@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef DEVICE_TYPE
-#define DEVICE_TYPE "Bento"
+#define DEVICE_TYPE "BLIP"
 #endif
 
 DeclareComponentSingleton(Settings, "settings", )
