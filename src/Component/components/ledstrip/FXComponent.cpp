@@ -29,7 +29,8 @@ void FXComponent::clearInternal()
 
 void FXComponent::process(Color *sourceColors)
 {
-
+    if(!enabled) return;
+    
     int numLeds = strip->count;
     if (numLeds == 0)
         return;

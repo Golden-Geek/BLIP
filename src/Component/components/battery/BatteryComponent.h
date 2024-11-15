@@ -1,8 +1,7 @@
 #pragma once
 
 #define BATTERY_CHECK_INTERVAL 100
-#define BATTERY_SET_INTERVAL 2000
-#define VALUES_SIZE BATTERY_SET_INTERVAL / BATTERY_CHECK_INTERVAL
+#define BATTERY_AVERAGE_WINDOW 20
 
 DeclareComponentSingleton(Battery, "battery", )
 
@@ -20,7 +19,7 @@ DeclareBoolParam(charging, false);
 long lastBatteryCheck = 0;
 long lastBatterySet = 0;
 long timeAtLowBattery = 0;
-float values[VALUES_SIZE];
+float values[BATTERY_AVERAGE_WINDOW];
 int valuesIndex = 0;
 
 bool initInternal(JsonObject o) override;

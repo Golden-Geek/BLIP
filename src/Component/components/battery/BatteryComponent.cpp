@@ -22,7 +22,7 @@ bool BatteryComponent::initInternal(JsonObject o)
     if (chargePin > 0)
         pinMode(chargePin, INPUT);
 
-    for (int i = 0; i < VALUES_SIZE; i++)
+    for (int i = 0; i < BATTERY_AVERAGE_WINDOW; i++)
         values[i] = analogRead(batteryPin);
 
     return true;
@@ -37,14 +37,16 @@ void BatteryComponent::updateInternal()
         {
 
             values[valuesIndex] = analogRead(batteryPin);
-            valuesIndex = (valuesIndex + 1) % VALUES_SIZE;
+            valuesIndex++;
         }
 
         lastBatteryCheck = millis();
     }
 
-    if (millis() > lastBatterySet + BATTERY_SET_INTERVAL)
+    if (valuesIndex >= BATTERY_AVERAGE_WINDOW)
     {
+        valuesIndex = 0;
+
         if (chargePin > 0)
         {
             SetParam(charging, (digitalRead(chargePin))); // measuredVal == 0;
@@ -54,10 +56,10 @@ void BatteryComponent::updateInternal()
         {
 
             float sum = 0;
-            for (int i = 0; i < VALUES_SIZE; i++)
+            for (int i = 0; i < BATTERY_AVERAGE_WINDOW; i++)
                 sum += values[i];
 
-            float val = sum / VALUES_SIZE;
+            float val = sum / BATTERY_AVERAGE_WINDOW;
 
             const float maxVoltage = 4.2f;
             const float minVoltage = 3.5f;

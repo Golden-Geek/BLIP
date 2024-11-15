@@ -15,6 +15,7 @@ ImplementManagerSingleton(LedStrip)
     AddIntParamConfig(clkPin);
     AddFloatParam(brightness);
     AddBoolParamConfig(invertStrip);
+    AddIntParamConfig(maxPower);
 
 #if USE_BAKELAYER
     AddOwnedComponent(&bakeLayer);
@@ -65,25 +66,18 @@ void LedStripComponent::setupLeds()
 
     if (clkPin > 0)
     {
-        NDBG("Setup dotstar");
+        NDBG("Using DotStar strip");
         dotStarStrip = new Adafruit_DotStar(count, dataPin, clkPin, DOTSTAR_BGR);
         dotStarStrip->begin();
-        dotStarStrip->setBrightness(brightness * LED_MAX_BRIGHTNESS * 255);
-        // dotStarStrip->fill(dotStarStrip->Color(50, 100, 150));
-        // dotStarStrip->show();
-        // delay(300);
     }
     else
     {
+        NDBG("Using NeoPixel strip");
         neoPixelStrip = new Adafruit_NeoPixel(count, dataPin, NEO_GRB + NEO_KHZ800);
         neoPixelStrip->begin();
-        neoPixelStrip->setBrightness(brightness * LED_MAX_BRIGHTNESS * 255);
-        // neoPixelStrip->fill(neoPixelStrip->Color(50, 100, 150));
-        // neoPixelStrip->show();
-
-        // delay(300);
     }
 
+    updateStripBrightness();
     setStripPower(true);
 }
 
@@ -105,6 +99,23 @@ void LedStripComponent::updateInternal()
     processLayer(&systemLayer);
 #endif
 
+    if (maxPower > 0)
+    {
+        int totalAmpRaw = 0;
+        const float bMultiplier = 60 * brightness * LED_BRIGHTNESS_FACTOR * LED_LEDS_PER_PIXEL;
+        for (int i = 0; i < count; i++)
+        {
+            Color c = colors[i];
+            totalAmpRaw += ((c.r + c.g + c.b) / 255.0f) * (c.a / 255.0f) * bMultiplier; // average 60mA per pixel at full white
+        }
+
+        if (totalAmpRaw > maxPower)
+        {
+            float factor = maxPower / (float)totalAmpRaw;
+            for (int i = 0; i < count; i++)
+                colors[i].a = colors[i].a * factor;
+        }
+    }
     showLeds();
 }
 
@@ -130,10 +141,7 @@ void LedStripComponent::paramValueChangedInternal(void *param)
 {
     if (param == &brightness)
     {
-        if (neoPixelStrip != NULL)
-            neoPixelStrip->setBrightness(brightness * LED_MAX_BRIGHTNESS * 255);
-        else if (dotStarStrip != NULL)
-            dotStarStrip->setBrightness(brightness * LED_MAX_BRIGHTNESS * 255);
+        updateStripBrightness();
     }
     else if (param == &count)
     {
@@ -147,6 +155,15 @@ void LedStripComponent::paramValueChangedInternal(void *param)
 void LedStripComponent::onEnabledChanged()
 {
     setStripPower(enabled);
+}
+
+void LedStripComponent::updateStripBrightness()
+{
+    NDBG("Set Brightness " + String(brightness));
+    if (neoPixelStrip != NULL)
+        neoPixelStrip->setBrightness(brightness * LED_BRIGHTNESS_FACTOR * 255);
+    else if (dotStarStrip != NULL)
+        dotStarStrip->setBrightness(brightness * LED_BRIGHTNESS_FACTOR * 255);
 }
 
 void LedStripComponent::setStripPower(bool value)
@@ -210,8 +227,6 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
 
         default:
             break;
-
-            break;
         }
     }
 
@@ -236,9 +251,9 @@ void LedStripComponent::showLeds()
         {
             float a = colors[i].a / 255.0f;
             neoPixelStrip->setPixelColor(ledMap(i),
-                                         (uint8_t)(colors[i].r * a),
-                                         (uint8_t)(colors[i].g * a),
-                                         (uint8_t)(colors[i].b * a));
+                                         Adafruit_NeoPixel::gamma8(colors[i].r * a),
+                                         Adafruit_NeoPixel::gamma8(colors[i].g * a),
+                                         Adafruit_NeoPixel::gamma8(colors[i].b * a));
         }
         neoPixelStrip->show();
     }
@@ -248,9 +263,9 @@ void LedStripComponent::showLeds()
         {
             float a = colors[i].a / 255.0f;
             dotStarStrip->setPixelColor(ledMap(i),
-                                        (uint8_t)(colors[i].r * a),
-                                        (uint8_t)(colors[i].g * a),
-                                        (uint8_t)(colors[i].b * a));
+                                        Adafruit_DotStar::gamma8(colors[i].r * a),
+                                        Adafruit_DotStar::gamma8(colors[i].g * a),
+                                        Adafruit_DotStar::gamma8(colors[i].b * a));
         }
         dotStarStrip->show();
     }

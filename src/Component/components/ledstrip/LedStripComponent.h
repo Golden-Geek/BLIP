@@ -53,6 +53,7 @@ public:
     DeclareIntParam(enPin, LED_DEFAULT_EN_PIN);
 
     DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
+    DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
 
     // mapping
     DeclareBoolParam(invertStrip, LED_DEFAULT_INVERT_DIRECTION);
@@ -94,6 +95,7 @@ public:
     void paramValueChangedInternal(void *param) override;
     void onEnabledChanged() override;
 
+    void updateStripBrightness();
     void setStripPower(bool value);
 
     // Layer functions
@@ -112,6 +114,7 @@ public:
     CheckAndSetParam(enPin);
     CheckAndSetParam(brightness);
     CheckAndSetParam(invertStrip);
+    CheckAndSetParam(maxPower);
     HandleSetParamInternalEnd;
 
     FillSettingsInternalStart
@@ -121,6 +124,8 @@ public:
     FillSettingsParam(enPin);
     FillSettingsParam(brightness);
     FillSettingsParam(invertStrip);
+    FillSettingsParam(maxPower);
+
     FillSettingsInternalEnd
 
         FillOSCQueryInternalStart
@@ -129,6 +134,7 @@ public:
     FillOSCQueryIntParam(clkPin);
     FillOSCQueryIntParam(enPin);
     FillOSCQueryRangeParam(brightness, 0, 1);
+    FillOSCQueryIntParam(maxPower);
     FillOSCQueryBoolParam(invertStrip);
     FillOSCQueryInternalEnd
 };
