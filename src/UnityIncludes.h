@@ -130,7 +130,7 @@
 #endif
 
 #include "Component/components/ledstrip/FXComponent.h"
-
+#include "Component/components/ledstrip/LedHelpers.h"
 #include "Component/components/ledstrip/LedStripComponent.h"
 #endif // LEDSTRIP
 

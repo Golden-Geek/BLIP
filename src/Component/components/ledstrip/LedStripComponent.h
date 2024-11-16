@@ -17,6 +17,13 @@
 
 #define USE_SYSTEMLAYER 1
 
+
+#define RED_MILLIAMP 16
+#define GREEN_MILLIAMP 11
+#define BLUE_MILLIAMP 15
+#define DARK_MILLIAMP 1
+
+
 class LedStripComponent : public Component
 {
 public:
@@ -60,6 +67,8 @@ public:
 
     Color colors[LED_MAX_COUNT];
 
+    uint8_t ditherFrameCounter = 0;
+
     // user layers, may be more than one later
 #if USE_BAKELAYER
     LedStripPlaybackLayer bakeLayer;
@@ -95,7 +104,6 @@ public:
     void paramValueChangedInternal(void *param) override;
     void onEnabledChanged() override;
 
-    void updateStripBrightness();
     void setStripPower(bool value);
 
     // Layer functions
@@ -104,6 +112,8 @@ public:
     // Color functions
     void clearColors();
     void showLeds();
+    uint8_t getDitheredBrightness(uint8_t brightness, uint8_t frame);
+    
 
     int ledMap(int index) const;
 

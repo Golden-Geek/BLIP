@@ -77,7 +77,6 @@ void LedStripComponent::setupLeds()
         neoPixelStrip->begin();
     }
 
-    updateStripBrightness();
     setStripPower(true);
 }
 
@@ -99,23 +98,6 @@ void LedStripComponent::updateInternal()
     processLayer(&systemLayer);
 #endif
 
-    if (maxPower > 0)
-    {
-        int totalAmpRaw = 0;
-        const float bMultiplier = 60 * brightness * LED_BRIGHTNESS_FACTOR * LED_LEDS_PER_PIXEL;
-        for (int i = 0; i < count; i++)
-        {
-            Color c = colors[i];
-            totalAmpRaw += ((c.r + c.g + c.b) / 255.0f) * (c.a / 255.0f) * bMultiplier; // average 60mA per pixel at full white
-        }
-
-        if (totalAmpRaw > maxPower)
-        {
-            float factor = maxPower / (float)totalAmpRaw;
-            for (int i = 0; i < count; i++)
-                colors[i].a = colors[i].a * factor;
-        }
-    }
     showLeds();
 }
 
@@ -139,11 +121,7 @@ void LedStripComponent::setBrightness(float val)
 
 void LedStripComponent::paramValueChangedInternal(void *param)
 {
-    if (param == &brightness)
-    {
-        updateStripBrightness();
-    }
-    else if (param == &count)
+    if (param == &count)
     {
         if (neoPixelStrip != NULL)
             neoPixelStrip->updateLength(count);
@@ -155,15 +133,6 @@ void LedStripComponent::paramValueChangedInternal(void *param)
 void LedStripComponent::onEnabledChanged()
 {
     setStripPower(enabled);
-}
-
-void LedStripComponent::updateStripBrightness()
-{
-    NDBG("Set Brightness " + String(brightness));
-    if (neoPixelStrip != NULL)
-        neoPixelStrip->setBrightness(brightness * LED_BRIGHTNESS_FACTOR * 255);
-    else if (dotStarStrip != NULL)
-        dotStarStrip->setBrightness(brightness * LED_BRIGHTNESS_FACTOR * 255);
 }
 
 void LedStripComponent::setStripPower(bool value)
@@ -194,8 +163,6 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
         {
         case LedStripLayer::Add:
             colors[i] += c;
-            // if (i == 0)
-            // NDBG(layer->name + " > " + colors[i].toString());
             break;
 
         case LedStripLayer::Multiply:
@@ -245,11 +212,41 @@ void LedStripComponent::clearColors()
 
 void LedStripComponent::showLeds()
 {
+    float targetBrightness = brightness * LED_BRIGHTNESS_FACTOR;
+    if (maxPower > 0)
+    {
+        int totalAmpFullBrightness = 0;
+        const float bMultiplier = LED_BRIGHTNESS_FACTOR * LED_LEDS_PER_PIXEL;
+
+        for (int i = 0; i < count; i++)
+        {
+            Color c = colors[i];
+            totalAmpFullBrightness += (((c.r * RED_MILLIAMP + c.g * GREEN_MILLIAMP + c.b * BLUE_MILLIAMP + DARK_MILLIAMP) / (c.a / 255.0f)) / 255.0f);
+        }
+
+        totalAmpFullBrightness *= bMultiplier;
+
+        NDBG("Total Amps at full brightness: " + String(totalAmpFullBrightness) + ", Max Power: " + String(maxPower));
+
+        if (totalAmpFullBrightness > maxPower)
+        {
+            float maxOkBrightness = LED_BRIGHTNESS_FACTOR * maxPower / (float)totalAmpFullBrightness;
+            targetBrightness = min(targetBrightness, maxOkBrightness);
+            NDBG("maxOkBrightness: " + String(maxOkBrightness) + ", Target brightness: " + String(targetBrightness));
+        }
+    }
+
+    if (neoPixelStrip != NULL)
+        neoPixelStrip->setBrightness(targetBrightness * 255);
+     else if (dotStarStrip != NULL)
+         dotStarStrip->setBrightness(targetBrightness * 255);
+
     if (neoPixelStrip != NULL)
     {
         for (int i = 0; i < count; i++)
         {
             float a = colors[i].a / 255.0f;
+            // float bFactor = getDitheredBrightness(targetBrightness * , ditherFrameCounter) / 255.0f;
             neoPixelStrip->setPixelColor(ledMap(i),
                                          Adafruit_NeoPixel::gamma8(colors[i].r * a),
                                          Adafruit_NeoPixel::gamma8(colors[i].g * a),
@@ -262,6 +259,7 @@ void LedStripComponent::showLeds()
         for (int i = 0; i < count; i++)
         {
             float a = colors[i].a / 255.0f;
+            // float bFactor = getDitheredBrightness(targetBrightness * colors[i].a, ditherFrameCounter) / 255.0f;
             dotStarStrip->setPixelColor(ledMap(i),
                                         Adafruit_DotStar::gamma8(colors[i].r * a),
                                         Adafruit_DotStar::gamma8(colors[i].g * a),
@@ -269,6 +267,26 @@ void LedStripComponent::showLeds()
         }
         dotStarStrip->show();
     }
+
+    ditherFrameCounter = (ditherFrameCounter + 1) & 0x07;
+}
+
+uint8_t LedStripComponent::getDitheredBrightness(uint8_t brightness, uint8_t frame) // frame goes 0-7
+{
+
+    static const uint8_t ditherTable[8][8] = {
+        {0, 32, 8, 40, 2, 34, 10, 42},
+        {48, 16, 56, 24, 50, 18, 58, 26},
+        {12, 44, 4, 36, 14, 46, 6, 38},
+        {60, 28, 52, 20, 62, 30, 54, 22},
+        {3, 35, 11, 43, 1, 33, 9, 41},
+        {51, 19, 59, 27, 49, 17, 57, 25},
+        {15, 47, 7, 39, 13, 45, 5, 37},
+        {63, 31, 55, 23, 61, 29, 53, 21}
+    };
+
+    uint8_t threshold = ditherTable[frame & 0x07][brightness & 0x07];
+    return (brightness > threshold) ? brightness : 0;
 }
 
 int LedStripComponent::ledMap(int index) const
