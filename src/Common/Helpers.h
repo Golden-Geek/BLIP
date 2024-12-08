@@ -75,7 +75,7 @@
         DeclareIntParam(count, 1);                            \
                                                               \
     DefineStaticItems(Type, MType);                           \
-    bool initInternal(JsonObject o) override                  \
+    void setupInternal(JsonObject o) override                  \
     {                                                         \
         AddIntParam(count);                                   \
         for (int i = 0; i < count; i++)                       \
@@ -84,7 +84,6 @@
             AddStaticOrDynamicComponent(n, Type, i == 0);     \
             addItemInternal(i);                               \
         }                                                     \
-        return true;                                          \
     }                                                         \
                                                               \
     HandleSetParamInternalStart                               \

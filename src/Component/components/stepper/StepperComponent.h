@@ -26,7 +26,8 @@ DeclareFloatParam(accel, 0);
 DeclareFloatParam(speed, 0);
 DeclareFloatParam(position, 0);
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 

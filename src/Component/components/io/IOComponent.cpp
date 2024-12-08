@@ -1,6 +1,6 @@
 ImplementManagerSingleton(IO);
 
-bool IOComponent::initInternal(JsonObject o)
+void IOComponent::setupInternal(JsonObject o)
 {
     pwmChannel = -1;
 
@@ -17,7 +17,10 @@ bool IOComponent::initInternal(JsonObject o)
     // value.readOnly = m == D_INPUT || m == D_INPUT_PULLUP || m == A_INPUT;
 
     prevValue = value;
+}
 
+bool IOComponent::initInternal()
+{
     setupPin();
     updatePin();
 

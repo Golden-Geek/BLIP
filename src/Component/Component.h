@@ -8,6 +8,7 @@ class Component : public EventBroadcaster<ComponentEvent>
 public:
     Component(const String &name, bool _enabled = true) : name(name),
                                                           isInit(false),
+                                                          autoInit(true),
                                                           exposeEnabled(true),
                                                           saveEnabled(true),
                                                           parentComponent(NULL),
@@ -21,6 +22,7 @@ public:
     virtual String getTypeString() const { return "[notype]"; }
 
     String name;
+    bool autoInit;
     bool isInit;
     bool exposeEnabled;
     bool saveEnabled;
@@ -71,11 +73,13 @@ public:
 
     virtual void onChildComponentEvent(const ComponentEvent &e) {}
 
-    bool init(JsonObject o = JsonObject());
+    void setup(JsonObject o = JsonObject());
+    bool init();
     void update();
     void clear();
 
-    virtual bool initInternal(JsonObject o) { return true; }
+    virtual void setupInternal(JsonObject o) {}
+    virtual bool initInternal() { return true; }
     virtual void updateInternal() {}
     virtual void clearInternal() {}
 

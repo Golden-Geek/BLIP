@@ -18,7 +18,7 @@ DeclareIntParam(wakeUpButton, POWER_WAKEUP_BUTTON);
 DeclareBoolParam(wakeUpState, POWER_WAKEUP_BUTTON_STATE);
 #endif
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
 
 bool handleCommandInternal(const String &command, var *data, int numData) override;
 

@@ -4,7 +4,7 @@ DeclareComponentSingleton(Script, "script", )
 
     Script script;
 
-bool initInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 

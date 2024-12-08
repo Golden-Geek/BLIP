@@ -1,6 +1,6 @@
 ImplementSingleton(WifiComponent)
 
-    bool WifiComponent::initInternal(JsonObject o)
+    void WifiComponent::setupInternal(JsonObject o)
 {
     state = Off;
 
@@ -10,6 +10,11 @@ ImplementSingleton(WifiComponent)
 
     AddStringParamConfig(ssid);
     AddStringParamConfig(pass);
+}
+
+bool WifiComponent::initInternal()
+{
+
 #ifdef USE_ETHERNET
     AddIntParamConfig(mode);
 
@@ -107,6 +112,12 @@ void WifiComponent::setState(ConnectionState s)
 
 void WifiComponent::connect()
 {
+
+#ifdef USE_ESPNOW
+    NDBG("ESPNow is running, not connecting to wifi");
+    return;
+#endif
+
     lastConnectTime = millis();
     timeAtConnect = millis();
 

@@ -1,9 +1,8 @@
 ImplementSingleton(ScriptComponent);
 
-bool ScriptComponent::initInternal(JsonObject o)
+bool ScriptComponent::initInternal()
 {
-    script.init();
-    return true;
+    return script.init();
 }
 
 void ScriptComponent::updateInternal()

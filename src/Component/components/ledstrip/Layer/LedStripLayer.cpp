@@ -9,7 +9,7 @@ LedStripLayer::~LedStripLayer()
 {
 }
 
-bool LedStripLayer::initInternal(JsonObject o)
+void LedStripLayer::setupInternal(JsonObject o)
 {
     AddIntParam(blendMode);
     // blendMode.options = blendModeOptions;
@@ -19,8 +19,6 @@ bool LedStripLayer::initInternal(JsonObject o)
 
     for (int i = 0; i < strip->count; i++)
         colors[i] = Color(0, 0, 0, 0);
-    
-    return true;
 }
 
 // Helpers

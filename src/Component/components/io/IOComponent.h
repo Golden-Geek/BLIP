@@ -35,7 +35,8 @@ float prevValue;
 
 const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
 
-virtual bool initInternal(JsonObject o) override;
+virtual void setupInternal(JsonObject o) override;
+virtual bool initInternal() override;
 virtual void updateInternal() override;
 virtual void clearInternal() override;
 

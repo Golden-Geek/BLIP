@@ -26,7 +26,7 @@ public:
     LedStripLayer(const String &name, Type t, LedStripComponent *strip);
     ~LedStripLayer();
 
-    virtual bool initInternal(JsonObject o) override;
+    virtual void setupInternal(JsonObject o) override;
 
     LedStripComponent *strip;
     Type type;

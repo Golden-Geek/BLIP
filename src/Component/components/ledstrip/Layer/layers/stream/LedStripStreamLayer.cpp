@@ -1,13 +1,19 @@
+#include "UnityIncludes.h"
+#include "LedStripStreamLayer.h"
+
 ImplementSingleton(LedStreamReceiverComponent);
 
-bool LedStripStreamLayer::initInternal(JsonObject o)
+void LedStripStreamLayer::setupInternal(JsonObject o)
 {
-    LedStripLayer::initInternal(o);
+    LedStripLayer::setupInternal(o);
 
     AddIntParamConfig(universe);
     AddBoolParamConfig(clearOnNoReception);
     AddFloatParamConfig(noReceptionTime);
+}
 
+bool LedStripStreamLayer::initInternal()
+{
     LedStreamReceiverComponent::instance->registerLayer(this);
 
     return true;
@@ -30,13 +36,21 @@ void LedStripStreamLayer::clearInternal()
     }
 }
 
-bool LedStreamReceiverComponent::initInternal(JsonObject o)
+void LedStreamReceiverComponent::setupInternal(JsonObject o)
 {
-    serverIsInit = false;
+#ifdef USE_ARTNET
+    artnetIsInit = false;
     AddIntParam(receiveRate);
     byteIndex = 0;
+#endif
+}
 
+bool LedStreamReceiverComponent::initInternal()
+{
+    
+#ifdef USE_ARTNET
     artnet.setArtDmxCallback(&LedStreamReceiverComponent::onDmxFrame);
+#endif
 
     setupConnection();
     return true;
@@ -44,7 +58,8 @@ bool LedStreamReceiverComponent::initInternal(JsonObject o)
 
 void LedStreamReceiverComponent::updateInternal()
 {
-    if (!serverIsInit)
+#ifdef USE_ARTNET
+    if (!artnetIsInit)
         return;
 
     long curTime = millis();
@@ -57,6 +72,7 @@ void LedStreamReceiverComponent::updateInternal()
             r = artnet.read();
         }
     }
+#endif
 }
 
 void LedStreamReceiverComponent::clearInternal()
@@ -71,20 +87,21 @@ void LedStreamReceiverComponent::onEnabledChanged()
 
 void LedStreamReceiverComponent::setupConnection()
 {
+#ifdef USE_ARTNET
     bool shouldConnect = enabled && WifiComponent::instance->state == WifiComponent::Connected;
-
     if (shouldConnect)
     {
         NDBG("Start Receive Led Stream on Artnet");
         artnet.begin();
         NDBG("Artnet started");
-        serverIsInit = true;
+        artnetIsInit = true;
     }
     else
     {
         artnet.stop();
-        serverIsInit = false;
+        artnetIsInit = false;
     }
+#endif
 }
 
 void LedStreamReceiverComponent::registerLayer(LedStripStreamLayer *layer)
@@ -104,10 +121,46 @@ void LedStreamReceiverComponent::unregisterLayer(LedStripStreamLayer *layer)
     }
 }
 
+#ifdef USE_ARTNET
 void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
 {
     // DBG("Received Artnet "+String(universe));
+    instance->handleReceiveData(universe, length, data);
+}
+#endif
 
+#ifdef USE_ESPNOW
+void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
+{
+
+    if (len < 12)
+    {
+        DBG("Not enough data received");
+        return;
+    }
+
+    int universe = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+    int start = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+    int count = (data[8] << 24) | (data[9] << 16) | (data[10] << 8) | data[11];
+
+    if (count < 1)
+    {
+        DBG("No colors provided");
+        return;
+    }
+
+    if (len < 12 + count * 3)
+    {
+        DBG("Led count more than provided data");
+        return;
+    }
+
+    handleReceiveData(universe, count * 3, (uint8_t *)data + 12);
+}
+#endif
+
+void LedStreamReceiverComponent::handleReceiveData(uint16_t universe, uint16_t length, uint8_t *data)
+{
     float multiplier = 1.0f;
     if (RootComponent::instance->isShuttingDown())
     {
@@ -116,7 +169,7 @@ void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, 
         multiplier = max(1 - relT * 2 / animTime, 0.f);
     }
 
-    for (auto &layer : instance->layers)
+    for (auto &layer : layers)
     {
         int numUniverses = std::ceil(layer->strip->count * 1.0f / 170); // 170 leds per universe
         if (universe < layer->universe || universe > layer->universe + numUniverses - 1)

@@ -27,7 +27,7 @@ public:
     DeclareBoolParam(longPress, false);
     DeclareBoolParam(veryLongPress, false);
 
-    bool initInternal(JsonObject o) override;
+    void setupInternal(JsonObject o) override;
     void updateInternal() override;
     void paramValueChangedInternal(void *param) override;
 

@@ -1,14 +1,10 @@
-#include "StepperComponent.h"
+#include "UnityIncludes.h"
+
 FastAccelStepperEngine StepperComponent::engine = FastAccelStepperEngine();
 bool StepperComponent::engineIsInit = false;
 
-bool StepperComponent::initInternal(JsonObject o)
+void StepperComponent::setupInternal(JsonObject o)
 {
-    if (!engineIsInit)
-    {
-        NDBG("Init Stepper Engine");
-        engine.init(1);
-    }
 
     AddIntParamConfig(stepPin);
     AddIntParamConfig(dirPin);
@@ -17,6 +13,16 @@ bool StepperComponent::initInternal(JsonObject o)
     AddFloatParamConfig(accel);
     AddFloatParamConfig(speed);
     AddFloatParam(position);
+}
+
+bool StepperComponent::initInternal()
+{
+
+    if (!engineIsInit)
+    {
+        NDBG("Init Stepper Engine");
+        engine.init(1);
+    }
 
     if (stepPin > -1)
     {
@@ -26,7 +32,7 @@ bool StepperComponent::initInternal(JsonObject o)
             stepper->setDirectionPin(dirPin);
             if (enPin > -1)
             {
-                NDBG("Set enable pin "+String(enPin));
+                NDBG("Set enable pin " + String(enPin));
                 delay(500);
                 stepper->setEnablePin(enPin);
                 stepper->enableOutputs();
@@ -36,7 +42,7 @@ bool StepperComponent::initInternal(JsonObject o)
             stepper->setSpeedInHz(speed);    // 500 steps/s
             stepper->setAcceleration(accel); // 100 steps/s
 
-            NDBG("Connected stepper on stepPin " + String(stepPin)+", dirPin "+String(dirPin)+", enPin "+String(enPin));
+            NDBG("Connected stepper on stepPin " + String(stepPin) + ", dirPin " + String(dirPin) + ", enPin " + String(enPin));
         }
         else
         {
@@ -64,26 +70,32 @@ void StepperComponent::clearInternal()
 
 void StepperComponent::paramValueChangedInternal(void *param)
 {
-    if(!isInit) return;
+    if (!isInit)
+        return;
 
     if (param == &position)
     {
-        NDBG("Move to position "+String(position));
+        NDBG("Move to position " + String(position));
         stepper->moveTo(position);
-    }else if(param == &speed)
+    }
+    else if (param == &speed)
     {
-        NDBG("Set speed to "+String(speed));
+        NDBG("Set speed to " + String(speed));
         stepper->setSpeedInHz(speed);
-    }else if(param == &accel)
+    }
+    else if (param == &accel)
     {
-        NDBG("Set acceleration to "+String(accel));
+        NDBG("Set acceleration to " + String(accel));
         stepper->setAcceleration(accel);
     }
 }
 
 void StepperComponent::onEnabledChanged()
 {
-    if(!isInit) return;
-    if(enabled) stepper->enableOutputs();
-    else stepper->disableOutputs();
+    if (!isInit)
+        return;
+    if (enabled)
+        stepper->enableOutputs();
+    else
+        stepper->disableOutputs();
 }

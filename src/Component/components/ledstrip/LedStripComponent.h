@@ -92,12 +92,12 @@ public:
     Adafruit_NeoPixel *neoPixelStrip;
     Adafruit_DotStar *dotStarStrip;
 
-    bool initInternal(JsonObject o) override;
-
-    void setupLeds();
-
+    void setupInternal(JsonObject o) override;
+    bool initInternal() override;
     void updateInternal() override;
     void clearInternal() override;
+
+    void setupLeds();
 
     void setBrightness(float val);
 

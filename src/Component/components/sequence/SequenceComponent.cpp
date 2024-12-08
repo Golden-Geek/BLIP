@@ -1,8 +1,7 @@
 ImplementSingleton(SequenceComponent)
 
-bool SequenceComponent::initInternal(JsonObject o)
+void SequenceComponent::setupInternal(JsonObject o)
 {
-    return true;
 }
 
 void SequenceComponent::updateInternal()

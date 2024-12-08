@@ -1,14 +1,15 @@
+#include "UnityIncludes.h"
+
 ImplementSingleton(SerialComponent);
 
-bool SerialComponent::initInternal(JsonObject o)
+void SerialComponent::setupInternal(JsonObject o)
 {
-    bufferIndex = 0;
-    memset(buffer, 0, 512);
-    Serial.begin(115200);
-
     AddBoolParamConfig(sendFeedback);
 
-    return true;
+    bufferIndex = 0;
+    memset(buffer, 0, 512);
+    
+    Serial.begin(115200);
 }
 
 void SerialComponent::updateInternal()

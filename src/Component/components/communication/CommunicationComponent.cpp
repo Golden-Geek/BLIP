@@ -1,7 +1,8 @@
-#include "CommunicationComponent.h"
+#include "UnityIncludes.h"
+
 ImplementSingleton(CommunicationComponent);
 
-bool CommunicationComponent::initInternal(JsonObject o)
+void CommunicationComponent::setupInternal(JsonObject o)
 {
 #ifdef USE_SERIAL
     AddOwnedComponent(&serial);
@@ -11,7 +12,9 @@ bool CommunicationComponent::initInternal(JsonObject o)
     AddOwnedComponent(&osc);
 #endif
 
-    return true;
+#ifdef USE_ESPNOW
+    AddOwnedComponent(&espNow);
+#endif
 }
 
 void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
@@ -29,6 +32,13 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 
 #ifdef USE_OSC
         if (e.component == &osc && e.type == OSCComponent::MessageReceived)
+    {
+        sendEvent(MessageReceived, e.data, e.numData);
+    }
+#endif
+
+#ifdef USE_ESPNOW
+    else if (e.component == &espNow && e.type == ESPNowComponent::MessageReceived)
     {
         sendEvent(MessageReceived, e.data, e.numData);
     }
@@ -77,7 +87,7 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
     }
 
     String baseAddress = c->getFullPath();
-    
+
 #ifdef USE_SERIAL
     if (serial.sendFeedback)
         serial.sendMessage(baseAddress, pName, data, numData);

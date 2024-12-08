@@ -1,15 +1,16 @@
-bool LedStripSystemLayer::initInternal(JsonObject o)
+#include "UnityIncludes.h"
+
+void LedStripSystemLayer::setupInternal(JsonObject o)
 {
-    LedStripLayer::initInternal(o);
+    LedStripLayer::setupInternal(o);
     blendMode = BlendMode::Alpha;
-    return true;
 }
 
 void LedStripSystemLayer::updateInternal()
 {
 
     clearColors();
-    updateWifiStatus();
+    updateConnectionStatus();
     updateShutdown();
 }
 
@@ -18,10 +19,19 @@ void LedStripSystemLayer::clearInternal()
     clearColors();
 }
 
-void LedStripSystemLayer::updateWifiStatus()
+void LedStripSystemLayer::updateConnectionStatus()
 {
     if (WifiComponent::instance == NULL)
         return;
+
+#ifdef USE_ESPNOW
+    Color c = ESPNowComponent::instance->hasReceivedData ? Color(50, 255, 0) : Color(255, 0, 120);
+    float pulseSpeed = 0.5; // Adjust this value to change the pace
+    float pulse = (sin(millis() * pulseSpeed / 1000.0f * PI * 2) * 0.5f + 0.5f) * 0.15f + 0.05f;
+    fillAll(Color(0, 0, 0, 255)); // clear strip
+    point(c, .5f, pulse, false);
+    return;
+#endif
 
     float relT = (millis() - WifiComponent::instance->timeAtStateChange) / 1000.0f;
     const float animTime = 1.0f;

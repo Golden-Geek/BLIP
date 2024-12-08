@@ -1,11 +1,14 @@
-bool DCMotorComponent::initInternal(JsonObject o)
+void DCMotorComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(enPin);
     AddIntParamConfig(dir1Pin);
     AddIntParamConfig(dir2Pin);
 
     AddFloatParam(speed);
+}
 
+bool DCMotorComponent::initInternal()
+{
     if (dir1Pin >= 0 && dir2Pin >= 0 && enPin >= 0)
     {
         pinMode(dir1Pin, OUTPUT);
@@ -25,6 +28,8 @@ bool DCMotorComponent::initInternal(JsonObject o)
             NDBG("Max channels reached, not able to create speedPin PWM channel");
         }
     }
+
+    return true;
 }
 
 void DCMotorComponent::updateInternal()

@@ -1,6 +1,6 @@
-ImplementManagerSingleton(LedStrip)
+ImplementManagerSingleton(LedStrip);
 
-    bool LedStripComponent::initInternal(JsonObject o)
+void LedStripComponent::setupInternal(JsonObject o)
 {
     // init
     neoPixelStrip = NULL;
@@ -37,6 +37,10 @@ ImplementManagerSingleton(LedStrip)
     AddOwnedComponent(&fx);
 #endif
 
+}
+
+bool LedStripComponent::initInternal()
+{
     setupLeds();
     return true;
 }
@@ -226,20 +230,20 @@ void LedStripComponent::showLeds()
 
         totalAmpFullBrightness *= bMultiplier;
 
-        NDBG("Total Amps at full brightness: " + String(totalAmpFullBrightness) + ", Max Power: " + String(maxPower));
+        // NDBG("Total Amps at full brightness: " + String(totalAmpFullBrightness) + ", Max Power: " + String(maxPower));
 
         if (totalAmpFullBrightness > maxPower)
         {
             float maxOkBrightness = LED_BRIGHTNESS_FACTOR * maxPower / (float)totalAmpFullBrightness;
             targetBrightness = min(targetBrightness, maxOkBrightness);
-            NDBG("maxOkBrightness: " + String(maxOkBrightness) + ", Target brightness: " + String(targetBrightness));
+            // NDBG("maxOkBrightness: " + String(maxOkBrightness) + ", Target brightness: " + String(targetBrightness));
         }
     }
 
     if (neoPixelStrip != NULL)
         neoPixelStrip->setBrightness(targetBrightness * 255);
-     else if (dotStarStrip != NULL)
-         dotStarStrip->setBrightness(targetBrightness * 255);
+    else if (dotStarStrip != NULL)
+        dotStarStrip->setBrightness(targetBrightness * 255);
 
     if (neoPixelStrip != NULL)
     {
@@ -282,8 +286,7 @@ uint8_t LedStripComponent::getDitheredBrightness(uint8_t brightness, uint8_t fra
         {3, 35, 11, 43, 1, 33, 9, 41},
         {51, 19, 59, 27, 49, 17, 57, 25},
         {15, 47, 7, 39, 13, 45, 5, 37},
-        {63, 31, 55, 23, 61, 29, 53, 21}
-    };
+        {63, 31, 55, 23, 61, 29, 53, 21}};
 
     uint8_t threshold = ditherTable[frame & 0x07][brightness & 0x07];
     return (brightness > threshold) ? brightness : 0;

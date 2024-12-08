@@ -39,7 +39,7 @@ public:
 
     Color colors[LED_MAX_COUNT];
 
-    virtual bool initInternal(JsonObject o) override;
+    virtual void setupInternal(JsonObject o) override;
     virtual void updateInternal() override;
     virtual void clearInternal() override;
 

@@ -31,6 +31,10 @@
 #include "Component/components/communication/serial/SerialComponent.cpp"
 #endif
 
+#ifdef USE_ESPNOW
+#include "Component/components/communication/espnow/ESPNowComponent.cpp"
+#endif
+
 #include "Component/components/communication/CommunicationComponent.cpp"
 
 

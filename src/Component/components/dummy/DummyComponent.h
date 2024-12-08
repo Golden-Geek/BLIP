@@ -1,3 +1,5 @@
+#pragma once
+
 DeclareComponent(Dummy, "dummy", )
 
 DeclareBoolParam(param1, false);
@@ -7,7 +9,7 @@ DeclareFloatParam(param4, 3.5f);
 DeclareStringParam(param5, "cool");
 
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
 
 HandleSetParamInternalStart
     CheckAndSetParam(param1);

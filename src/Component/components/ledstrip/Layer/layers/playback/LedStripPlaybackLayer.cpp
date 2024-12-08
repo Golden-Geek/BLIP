@@ -1,7 +1,7 @@
 #include "LedStripPlaybackLayer.h"
-bool LedStripPlaybackLayer::initInternal(JsonObject o)
+void LedStripPlaybackLayer::setupInternal(JsonObject o)
 {
-    LedStripLayer::initInternal(o);
+    LedStripLayer::setupInternal(o);
 
 #if PLAYBACK_USE_ALPHA
     frameSize = strip->count * 4;
@@ -25,8 +25,6 @@ bool LedStripPlaybackLayer::initInternal(JsonObject o)
 #ifdef USE_SCRIPT
     activeScriptIndex = -1;
 #endif
-
-    return true;
 }
 
 void LedStripPlaybackLayer::updateInternal()
@@ -245,7 +243,6 @@ void LedStripPlaybackLayer::load(String path)
 
 void LedStripPlaybackLayer::play(float atTime)
 {
-    DBG("Play " + String(atTime));
     if (!curFile)
         return;
 
@@ -259,7 +256,6 @@ void LedStripPlaybackLayer::play(float atTime)
 
 void LedStripPlaybackLayer::seek(float t, bool doSendEvent)
 {
-    NDBG("Seek " + String(t));
     if (!curFile)
         return;
 
@@ -283,14 +279,12 @@ void LedStripPlaybackLayer::seek(float t, bool doSendEvent)
 
 void LedStripPlaybackLayer::pause()
 {
-    DBG("Pause");
     isPlaying = false;
     sendEvent(Paused);
 }
 
 void LedStripPlaybackLayer::stop()
 {
-    DBG("Stop");
     isPlaying = false;
     curTimeMs = 0;
     prevTimeMs = 0;

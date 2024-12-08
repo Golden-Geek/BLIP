@@ -1,10 +1,7 @@
 #pragma once
 
 
-
 DeclareComponentSingleton(Root, "root", )
-
-
 
 // DeclareConfigParameter(deviceName, deviceID);
 // DeclareConfigParameter(wakeUpButton, POWER_WAKEUP_BUTTON);
@@ -89,7 +86,7 @@ Timer<5> timer;
 long timeAtStart;
 long timeAtShutdown;
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
 void updateInternal() override;
 
 void shutdown();

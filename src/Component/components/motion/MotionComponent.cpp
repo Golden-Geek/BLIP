@@ -1,4 +1,4 @@
-bool MotionComponent::initInternal(JsonObject o)
+void MotionComponent::setupInternal(JsonObject o)
 {
     saveEnabled = false;
     enabled = false;
@@ -33,7 +33,10 @@ bool MotionComponent::initInternal(JsonObject o)
     AddFloatParamConfig(angleOffset);
     AddFloatParam(projectedAngle);
     AddFloatParamConfig(xOnCalibration);
+}
 
+bool MotionComponent::initInternal()
+{
 #ifdef IMU_TYPE_BNO055
     if (sdaPin == 0 || sclPin == 0)
     {
@@ -239,7 +242,6 @@ void MotionComponent::readIMU()
     mpu.getGyroData(&gyroX, &gyroY, &gyroZ);
     mpu.getAccelData(&accX, &accY, &accZ);
     // mpu.getAhrsData(&pitch, &roll, &yaw);
-
 
     double dt = (millis() - lastUpdateTime) / 1000.0;
     lastUpdateTime = millis();

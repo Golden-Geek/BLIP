@@ -10,7 +10,8 @@ DeclareColorParam(color, 0, 0, 0, 1);
 
 int pwmChannels[4];
 
-virtual bool initInternal(JsonObject o) override;
+virtual void setupInternal(JsonObject o) override;
+virtual bool initInternal() override;
 virtual void updateInternal() override;
 virtual void clearInternal() override;
 

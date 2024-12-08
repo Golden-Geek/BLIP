@@ -12,6 +12,7 @@ RootComponent root("root");
 
 void setup()
 {
+	root.setup();
 	root.init();
     DBG("Device is init");
 }

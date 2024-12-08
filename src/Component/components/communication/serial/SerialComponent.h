@@ -6,7 +6,7 @@ DeclareComponentSingleton(Serial, "serial", )
 byte bufferIndex;
 DeclareBoolParam(sendFeedback, false);
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
 void updateInternal() override;
 void clearInternal() override;
 

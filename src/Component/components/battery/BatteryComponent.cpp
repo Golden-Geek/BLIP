@@ -1,7 +1,7 @@
 #include "BatteryComponent.h"
 ImplementSingleton(BatteryComponent);
 
-bool BatteryComponent::initInternal(JsonObject o)
+void BatteryComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(batteryPin);
     AddIntParamConfig(chargePin);
@@ -12,7 +12,10 @@ bool BatteryComponent::initInternal(JsonObject o)
 
     AddFloatParam(batteryLevel);
     AddBoolParam(charging);
+}
 
+bool BatteryComponent::initInternal()
+{
     if (batteryPin > 0)
     {
         pinMode(batteryPin, INPUT);

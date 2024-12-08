@@ -34,7 +34,7 @@ M5GFX display;
 M5Canvas canvas;
 #endif
 
-bool initInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 

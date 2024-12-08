@@ -1,10 +1,12 @@
-bool ServoComponent::initInternal(JsonObject o)
+void ServoComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(pin);
-    if (pin > 0)
-        servo.attach(pin);
-
     AddFloatParam(position);
+}
+
+bool ServoComponent::initInternal()
+{
+    if (pin > 0) servo.attach(pin);
     return true;
 }
 

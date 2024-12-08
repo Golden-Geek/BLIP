@@ -5,7 +5,7 @@ ImplementSingleton(RootComponent);
 
 bool RootComponent::availablePWMChannels[16] = {true};
 
-bool RootComponent::initInternal(JsonObject)
+void RootComponent::setupInternal(JsonObject)
 {
     BoardInit;
 
@@ -89,8 +89,6 @@ bool RootComponent::initInternal(JsonObject)
 #ifdef USE_WIFI
     AddOwnedComponent(&wifi);
 #endif
-
-    return true;
 }
 
 void RootComponent::updateInternal()

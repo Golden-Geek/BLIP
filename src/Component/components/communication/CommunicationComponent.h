@@ -9,7 +9,11 @@ DeclareComponentSingleton(Communication, "comm", )
 OSCComponent osc;
 #endif
 
-bool initInternal(JsonObject o) override;
+#ifdef USE_ESPNOW
+ESPNowComponent espNow;
+#endif
+
+void setupInternal(JsonObject o) override;
 
 void onChildComponentEvent(const ComponentEvent &e) override;
 

@@ -1,4 +1,4 @@
-// bool LedStripScriptLayer::initInternal(JsonObject o)
+// void LedStripScriptLayer::setupInternal(JsonObject o)
 // {
 //     LedStripLayer::initInternal(o);
 //     return true;

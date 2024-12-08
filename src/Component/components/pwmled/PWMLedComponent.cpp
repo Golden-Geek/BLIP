@@ -1,6 +1,6 @@
 ImplementManagerSingleton(PWMLed);
 
-bool PWMLedComponent::initInternal(JsonObject o)
+void PWMLedComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(rPin);
     AddIntParamConfig(gPin);
@@ -8,6 +8,10 @@ bool PWMLedComponent::initInternal(JsonObject o)
     AddIntParamConfig(wPin);
     // AddColorParam(color);
 
+}
+
+bool PWMLedComponent::initInternal()
+{
     setupPins();
     updatePins();
 

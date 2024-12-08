@@ -70,6 +70,11 @@
 #include "Component/components/communication/serial/SerialComponent.h"
 #endif
 
+#ifdef USE_ESPNOW
+#include <esp_now.h>
+#include "Component/components/communication/espnow/ESPNowComponent.h"
+#endif
+
 #include "Component/components/communication/CommunicationComponent.h"
 
 #ifdef USE_SERVER

@@ -2,7 +2,8 @@
 
 DeclareComponentSingleton(Files, "files", )
 
-    bool initInternal(JsonObject o) override;
+    void setupInternal(JsonObject o) override;
+    bool initInternal() override;
 bool initInternalMemory();
 
 #ifdef FILES_TYPE_SPIFFS

@@ -19,13 +19,18 @@ Script::Script(Component *localComponent) : isRunning(false),
     DBG("Script Init here");
 }
 
-void Script::init()
+bool Script::init()
 {
     DBG("Script init.");
     env = m3_NewEnvironment();
 
     if (!env)
+    {
         DBG("Script environment error");
+        return false;
+    }
+
+    return true;
 }
 
 void Script::update()

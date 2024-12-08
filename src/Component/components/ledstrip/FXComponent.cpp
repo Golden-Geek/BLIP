@@ -4,7 +4,7 @@
 #define FX_SWAP_UPSIDE_DOWN 0
 #endif
 
-bool FXComponent::initInternal(JsonObject o)
+void FXComponent::setupInternal(JsonObject o)
 {
     AddFloatParam(staticOffset);
     AddFloatParam(offsetSpeed);
@@ -15,8 +15,6 @@ bool FXComponent::initInternal(JsonObject o)
     AddBoolParam(showCalibration);
 
     memset(colors, 0, strip->count * sizeof(Color));
-
-    return true;
 }
 
 void FXComponent::updateInternal()

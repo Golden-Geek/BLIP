@@ -1,11 +1,11 @@
 ImplementManagerSingleton(Button);
 
-bool ButtonComponent::initInternal(JsonObject o)
+void ButtonComponent::setupInternal(JsonObject o)
 {
     // value.val.type = 'b'; //force boolean
     // SetParam(value,false);
 
-    bool result = IOComponent::initInternal(o);
+    IOComponent::setupInternal(o);
 
     debounceCount = 0;
     timeAtPress = 0;
@@ -17,11 +17,8 @@ bool ButtonComponent::initInternal(JsonObject o)
     // longPress.readOnly = true;
 
     AddIntParam(veryLongPress);
-    
-    AddBoolParamConfig(canShutDown);
-    // veryLongPress.readOnly = true;
 
-    return result;
+    AddBoolParamConfig(canShutDown);
 }
 
 void ButtonComponent::updateInternal()

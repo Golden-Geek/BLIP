@@ -64,7 +64,8 @@ DeclareStringParam(ssid, "");
 DeclareStringParam(pass, "");
 DeclareIntParam(mode, WIFI_DEFAULT_MODE);
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 

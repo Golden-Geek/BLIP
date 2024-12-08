@@ -2,9 +2,23 @@ ImplementSingleton(FilesComponent);
 
 fs::FS &FilesComponent::fs = FS_TYPE;
 
-bool FilesComponent::initInternal(JsonObject o)
+void FilesComponent::setupInternal(JsonObject o)
 {
 
+
+#ifdef FILES_TYPE_SD
+    AddIntParamConfig(sdEnPin);
+    AddBoolParamConfig(sdEnVal);
+    AddIntParamConfig(sdSCK);
+    AddIntParamConfig(sdMiso);
+    AddIntParamConfig(sdMosi);
+    AddIntParamConfig(sdCS);
+    AddIntParamConfig(sdSpeed);
+#endif
+}
+
+bool FilesComponent::initInternal()
+{
     bool mounted = false;
 
 #ifdef FILES_TYPE_SPIFFS
@@ -12,7 +26,6 @@ bool FilesComponent::initInternal(JsonObject o)
 #else
     useInternalMemory = false;
 #endif
-
 
 #ifdef FILES_TYPE_MMC
 
@@ -25,15 +38,6 @@ bool FilesComponent::initInternal(JsonObject o)
 
 #ifdef FILES_TYPE_SD
     NDBG("Init SD SPI");
-
-    AddIntParamConfig(sdEnPin);
-    AddBoolParamConfig(sdEnVal);
-    AddIntParamConfig(sdSCK);
-    AddIntParamConfig(sdMiso);
-    AddIntParamConfig(sdMosi);
-    AddIntParamConfig(sdCS);
-    AddIntParamConfig(sdSpeed);
-
     if (sdEnPin > 0)
     {
         // NDBG("Setting SD En Pin " + String(sdEnPin) + " to " + String(sdEnVal));
@@ -64,6 +68,8 @@ bool FilesComponent::initInternal(JsonObject o)
     pinMode(sdCS, OUTPUT);
     digitalWrite(sdCS, LOW);
 
+
+
     spiSD.begin((int8_t)sdSCK, (int8_t)sdMiso, (int8_t)sdMosi, (int8_t)sdCS); // SCK,MISO,MOSI,ss
 
     if (SD.begin((uint8_t)sdCS, spiSD))
@@ -89,8 +95,7 @@ bool FilesComponent::initInternal(JsonObject o)
         useInternalMemory = true;
     }
 
-    initInternalMemory();
-    return true;
+    return initInternalMemory();
 }
 
 bool FilesComponent::initInternalMemory()

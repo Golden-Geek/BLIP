@@ -1,6 +1,6 @@
 ImplementSingleton(SettingsComponent);
 
-bool SettingsComponent::initInternal(JsonObject o)
+void SettingsComponent::setupInternal(JsonObject o)
 {
     AddIntParam(propID);
     AddStringParam(deviceName);
@@ -9,7 +9,6 @@ bool SettingsComponent::initInternal(JsonObject o)
     AddIntParamConfig(wakeUpButton);
     AddBoolParamConfig(wakeUpState);
 #endif
-    return true;
 }
 
 bool SettingsComponent::handleCommandInternal(const String &command, var *data, int numData)

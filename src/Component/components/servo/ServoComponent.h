@@ -11,7 +11,8 @@ DeclareFloatParam(position, 0);
 
 Servo servo;
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 void paramValueChangedInternal(void *param) override;

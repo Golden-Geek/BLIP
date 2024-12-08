@@ -1,6 +1,6 @@
-#include "DisplayComponent.h"
+#include "UnityIncludes.h"
 
-bool DisplayComponent::initInternal(JsonObject o)
+bool DisplayComponent::initInternal()
 {
 #if DISPLAY_TYPE == M5StickC
     initM5StickC();

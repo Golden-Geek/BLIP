@@ -35,7 +35,7 @@ public:
     long tstart;
     long tend;
 
-    void init();
+    bool init();
     void update();
     void launchWasm();
     void shutdown();

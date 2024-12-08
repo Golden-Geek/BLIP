@@ -1,10 +1,23 @@
-#include "Component.h"
-bool Component::init(JsonObject o)
-{
-    AddBoolParam(enabled);
+#include "UnityIncludes.h"
 
+void Component::setup(JsonObject o)
+{
+    NDBG("Setup");
+    AddBoolParam(enabled);
+    setupInternal(o);
+}
+
+bool Component::init()
+{
     NDBG("Init");
-    isInit = initInternal(o);
+
+    for (int i = 0; i < numComponents; i++)
+    {
+        // NDBG("> Init " + components[i]->name);
+        components[i]->init();
+    }
+
+    isInit = initInternal();
 
     if (!isInit)
         NDBG(F("Init Error."));
@@ -93,7 +106,8 @@ bool Component::checkCommand(const String &command, const String &ref, int numDa
 
 void Component::fillSettingsData(JsonObject o, bool showConfig)
 {
-    if(saveEnabled) FillSettingsParam(enabled);
+    if (saveEnabled)
+        FillSettingsParam(enabled);
     fillSettingsParamsInternal(o, showConfig);
 
     if (numComponents > 0)
@@ -110,7 +124,7 @@ void Component::fillSettingsData(JsonObject o, bool showConfig)
 
 void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
 {
-    const String fullPath = getFullPath();//this == RootComponent::instance);
+    const String fullPath = getFullPath(); // this == RootComponent::instance);
 
     switch (chunk->nextType)
     {
@@ -127,7 +141,8 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
             StaticJsonDocument<6000> doc;
             JsonObject o = doc.to<JsonObject>();
 
-            if(exposeEnabled) FillOSCQueryBoolParam(enabled);
+            if (exposeEnabled)
+                FillOSCQueryBoolParam(enabled);
             fillOSCQueryParamsInternal(o, fullPath, showConfig);
 
             String str;
@@ -303,8 +318,9 @@ void Component::setupChunkAfterComponent(OSCQueryChunk *chunk, const Component *
 
 String Component::getFullPath(bool includeRoot, bool scriptMode) const
 {
-    if(this == RootComponent::instance && !includeRoot) return "";
-    
+    if (this == RootComponent::instance && !includeRoot)
+        return "";
+
     Component *pc = parentComponent;
     String s = name;
 
@@ -355,7 +371,8 @@ Component *Component::addComponent(Component *c, JsonObject o)
     c->parentComponent = this;
     AddDefaultComponentListener(c);
     numComponents++;
-    c->init(o);
+
+    c->setup(o);
     // DBG("Component added, size = " + String(sizeof(*c)) + " (" + String(sizeof(Component)) + ")");
     return c;
 }
@@ -482,9 +499,10 @@ void Component::setParam(void *param, var *value, int numData)
             ((float *)param)[0] = value[0].floatValue();
             ((float *)param)[1] = value[1].floatValue();
             ((float *)param)[2] = value[2].floatValue();
-        }else
+        }
+        else
         {
-            DBG("No change");
+            // DBG("No change");
         }
         break;
 

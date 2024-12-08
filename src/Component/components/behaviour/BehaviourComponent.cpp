@@ -1,6 +1,6 @@
 ImplementManagerSingleton(Behaviour)
 
-bool BehaviourComponent::initInternal(JsonObject o)
+void BehaviourComponent::setupInternal(JsonObject o)
 {
     AddStringParamConfig(paramName);
     AddIntParamConfig(comparator);
@@ -20,8 +20,6 @@ bool BehaviourComponent::initInternal(JsonObject o)
     AddStringParamConfig(triggerValue);
 
     updateTargetParameter();
-
-    return true;
 }
 
 void BehaviourComponent::updateInternal()

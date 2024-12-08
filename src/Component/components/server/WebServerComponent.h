@@ -33,7 +33,8 @@ File uploadingFile;
 
 String tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 

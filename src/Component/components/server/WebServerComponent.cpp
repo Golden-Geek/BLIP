@@ -1,10 +1,13 @@
 ImplementSingleton(WebServerComponent);
 
-bool WebServerComponent::initInternal(JsonObject o)
+void WebServerComponent::setupInternal(JsonObject o)
 {
 
     AddBoolParamConfig(sendFeedback);
+}
 
+bool WebServerComponent::initInternal()
+{
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");

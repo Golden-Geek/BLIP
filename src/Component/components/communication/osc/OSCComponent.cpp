@@ -1,13 +1,13 @@
+#include "UnityIncludes.h"
+
 ImplementSingleton(OSCComponent);
 
-bool OSCComponent::initInternal(JsonObject o)
+void OSCComponent::setupInternal(JsonObject o)
 {
     udpIsInit = false;
 
     AddStringParamConfig(remoteHost);
     AddBoolParamConfig(sendFeedback);
-
-    return true;
 }
 
 void OSCComponent::updateInternal()

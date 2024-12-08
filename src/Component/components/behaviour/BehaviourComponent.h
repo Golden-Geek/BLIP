@@ -50,7 +50,7 @@ int listenerIndex = -1;
 float timeAtValidation = 0.f;
 bool delayedValidation = false;
 
-bool initInternal(JsonObject o) override;
+bool setupInternal(JsonObject o) override;
 void updateInternal() override;
 
 void updateTargetParameter();

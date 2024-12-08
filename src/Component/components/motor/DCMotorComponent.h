@@ -21,7 +21,8 @@ DeclareIntParam(dir1Pin, DC_MOTOR_DEFAULT_DIR1_PIN);
 DeclareIntParam(dir2Pin, DC_MOTOR_DEFAULT_DIR2_PIN);
 DeclareFloatParam(speed, 0);
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 void paramValueChangedInternal(void *param) override;

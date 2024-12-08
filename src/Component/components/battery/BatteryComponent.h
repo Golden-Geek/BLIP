@@ -22,7 +22,8 @@ long timeAtLowBattery = 0;
 float values[BATTERY_AVERAGE_WINDOW];
 int valuesIndex = 0;
 
-bool initInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 

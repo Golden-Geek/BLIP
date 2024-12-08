@@ -6,7 +6,7 @@
 //     LedStripScriptLayer(LedStripComponent *strip) : LedStripLayer("scriptLayer", LedStripLayer::ScriptType, strip),script(this) {}
 //     ~LedStripScriptLayer() {}
 
-//     bool initInternal(JsonObject o) override;
+//     void setupInternal(JsonObject o) override;
 //     void updateInternal() override;
 //     void clearInternal() override;
 
