@@ -232,6 +232,12 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
         DBG("Free Stack size  " + String((int)uxTaskGetStackHighWaterMark(NULL)) + " free");
         // comm->sendMessage(this, "freeHeap", String(ESP.getFreeHeap()) + " bytes");
     }
+    else if (command == "log")
+    {
+        NDBG("Logging " + String(numData) + " values");
+        for (int i = 0; i < numData; i++)
+            NDBG("> " + data[i].stringValue());
+    }
     else
     {
         return false;

@@ -11,6 +11,7 @@ struct var
 
     uint8_t size;
     String s;
+    bool shouldClear = false;
 
     var() { type = '?'; }
 
@@ -47,11 +48,18 @@ struct var
         size = s.length();
     }
 
-    var(const uint8_t *ptr, uint8_t dataSize)
+    var(const uint8_t *ptr, uint8_t dataSize, bool ownData = false)
     {
         type = 'p';
         value.ptr = ptr;
         size = dataSize;
+        shouldClear = ownData;
+    }
+
+    ~var()
+    {
+        if (shouldClear && type == 'p')
+           free((void*)value.ptr);
     }
 
     operator bool() const { return boolValue(); }
@@ -128,13 +136,20 @@ struct var
         case 'b':
             return String((int)value.b);
         case 'i':
-            return String(value.i);
+            return String((int)value.i);
         case 'f':
-            return String(value.f);
+            return String((float)value.f);
         case 's':
             return s;
         case 'p':
-            return "[ptr]";
+            String str = "[";
+            for (int i = 0; i < size; i++)
+            {
+                str += String(value.ptr[i]);
+                if (i < size - 1)
+                    str += ",";
+            }
+            return str + "]";
         }
         return "";
     }
@@ -143,6 +158,25 @@ struct var
     int getPtrInt(uint8_t offset) const { return (int)value.ptr[offset]; }
     float getPtrFloat(uint8_t offset) const { return (float)value.ptr[offset]; }
     String getPtrString(uint8_t offset, uint8_t len) const { return String((char *)value.ptr + offset, len); }
+
+    uint8_t getSize() const
+    {
+        switch (type)
+        {
+        case 'b':
+            return sizeof(bool);
+        case 'i':
+            return sizeof(int);
+        case 'f':
+            return sizeof(float);
+        case 's':
+            return s.length();
+        case 'p':
+            return size;
+        }
+
+        return 0;
+    }
 
     var &operator=(const bool v)
     {

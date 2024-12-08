@@ -17,6 +17,7 @@ DeclareStringParam(remoteMac, "30-AE-A4-F3-A3-88");
 
 bool hasReceivedData;
 long lastSendTime;
+uint8_t sendPacketData[250];
 
 esp_now_peer_info_t peerInfo;
 ESPNowStreamReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
@@ -26,7 +27,7 @@ bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 
-void sendMessage(const String& mac, const String &address, const uint8_t *data, int len);
+void sendMessage(const String& mac, const String &address, const String& command, var* data, int numData);
 void sendStream(const String& mac, int universe, Color* colors, int numColors);
 
 void registerStreamReceiver(ESPNowStreamReceiver *receiver);

@@ -38,8 +38,8 @@ bool ESPNowComponent::initInternal()
 
 #ifdef ESPNOW_BRIDGE
     uint8_t remoteMacArr[6];
-    sscanf(remoteMac.c_str(), "%hhx-%hhx-%hhx-%hhx-%hhx-%hhx", 
-           &remoteMacArr[0], &remoteMacArr[1], &remoteMacArr[2], 
+    sscanf(remoteMac.c_str(), "%hhx-%hhx-%hhx-%hhx-%hhx-%hhx",
+           &remoteMacArr[0], &remoteMacArr[1], &remoteMacArr[2],
            &remoteMacArr[3], &remoteMacArr[4], &remoteMacArr[5]);
 
     memcpy(peerInfo.peer_addr, remoteMacArr, 6);
@@ -48,9 +48,11 @@ bool ESPNowComponent::initInternal()
     NDBG("ESP-NOW initialized as bridge, added " + remoteMac);
 
 #else
+
+#endif
+
     esp_now_register_recv_cb(&ESPNowComponent::onDataReceived);
     NDBG("ESP-NOW accessible at  : " + SettingsComponent::instance->getDeviceID());
-#endif
 
     esp_now_register_send_cb(&ESPNowComponent::onDataSent);
     return true;
@@ -64,7 +66,20 @@ void ESPNowComponent::updateInternal()
     if (currentTime - lastSendTime >= 1000)
     {
         lastSendTime = currentTime;
-        sendMessage("", "root.stats", (uint8_t *)"ping", 4);
+        var data[4];
+        data[0] = 8;
+        data[1] = 154.5264f;
+        data[2] = String("ping");
+
+        uint8_t *testData = (uint8_t *)malloc(3);
+        testData[0] = 10;
+        testData[1] = 5;
+        testData[2] = 2;
+        data[3] = var(testData, 3);
+
+        DBG("Sending ping to " + remoteMac);
+        sendMessage("", "root", "log", data, 4);
+        free(testData);
     }
 #endif
 }
@@ -75,13 +90,16 @@ void ESPNowComponent::clearInternal()
 
 void ESPNowComponent::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    char macStr[18];
-    String statusStr = String(status == ESP_NOW_SEND_SUCCESS ? "Success" : "Fail");
-    DBG("[ESPNow] Send to: " + String(mac_addr[0]) + ":" + String(mac_addr[1]) + ":" + String(mac_addr[2]) + ":" + String(mac_addr[3]) + ":" + String(mac_addr[4]) + ":" + String(mac_addr[5]) + String(" > ") + statusStr);
+    if (status == ESP_NOW_SEND_SUCCESS)
+        return;
+
+    DBG("[ESPNow] Error sending to " + String(mac_addr[0]) + ":" + String(mac_addr[1]) + ":" + String(mac_addr[2]) + ":" + String(mac_addr[3]) + ":" + String(mac_addr[4]) + ":" + String(mac_addr[5]));
 }
 
 void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
+    // DBG("[ESPNow] Data received from " + String(mac[0]) + ":" + String(mac[1]) + ":" + String(mac[2]) + ":" + String(mac[3]) + ":" + String(mac[4]) + ":" + String(mac[5]) + " : " + String(len) + " bytes");
+
     instance->hasReceivedData = true;
 
     if (len < 2)
@@ -102,15 +120,83 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
             return;
         }
 
-        String address = String((char *)(incomingData + 2));
+        String address = String((char *)(incomingData + 2), addressLength);
 
-        int remainingData = len - 2 - addressLength;
+        uint8_t commandLength = incomingData[2 + addressLength];
+        if (len < 3 + addressLength + commandLength)
+        {
+            DBG("[ESPNow] Command length more than data received");
+            return;
+        }
 
-        var data[2];
+        String command = String((char *)(incomingData + 3 + addressLength), commandLength);
+
+        var data[10];
         data[0] = address;
-        data[1] = var(incomingData + 2 + addressLength, remainingData);
+        data[1] = command;
 
-        ESPNowComponent::instance->sendEvent(MessageReceived, data, 2);
+        // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(len) + " bytes");
+
+        int dataIndex = 3 + addressLength + commandLength;
+
+        int dataCount = 2;
+        while (dataIndex < len)
+        {
+            if (dataCount >= 10)
+            {
+                DBG("[ESPNow] Too many data received");
+                return;
+            }
+
+            data[dataCount].type = incomingData[dataIndex];
+            dataIndex++;
+
+            if (data[dataCount].type == 's')
+            {
+                uint8_t strLen = incomingData[dataIndex];
+                dataIndex++;
+                data[dataCount] = String((char *)(incomingData + dataIndex), strLen);
+            }
+            else if (data[dataCount].type == 'p')
+            {
+                uint8_t dataSize = incomingData[dataIndex];
+                dataIndex++;
+                data[dataCount] = var((uint8_t *)(incomingData + dataIndex), dataSize);
+            }
+            else if (data[dataCount].type == 'b')
+            {
+                data[dataCount].value.b = incomingData[dataIndex];
+            }
+            else if (data[dataCount].type == 'i')
+            {
+                memcpy(&data[dataCount].value.i, incomingData + dataIndex, sizeof(int));
+            }
+            else if (data[dataCount].type == 'f')
+            {
+                memcpy(&data[dataCount].value.f, incomingData + dataIndex, sizeof(float));
+            }
+
+            dataIndex += data[dataCount].getSize();
+            dataCount++;
+        }
+
+        // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2));
+
+        ESPNowComponent::instance->sendEvent(MessageReceived, data, dataCount);
+
+        // test send "ok" feedback
+
+#ifndef ESPNOW_BRIDGE
+        var feedbackData[1];
+        feedbackData[0] = "ok";
+
+        memcpy(instance->peerInfo.peer_addr, (void *)mac, 6);
+        esp_err_t t = esp_now_add_peer(&instance->peerInfo);
+
+        // DBG("Sending feedback to " + String(mac[0]) + ":" + String(mac[1]) + ":" + String(mac[2]) + ":" + String(mac[3]) + ":" + String(mac[4]) + ":" + String(mac[5]));
+
+        ESPNowComponent::instance->sendMessage("", "root", "log", feedbackData, 1);
+#endif
     }
     break;
 
@@ -128,37 +214,89 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     }
 }
 
-void ESPNowComponent::sendMessage(const String &mac, const String &address, const uint8_t *data, int len)
+void ESPNowComponent::sendMessage(const String &mac, const String &address, const String &command, var *data, int numData)
 {
-    uint8_t addressLength = address.length();
-    uint8_t totalLen = 2 + addressLength + len;
-    uint8_t *fullData = (uint8_t *)malloc(totalLen);
+    // Data format for message
+    //  0 - Message
+    //  1 - Address length
+    //  2 - Address
+    //  3 - Command length
+    //  4 - Command
+    //  for each var
+    //  5 - var type
+    //  6 - var length (if string or ptr)
+    //  7 - var data
 
-    fullData[0] = 0; // Message
-    fullData[1] = addressLength;
-    memcpy(fullData + 2, address.c_str(), addressLength);
-    memcpy(fullData + 2 + addressLength, data, len);
+    // NDBG("Sending message to " + mac + " : " + address + " : " + command);
 
-    // wifi_set_channel(channel);
-    esp_now_send(NULL, fullData, totalLen);
-    free(fullData);
+    sendPacketData[0] = 0; // Message
+    sendPacketData[1] = address.length();
+    memcpy(sendPacketData + 2, address.c_str(), address.length());
+    sendPacketData[2 + address.length()] = command.length();
+    memcpy(sendPacketData + 3 + address.length(), command.c_str(), command.length());
+
+    int dataIndex = 3 + address.length() + command.length();
+    for (int i = 0; i < numData; i++)
+    {
+        sendPacketData[dataIndex] = data[i].type;
+        dataIndex++;
+        if (data[i].type == 'p')
+        {
+            sendPacketData[dataIndex++] = data[i].getSize();
+            memcpy(sendPacketData + dataIndex, data[i].value.ptr, data[i].getSize());
+        }
+        else if (data[i].type == 's')
+        {
+            sendPacketData[dataIndex++] = data[i].getSize();
+            memcpy(sendPacketData + dataIndex, data[i].stringValue().c_str(), data[i].getSize());
+        }
+        else if (data[i].type == 'b')
+            sendPacketData[dataIndex] = data[i].boolValue();
+        else if (data[i].type == 'i')
+        {
+            memcpy(sendPacketData + dataIndex, &data[i].value.i, sizeof(int));
+        }
+        else if (data[i].type == 'f')
+        {
+            memcpy(sendPacketData + dataIndex, &data[i].value.f, sizeof(float));
+        }
+
+        dataIndex += data[i].getSize();
+    }
+
+    if (dataIndex > 250)
+    {
+        DBG("Message data too long, max 250 bytes allowed.");
+        return;
+    }
+
+    esp_now_send(peerInfo.peer_addr, sendPacketData, dataIndex);
 }
 
 void ESPNowComponent::sendStream(const String &mac, int universe, Color *colors, int numColors)
 {
-    uint8_t *fullData = (uint8_t *)malloc(1 + numColors * 3);
-    fullData[0] = 1; // Stream
+    uint8_t totalLen = 5 + numColors * 3;
+    if (totalLen > 250)
+    {
+        DBG("Stream data too long, max 50 colors allowed per packet.");
+        return;
+    }
+
+    sendPacketData[0] = 1; // Stream
+    sendPacketData[1] = (universe >> 24) & 0xFF;
+    sendPacketData[2] = (universe >> 16) & 0xFF;
+    sendPacketData[3] = (universe >> 8) & 0xFF;
+    sendPacketData[4] = universe & 0xFF;
 
     for (int i = 0; i < numColors; i++)
     {
-        fullData[1 + i * 3] = colors[i].r;
-        fullData[1 + i * 3 + 1] = colors[i].g;
-        fullData[1 + i * 3 + 2] = colors[i].b;
+        sendPacketData[5 + i * 3] = colors[i].r;
+        sendPacketData[5 + i * 3 + 1] = colors[i].g;
+        sendPacketData[5 + i * 3 + 2] = colors[i].b;
     }
 
     // wifi_set_channel(channel);
-    esp_now_send(NULL, fullData, 1 + numColors * 3);
-    free(fullData);
+    esp_now_send(NULL, sendPacketData, totalLen);
 }
 
 void ESPNowComponent::registerStreamReceiver(ESPNowStreamReceiver *receiver)
