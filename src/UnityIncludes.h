@@ -134,6 +134,10 @@
 #include "Component/components/ledstrip/LedStripComponent.h"
 #endif // LEDSTRIP
 
+#ifdef USE_PWMLED
+#include "Component/components/pwmled/PWMLedComponent.h"
+#endif
+
 #ifdef USE_SEQUENCE
 #include "Component/components/sequence/SequenceComponent.h"
 #endif

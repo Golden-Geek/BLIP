@@ -133,25 +133,26 @@
 #define DeclareStringParam(name, val) String name = val;
 #define DeclareP2DParam(name, val1, val2) float name[2]{val1, val2};
 #define DeclareP3DParam(name, val1, val2, val3) float name[3]{val1, val2, val3};
+#define DeclareColorParam(name, r, g, b, a) float name[4]{r, b, g, a};
 
 #define AddParamWithTag(type, class, param, tag) \
     addParam(&param, ParamType::type, tag);      \
     SetParam(param, Settings::getVal<class>(o, #param, param));
 
-#define AddMultiParamWithTag(type, class, param, tag, numData)            \
-    {                                                                     \
-                                                                          \
-        addParam(&param, ParamType::type, tag);                           \
-        if (o.containsKey(#param))                                        \
-        {                                                                 \
-            JsonArray vArr = o[#param].as<JsonArray>();                   \
-            var dataV[numData];                                           \
-            dataV[0] = vArr[0].as<class>();                               \
-            dataV[1] = vArr[1].as<class>();                               \
-            if (numData > 2)                                              \
-                dataV[2] = vArr[2].as<class>();                           \
-            setParam(param, dataV, numData);                              \
-        }                                                                 \
+#define AddMultiParamWithTag(type, class, param, tag, numData) \
+    {                                                          \
+                                                               \
+        addParam(&param, ParamType::type, tag);                \
+        if (o.containsKey(#param))                             \
+        {                                                      \
+            JsonArray vArr = o[#param].as<JsonArray>();        \
+            var dataV[numData];                                \
+            dataV[0] = vArr[0].as<class>();                    \
+            dataV[1] = vArr[1].as<class>();                    \
+            if (numData > 2)                                   \
+                dataV[2] = vArr[2].as<class>();                \
+            setParam(param, dataV, numData);                   \
+        }                                                      \
     }
 
 #define AddBoolParamWithTag(param, tag) AddParamWithTag(Bool, bool, param, tag)
@@ -160,6 +161,7 @@
 #define AddStringParamWithTag(param, tag) AddParamWithTag(Str, String, param, tag)
 #define AddP2DParamWithTag(param, tag) AddMultiParamWithTag(P2D, float, param, tag, 2);
 #define AddP3DParamWithTag(param, tag) AddMultiParamWithTag(P3D, float, param, tag, 3);
+#define AddColorParamWithTag(param, tag) AddMultiParamWithTag(TypeColor, float, param, tag, 4);
 
 #define AddBoolParam(param) AddBoolParamWithTag(param, TagNone)
 #define AddIntParam(param) AddIntParamWithTag(param, TagNone)
@@ -167,6 +169,7 @@
 #define AddStringParam(param) AddStringParamWithTag(param, TagNone)
 #define AddP2DParam(param) AddP2DParamWithTag(param, TagNone)
 #define AddP3DParam(param) AddP3DParamWithTag(param, TagNone)
+#define AddColorParam(param) AddColorParamWithTag(param, TagNone)
 
 #define AddBoolParamConfig(param) AddBoolParamWithTag(param, TagConfig)
 #define AddIntParamConfig(param) AddIntParamWithTag(param, TagConfig)
@@ -174,6 +177,7 @@
 #define AddStringParamConfig(param) AddStringParamWithTag(param, TagConfig)
 #define AddP2DParamConfig(param) AddP2DParamWithTag(param, TagConfig)
 #define AddP3DParamConfig(param) AddP3DParamWithTag(param, TagConfig)
+#define AddColorParamConfig(param) AddColorParamWithTag(param, TagConfig)
 
 #define SetParam(param, val)        \
     {                               \
@@ -207,11 +211,11 @@
     if (Class::handleSetParamInternal(paramName, data, numData)) \
         return true;
 
-#define CheckTrigger(func)                                     \
-    if (paramName == #func)                                    \
-    {                                                          \
-        func();                                                \
-        return true;                                           \
+#define CheckTrigger(func)  \
+    if (paramName == #func) \
+    {                       \
+        func();             \
+        return true;        \
     }
 
 #define CheckAndSetParam(param)                      \
@@ -300,6 +304,15 @@
         pArr[2] = param[2];                           \
     }
 
+#define FillSettingsParam4(param)                     \
+    {                                                 \
+        JsonArray pArr = o.createNestedArray(#param); \
+        pArr[0] = param[0];                           \
+        pArr[1] = param[1];                           \
+        pArr[2] = param[2];                           \
+        pArr[3] = param[3];                           \
+    }
+
 #define FillSettingsInternalMotherClass(Class) Class::fillSettingsParamsInternal(o, showConfig);
 
 #define FillSettingsInternalStart                                                           \
@@ -317,6 +330,7 @@
 #define FillOSCQueryStringParam(param) fillOSCQueryParam(o, fullPath, #param, ParamType::Str, &param, showConfig);
 #define FillOSCQueryP2DParam(param) fillOSCQueryParam(o, fullPath, #param, ParamType::P2D, param, showConfig);
 #define FillOSCQueryP3DParam(param) fillOSCQueryParam(o, fullPath, #param, ParamType::P2D, param, showConfig);
+#define FillOSCQueryColorParam(param) fillOSCQueryParam(o, fullPath, #param, ParamType::TypeColor, param, showConfig);
 
 #define FillOSCQueryTriggerReadOnly(func) fillOSCQueryParam(o, fullPath, #func, ParamType::Trigger, nullptr, showConfig, true);
 #define FillOSCQueryBoolParamReadOnly(param) fillOSCQueryParam(o, fullPath, #param, ParamType::Bool, &param, showConfig, true);
@@ -326,8 +340,10 @@
 #define FillOSCQueryRangeParamReadOnly(param, vMin, vMax) fillOSCQueryParam(o, fullPath, #param, ParamType::Float, &param, showConfig, true, nullptr, 0, vMin, vMax);
 #define FillOSCQueryStringParamReadOnly(param) fillOSCQueryParam(o, fullPath, #param, ParamType::Str, &param, showConfig, true);
 #define FillOSCQueryP2DParamReadOnly(param) fillOSCQueryParam(o, fullPath, #param, ParamType::P2D, param, showConfig, true);
+#define FillOSCQueryP2DRangeParamReadOnly(param, min1, max1, min2, max2) fillOSCQueryParam(o, fullPath, #param, ParamType::P3D, param, showConfig, true, nullptr, 0, min1, max1, min2, max2);
 #define FillOSCQueryP3DParamReadOnly(param) fillOSCQueryParam(o, fullPath, #param, ParamType::P3D, param, showConfig, true);
 #define FillOSCQueryP3DRangeParamReadOnly(param, min1, max1, min2, max2, min3, max3) fillOSCQueryParam(o, fullPath, #param, ParamType::P3D, param, showConfig, true, nullptr, 0, min1, max1, min2, max2, min3, max3);
+#define FillOSCQueryColorParamReadOnly(param) fillOSCQueryParam(o, fullPath, #param, ParamType::TypeColor, param, showConfig, true);
 
 #define FillOSCQueryInternalStart                                                                         \
     virtual void fillOSCQueryParamsInternal(JsonObject o, const String &fullPath, bool showConfig = true) \

@@ -74,6 +74,10 @@
 #include "Component/components/ledstrip/LedStripComponent.cpp"
 #endif
 
+#ifdef USE_PWMLED
+#include "Component/components/pwmled/PWMLedComponent.cpp"
+#endif
+
 #ifdef USE_SEQUENCE
 #include "Component/components/sequence/SequenceComponent.cpp"
 #endif

@@ -44,6 +44,7 @@ public:
         Str,
         P2D,
         P3D,
+        TypeColor,
         ParamTypeMax
     };
 
