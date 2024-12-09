@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "ESPNowComponent.h"
 
 ImplementSingleton(ESPNowComponent);
 
@@ -12,10 +13,7 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddStringParamConfig(remoteMac2);
 #endif
 
-    hasReceivedData = false;
-    lastSendTime = 0;
     lastReceiveTime = 0;
-    strobe = false;
 
     for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
         streamReceivers[i] = nullptr;
@@ -23,20 +21,28 @@ void ESPNowComponent::setupInternal(JsonObject o)
 
 bool ESPNowComponent::initInternal()
 {
-#ifdef USE_WIFI
-    if (WifiComponent::instance->state != WifiComponent::ConnectionState::Off && WifiComponent::instance->state != WifiComponent::ConnectionState::Hotspot)
-    {
-        NDBG("Wifi is connected, can't init ESP-NOW");
-        return false;
-    }
-
+#if defined USE_WIFI && defined ESPNOW_BRIDGE
+    // wait for wifi connection
+#else
     WiFi.mode(WIFI_STA);
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+    initESPNow();
 #endif
 
+    return true;
+}
+
+void ESPNowComponent::initESPNow()
+{
+#if defined USE_WIFI && defined ESPNOW_BRIDGE
+    channel = WiFi.channel();
+#endif
+
+    NDBG("Init ESPNow on channel " + String(channel));
     if (esp_now_init() != ESP_OK)
     {
         NDBG("Error initializing ESP-NOW");
-        return false;
+        return;
     }
 
 #ifdef ESPNOW_BRIDGE
@@ -46,6 +52,8 @@ bool ESPNowComponent::initInternal()
            &remoteMacArr[3], &remoteMacArr[4], &remoteMacArr[5]);
 
     memcpy(peerInfo.peer_addr, remoteMacArr, 6);
+    peerInfo.channel = 0;
+    peerInfo.encrypt = false;
     esp_now_add_peer(&peerInfo);
 
     uint8_t remoteMacArr2[6];
@@ -54,19 +62,21 @@ bool ESPNowComponent::initInternal()
            &remoteMacArr2[3], &remoteMacArr2[4], &remoteMacArr2[5]);
 
     memcpy(peerInfo2.peer_addr, remoteMacArr2, 6);
+    peerInfo2.channel = 0;
+    peerInfo2.encrypt = false;
     esp_now_add_peer(&peerInfo2);
 
     NDBG("ESP-NOW initialized as bridge");
 
-#else
-
+#if USE_STREAMING
+    LedStreamReceiverComponent::instance->registerStreamListener(this);
+#endif
 #endif
 
     esp_now_register_recv_cb(&ESPNowComponent::onDataReceived);
     NDBG("ESP-NOW accessible at  : " + SettingsComponent::instance->getDeviceID());
 
     esp_now_register_send_cb(&ESPNowComponent::onDataSent);
-    return true;
 }
 
 void ESPNowComponent::updateInternal()
@@ -74,7 +84,7 @@ void ESPNowComponent::updateInternal()
 #ifdef ESPNOW_BRIDGE
     unsigned long currentTime = millis();
 
-    if (currentTime - lastSendTime >= 4)
+    if (currentTime - lastSendTime >= 500)
     {
         lastSendTime = currentTime;
         // var data[4];
@@ -95,19 +105,20 @@ void ESPNowComponent::updateInternal()
         Color colors[32];
         for (int i = 0; i < 32; i++)
         {
-            colors[i] = Color::HSV(millis()/2000.f + i / 32.f, (cos(i * millis() / 32000.f) * .5f + .5f), (int)strobe);
+            colors[i] = Color::HSV(millis() / 2000.f + i / 32.f, 1, 1);
         }
 
-        strobe = !strobe;
-
         // DBG("Sending stream");
-        sendStream(remoteMac, 0, colors, 32);
+        sendStream("", 0, colors, 32);
     }
 #endif
 }
 
 void ESPNowComponent::clearInternal()
 {
+#if defined USE_STREAMING && defined ESPNOW_BRIDGE
+    LedStreamReceiverComponent::instance->unregisterStreamListener(this);
+#endif
 }
 
 void ESPNowComponent::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
@@ -122,7 +133,6 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
 {
     // DBG("[ESPNow] Data received from " + String(mac[0]) + ":" + String(mac[1]) + ":" + String(mac[2]) + ":" + String(mac[3]) + ":" + String(mac[4]) + ":" + String(mac[5]) + " : " + String(len) + " bytes");
 
-    instance->hasReceivedData = true;
     instance->lastReceiveTime = millis();
 
     if (len < 2)
@@ -306,8 +316,7 @@ void ESPNowComponent::sendStream(const String &mac, int universe, Color *colors,
     //  G
     //  B
 
-
-    uint8_t totalLen = 9 + numColors * 3;
+    uint8_t totalLen = 5 + numColors * 3;
     if (totalLen > 250)
     {
         DBG("Stream data too long, max ~80 colors allowed per packet.");
@@ -356,3 +365,23 @@ void ESPNowComponent::unregisterStreamReceiver(ESPNowStreamReceiver *receiver)
         }
     }
 }
+
+#ifdef USE_STREAMING
+void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len)
+{
+    const int cappedLen = min((int)len, 32 * 3); // max 80 leds
+    int totalLen = 5 + cappedLen;
+
+    sendPacketData[0] = 1; // Stream
+    sendPacketData[1] = (universe >> 24) & 0xFF;
+    sendPacketData[2] = (universe >> 16) & 0xFF;
+    sendPacketData[3] = (universe >> 8) & 0xFF;
+    sendPacketData[4] = universe & 0xFF;
+
+    memcpy(sendPacketData + 5, data, cappedLen);
+
+    // wifi_set_channel(channel);
+    NDBG("Sending stream " + String(totalLen) + " bytes");
+    esp_now_send(NULL, sendPacketData, totalLen);
+}
+#endif

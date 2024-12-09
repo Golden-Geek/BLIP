@@ -78,6 +78,10 @@
 #include "Component/components/ledstrip/LedStripComponent.cpp"
 #endif
 
+#if (defined USE_STREAMING) && (defined USE_LEDSTRIP || (defined USE_ESPNOW && defined ESPNOW_BRIDGE))
+#include "Component/components/ledstrip/LedStreamReceiver.cpp"
+#endif
+
 #ifdef USE_PWMLED
 #include "Component/components/pwmled/PWMLedComponent.cpp"
 #endif

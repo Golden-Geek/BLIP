@@ -10,15 +10,17 @@ DeclareComponentSingleton(Root, "root", )
 // system
 SettingsComponent settings;
 
+#ifdef USE_WIFI
+WifiComponent wifi;
+#endif
+
 CommunicationComponent comm;
 
 #ifdef USE_DISPLAY
 DisplayComponent display;
 #endif
 
-#ifdef USE_WIFI
-WifiComponent wifi;
-#endif
+
 
 #ifdef USE_FILES
 FilesComponent files;
@@ -36,10 +38,11 @@ BatteryComponent battery;
 SequenceComponent sequence;
 #endif
 
-#ifdef USE_LEDSTRIP
 #ifdef USE_STREAMING
 LedStreamReceiverComponent streamReceiver;
 #endif
+
+#ifdef USE_LEDSTRIP
 LedStripManagerComponent strips;
 #endif
 

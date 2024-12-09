@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 ImplementSingleton(WifiComponent)
 
     void WifiComponent::setupInternal(JsonObject o)
@@ -97,7 +99,7 @@ void WifiComponent::setState(ConnectionState s)
         NDBG("Connected to ethernet with IP " + getIP());
 
 #else
-        NDBG("Connected to wifi " + ssid + " : " + pass + " with IP " + getIP());
+        NDBG("Connected to wifi " + ssid + " : " + pass + " with IP " + getIP() + "on channel " + String(WiFi.channel()));
 #endif
         break;
 
@@ -113,9 +115,11 @@ void WifiComponent::setState(ConnectionState s)
 void WifiComponent::connect()
 {
 
-#ifdef USE_ESPNOW
-    NDBG("ESPNow is running, not connecting to wifi");
+#if defined USE_ESPNOW
+#ifndef ESPNOW_BRIDGE
+    NDBG("ESPNow is running in normal mode, not connecting to wifi");
     return;
+#endif
 #endif
 
     lastConnectTime = millis();

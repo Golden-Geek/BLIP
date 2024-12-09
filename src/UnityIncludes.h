@@ -12,6 +12,10 @@
 #include <SPI.h>
 #include <arduino-timer.h>
 
+#ifdef USE_ARTNET
+#include <ArtnetWifi.h>
+#endif
+
 // Firmware
 #include "Common/Helpers.h"
 #include "Common/BoardDefines.h"
@@ -20,6 +24,7 @@
 #include "Common/EventBroadcaster.h"
 #include "Common/Settings.h"
 #include "Common/StringHelpers.h"
+#include "Common/CommonListeners.h"
 
 #ifdef USE_SCRIPT // needs pre declaration to be used by Component
 #include <wasm3.h>
@@ -130,7 +135,6 @@
 #include "Component/components/ledstrip/Layer/layers/system/LedStripSystemLayer.h"
 
 #ifdef USE_STREAMING
-#include <ArtnetWifi.h>
 #include "Component/components/ledstrip/Layer/layers/stream/LedStripStreamLayer.h"
 #endif
 
@@ -138,6 +142,10 @@
 #include "Component/components/ledstrip/LedHelpers.h"
 #include "Component/components/ledstrip/LedStripComponent.h"
 #endif // LEDSTRIP
+
+#if (defined USE_STREAMING) && (defined USE_LEDSTRIP || (defined USE_ESPNOW && defined ESPNOW_BRIDGE))
+#include "Component/components/ledstrip/LedStreamReceiver.h"
+#endif
 
 #ifdef USE_PWMLED
 #include "Component/components/pwmled/PWMLedComponent.h"

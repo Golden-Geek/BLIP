@@ -12,6 +12,10 @@
 
 #include <WiFi.h>
 
+#ifdef USE_ESPNOW
+#include <esp_wifi.h> // Include this library for esp_wifi_set_channel
+#endif
+
 #elif defined ESP8266
 #include <ESP8266WiFi.h>
 #endif

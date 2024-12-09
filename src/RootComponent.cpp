@@ -22,6 +22,10 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&comm);
     AddOwnedComponent(&settings);
 
+#ifdef USE_WIFI
+    AddOwnedComponent(&wifi);
+#endif
+
 #ifdef USE_DISPLAY
     AddOwnedComponent(&display);
 #endif
@@ -84,10 +88,6 @@ void RootComponent::setupInternal(JsonObject)
 
 #ifdef USE_SEQUENCE
     AddOwnedComponent(&sequence);
-#endif
-
-#ifdef USE_WIFI
-    AddOwnedComponent(&wifi);
 #endif
 }
 
@@ -176,24 +176,28 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
                 NDBG("Setup connections now");
                 server.setupConnection();
 
-#if USE_STREAMING
+#ifdef USE_STREAMING
                 streamReceiver.setupConnection();
 #endif
 
-#if USE_OSC
+#ifdef USE_OSC
                 comm.osc.setupConnection();
+#endif
+
+#if defined USE_ESPNOW && defined ESPNOW_BRIDGE
+                comm.espNow.initESPNow();
 #endif
             }
         }
     }
 #endif
 
-#if USE_BATTERY
+#ifdef USE_BATTERY
     else if (e.component == &battery)
     {
         if (e.type == BatteryComponent::CriticalBattery)
         {
-#if USE_LEDSTRIP
+#ifdef USE_LEDSTRIP
             strips.items[0]->setBrightness(.05f);
 #endif
             shutdown();
