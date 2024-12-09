@@ -13,13 +13,17 @@ DeclareComponentSingleton(ESPNow, "espnow", )
 
 #ifdef ESPNOW_BRIDGE
 DeclareStringParam(remoteMac, "30-AE-A4-F3-A3-88");
+DeclareStringParam(remoteMac2, "30-AE-A4-31-2C-60");
 #endif
 
+bool strobe;
 bool hasReceivedData;
 long lastSendTime;
+long lastReceiveTime;
 uint8_t sendPacketData[250];
 
 esp_now_peer_info_t peerInfo;
+esp_now_peer_info_t peerInfo2;
 ESPNowStreamReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
 
 void setupInternal(JsonObject o) override;

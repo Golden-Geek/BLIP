@@ -5,7 +5,6 @@ fs::FS &FilesComponent::fs = FS_TYPE;
 void FilesComponent::setupInternal(JsonObject o)
 {
 
-
 #ifdef FILES_TYPE_SD
     AddIntParamConfig(sdEnPin);
     AddBoolParamConfig(sdEnVal);
@@ -67,8 +66,6 @@ bool FilesComponent::initInternal()
     pinMode(sdMosi, INPUT_PULLUP);
     pinMode(sdCS, OUTPUT);
     digitalWrite(sdCS, LOW);
-
-
 
     spiSD.begin((int8_t)sdSCK, (int8_t)sdMiso, (int8_t)sdMosi, (int8_t)sdCS); // SCK,MISO,MOSI,ss
 
@@ -283,6 +280,8 @@ esp_err_t FilesComponent::format_sdcard()
 
     return err;
 #endif
+
+    return ESP_ERR_NOT_FOUND;
 }
 
 bool FilesComponent::handleCommandInternal(const String &command, var *data, int numData)

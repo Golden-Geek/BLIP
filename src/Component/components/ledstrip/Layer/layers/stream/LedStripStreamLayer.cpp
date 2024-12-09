@@ -36,6 +36,8 @@ void LedStripStreamLayer::clearInternal()
     }
 }
 
+/////    LEDSTREAM RECEIVER COMPONENT    /////
+
 void LedStreamReceiverComponent::setupInternal(JsonObject o)
 {
 #ifdef USE_ARTNET
@@ -47,7 +49,7 @@ void LedStreamReceiverComponent::setupInternal(JsonObject o)
 
 bool LedStreamReceiverComponent::initInternal()
 {
-    
+
 #ifdef USE_ARTNET
     artnet.setArtDmxCallback(&LedStreamReceiverComponent::onDmxFrame);
 #endif
@@ -102,6 +104,17 @@ void LedStreamReceiverComponent::setupConnection()
         artnetIsInit = false;
     }
 #endif
+
+#ifdef USE_ESPNOW
+    if (enabled)
+    {
+        ESPNowComponent::instance->registerStreamReceiver(this);
+    }
+    else
+    {
+        ESPNowComponent::instance->unregisterStreamReceiver(this);
+    }
+#endif
 }
 
 void LedStreamReceiverComponent::registerLayer(LedStripStreamLayer *layer)
@@ -133,15 +146,19 @@ void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, 
 void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
 {
 
-    if (len < 12)
+    NDBG("Received Stream " + String(len));
+    if (len < 4)
     {
         DBG("Not enough data received");
         return;
     }
 
     int universe = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
-    int start = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
-    int count = (data[8] << 24) | (data[9] << 16) | (data[10] << 8) | data[11];
+    // int start = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+
+    int count = (len - 4) / 3;
+
+    // NDBG("Received Stream universe : " + String(universe) + ", count : " + String(count) + ", start : " + String(start));
 
     if (count < 1)
     {
@@ -149,7 +166,7 @@ void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
         return;
     }
 
-    if (len < 12 + count * 3)
+    if (len < 4 + count * 3)
     {
         DBG("Led count more than provided data");
         return;

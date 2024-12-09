@@ -9,10 +9,13 @@ void ESPNowComponent::setupInternal(JsonObject o)
 
 #ifdef ESPNOW_BRIDGE
     AddStringParamConfig(remoteMac);
+    AddStringParamConfig(remoteMac2);
 #endif
 
     hasReceivedData = false;
     lastSendTime = 0;
+    lastReceiveTime = 0;
+    strobe = false;
 
     for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
         streamReceivers[i] = nullptr;
@@ -45,7 +48,15 @@ bool ESPNowComponent::initInternal()
     memcpy(peerInfo.peer_addr, remoteMacArr, 6);
     esp_now_add_peer(&peerInfo);
 
-    NDBG("ESP-NOW initialized as bridge, added " + remoteMac);
+    uint8_t remoteMacArr2[6];
+    sscanf(remoteMac2.c_str(), "%hhx-%hhx-%hhx-%hhx-%hhx-%hhx",
+           &remoteMacArr2[0], &remoteMacArr2[1], &remoteMacArr2[2],
+           &remoteMacArr2[3], &remoteMacArr2[4], &remoteMacArr2[5]);
+
+    memcpy(peerInfo2.peer_addr, remoteMacArr2, 6);
+    esp_now_add_peer(&peerInfo2);
+
+    NDBG("ESP-NOW initialized as bridge");
 
 #else
 
@@ -63,23 +74,34 @@ void ESPNowComponent::updateInternal()
 #ifdef ESPNOW_BRIDGE
     unsigned long currentTime = millis();
 
-    if (currentTime - lastSendTime >= 1000)
+    if (currentTime - lastSendTime >= 4)
     {
         lastSendTime = currentTime;
-        var data[4];
-        data[0] = 8;
-        data[1] = 154.5264f;
-        data[2] = String("ping");
+        // var data[4];
+        // data[0] = 8;
+        // data[1] = 154.5264f;
+        // data[2] = String("ping");
 
-        uint8_t *testData = (uint8_t *)malloc(3);
-        testData[0] = 10;
-        testData[1] = 5;
-        testData[2] = 2;
-        data[3] = var(testData, 3);
+        // uint8_t *testData = (uint8_t *)malloc(3);
+        // testData[0] = 10;
+        // testData[1] = 5;
+        // testData[2] = 2;
+        // data[3] = var(testData, 3);
 
-        DBG("Sending ping to " + remoteMac);
-        sendMessage("", "root", "log", data, 4);
-        free(testData);
+        // DBG("Sending ping";
+        // sendMessage("", "root", "log", data, 4);
+        // free(testData);
+
+        Color colors[32];
+        for (int i = 0; i < 32; i++)
+        {
+            colors[i] = Color::HSV(millis()/2000.f + i / 32.f, (cos(i * millis() / 32000.f) * .5f + .5f), (int)strobe);
+        }
+
+        strobe = !strobe;
+
+        // DBG("Sending stream");
+        sendStream(remoteMac, 0, colors, 32);
     }
 #endif
 }
@@ -101,6 +123,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     // DBG("[ESPNow] Data received from " + String(mac[0]) + ":" + String(mac[1]) + ":" + String(mac[2]) + ":" + String(mac[3]) + ":" + String(mac[4]) + ":" + String(mac[5]) + " : " + String(len) + " bytes");
 
     instance->hasReceivedData = true;
+    instance->lastReceiveTime = millis();
 
     if (len < 2)
     {
@@ -270,15 +293,24 @@ void ESPNowComponent::sendMessage(const String &mac, const String &address, cons
         return;
     }
 
-    esp_now_send(peerInfo.peer_addr, sendPacketData, dataIndex);
+    esp_now_send(NULL, sendPacketData, dataIndex);
 }
 
 void ESPNowComponent::sendStream(const String &mac, int universe, Color *colors, int numColors)
 {
-    uint8_t totalLen = 5 + numColors * 3;
+    // Data format for stream
+    //  0 - Stream
+    //  1-4 - Universe
+    //  for each color
+    //  R
+    //  G
+    //  B
+
+
+    uint8_t totalLen = 9 + numColors * 3;
     if (totalLen > 250)
     {
-        DBG("Stream data too long, max 50 colors allowed per packet.");
+        DBG("Stream data too long, max ~80 colors allowed per packet.");
         return;
     }
 

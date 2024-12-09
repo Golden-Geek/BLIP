@@ -26,10 +26,21 @@ void LedStripSystemLayer::updateConnectionStatus()
 
 #ifdef USE_ESPNOW
     Color c = ESPNowComponent::instance->hasReceivedData ? Color(50, 255, 0) : Color(255, 0, 120);
-    float pulseSpeed = 0.5; // Adjust this value to change the pace
-    float pulse = (sin(millis() * pulseSpeed / 1000.0f * PI * 2) * 0.5f + 0.5f) * 0.15f + 0.05f;
-    fillAll(Color(0, 0, 0, 255)); // clear strip
-    point(c, .5f, pulse, false);
+
+    if (!ESPNowComponent::instance->hasReceivedData)
+    {
+        float pulseSpeed = 0.5; // Adjust this value to change the pace
+        float pulse = (sin(millis() * pulseSpeed / 1000.0f * PI * 2) * 0.5f + 0.5f) * 0.15f + 0.05f;
+        fillAll(Color(0, 0, 0, 255)); // clear strip
+        point(c, .5f, pulse, false);
+    }
+    else
+    {
+        float rad = max(1 - (millis() - ESPNowComponent::instance->lastReceiveTime) * 2 / 1000.0f, 0.f) * .3f;
+        fillAll(Color(0, 0, 0, 10)); // clear strip
+        point(c, .5f, rad, false);
+    }
+
     return;
 #endif
 
