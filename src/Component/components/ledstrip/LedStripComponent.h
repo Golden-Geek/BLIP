@@ -24,6 +24,9 @@
 #define DARK_MILLIAMP 1
 
 
+
+
+
 class LedStripComponent : public Component
 {
 public:

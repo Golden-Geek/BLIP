@@ -51,7 +51,9 @@ void RootComponent::setupInternal(JsonObject)
 #endif
 
 #ifdef USE_STREAMING
+#if defined ESPNOW_BRIDGE || defined USE_LEDSTRIP
     AddOwnedComponent(&streamReceiver);
+#endif
 #endif
 
 #ifdef USE_IO
@@ -177,7 +179,9 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
                 server.setupConnection();
 
 #ifdef USE_STREAMING
+#if defined ESPNOW_BRIDGE || defined USE_LEDSTRIP
                 streamReceiver.setupConnection();
+#endif
 #endif
 
 #ifdef USE_OSC

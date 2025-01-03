@@ -130,7 +130,7 @@ void LedStreamReceiverComponent::unregisterStreamListener(LedStreamListener *lis
 void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
 {
 
-    NDBG("Received Stream " + String(len));
+    // NDBG("Received Stream " + String(len));
     if (len < 4)
     {
         DBG("Not enough data received");
@@ -156,14 +156,14 @@ void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
         return;
     }
 
-    handleReceiveData(universe, count * 3, (uint8_t *)data + 12);
+    handleReceiveData(universe, count * 3, (uint8_t *)data + 4);
 }
 #endif
 #endif
 
 void LedStreamReceiverComponent::handleReceiveData(uint16_t universe, uint16_t length, uint8_t *data)
 {
-#if USE_LEDSTRIP
+#ifdef USE_LEDSTRIP
 
     float multiplier = 1.0f;
     if (RootComponent::instance->isShuttingDown())
@@ -197,10 +197,10 @@ void LedStreamReceiverComponent::handleReceiveData(uint16_t universe, uint16_t l
 
 #if defined USE_ESPNOW && defined ESPNOW_BRIDGE
 
-    NDBG("Received Stream " + String(length) + " " + String(universe));
+    // NDBG("Received Stream " + String(length) + " " + String(universe));
     for (auto &listener : streamListeners)
     {
-        NDBG("Send to listener");
+        // NDBG("Send to listener");
         listener->onLedStreamReceived(universe, data, length);
     }
 

@@ -1,4 +1,4 @@
-#include "StringHelpers.h"
+#include "UnityIncludes.h"
 
 void StringHelpers::processStringMessage(const String &buffer, std::function<void(var *data, int numData)> callback)
 {
@@ -98,4 +98,22 @@ String StringHelpers::ipToString(IPAddress ip)
            "." + String(ip[1]) +
            "." + String(ip[2]) +
            "." + String(ip[3]);
+}
+
+void StringHelpers::macFromString(const String &mac, uint8_t *outMac)
+{
+    sscanf(mac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+           &outMac[0], &outMac[1], &outMac[2],
+           &outMac[3], &outMac[4], &outMac[5]);
+}
+
+
+String StringHelpers::macToString(const uint8_t *mac)
+{
+    return String(mac[0], HEX) + ":" +
+           String(mac[1], HEX) + ":" +
+           String(mac[2], HEX) + ":" +
+           String(mac[3], HEX) + ":" +
+           String(mac[4], HEX) + ":" +
+           String(mac[5], HEX);
 }

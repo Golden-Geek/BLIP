@@ -203,6 +203,7 @@ void LedStripPlaybackLayer::load(String path)
                                (float)(metaData["groupColor"][1]) * 255,
                                (float)(metaData["groupColor"][2]) * 255);
 
+#ifdef USE_SCRIPT
             numScripts = metaData["scripts"].size();
             for (int i = 0; i < numScripts; i++)
             {
@@ -210,8 +211,13 @@ void LedStripPlaybackLayer::load(String path)
                 scriptStartTimes[i] = (float)metaData["scripts"][i]["start"];
                 scriptEndTimes[i] = (float)metaData["scripts"][i]["end"];
             }
+#endif
 
-            NDBG("Loaded meta, id " + String(groupID) + ":" + String(localID) + " at " + String(fps) + " fps, " + String(numScripts) + " scripts");
+            NDBG("Loaded meta, id " + String(groupID) + ":" + String(localID) + " at " + String(fps) + " fps, "
+            #ifdef USE_SCRIPT
+             + String(numScripts) + " scripts"
+             #endif
+             );
         }
 
         metaDataFile.close();

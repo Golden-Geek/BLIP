@@ -39,7 +39,9 @@ SequenceComponent sequence;
 #endif
 
 #ifdef USE_STREAMING
+#if defined ESPNOW_BRIDGE || defined USE_LEDSTRIP
 LedStreamReceiverComponent streamReceiver;
+#endif
 #endif
 
 #ifdef USE_LEDSTRIP

@@ -60,7 +60,7 @@ String SettingsComponent::getDeviceID() const
 
     String d = "";
     for (int i = 0; i < 6; i++)
-        d += (i > 0 ? "-" : "") + String(mac[i], HEX);
+        d += (i > 0 ? ":" : "") + String(mac[i], HEX);
 
     d.toUpperCase();
     return d;

@@ -36,7 +36,7 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
     }
 
 #ifdef ESPNOW_BRIDGE
-    espNow.sendMessage("", e.data[0].stringValue(), e.data[1].stringValue(), &e.data[2], e.numData - 2);
+     if (e.component != &espNow) espNow.sendMessage("", e.data[0].stringValue(), e.data[1].stringValue(), &e.data[2], e.numData - 2);
 #endif
 #endif
 

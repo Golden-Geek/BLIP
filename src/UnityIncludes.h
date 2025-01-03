@@ -129,6 +129,7 @@
 #ifdef USE_LEDSTRIP
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_DotStar.h>
+#include "Component/components/ledstrip/LedHelpers.h"
 
 #include "Component/components/ledstrip/Layer/LedStripLayer.h"
 #include "Component/components/ledstrip/Layer/layers/playback/LedStripPlaybackLayer.h"
@@ -139,7 +140,6 @@
 #endif
 
 #include "Component/components/ledstrip/FXComponent.h"
-#include "Component/components/ledstrip/LedHelpers.h"
 #include "Component/components/ledstrip/LedStripComponent.h"
 #endif // LEDSTRIP
 

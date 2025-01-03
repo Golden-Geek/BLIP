@@ -99,7 +99,7 @@ void WifiComponent::setState(ConnectionState s)
         NDBG("Connected to ethernet with IP " + getIP());
 
 #else
-        NDBG("Connected to wifi " + ssid + " : " + pass + " with IP " + getIP() + "on channel " + String(WiFi.channel()));
+        NDBG("Connected to wifi " + ssid + " : " + pass + " with IP " + getIP() + " on channel " + String(WiFi.channel()));
 #endif
         break;
 
