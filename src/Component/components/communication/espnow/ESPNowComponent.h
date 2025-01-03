@@ -11,11 +11,12 @@
 #endif
 
 DeclareComponentSingleton(ESPNow, "espnow", ListenerDerive)
-    DeclareIntParam(channel, 1);
+    DeclareBoolParam(pairingMode, false);
+DeclareBoolParam(broadcastMode, false);
 
 #ifdef ESPNOW_BRIDGE
-DeclareBoolParam(pairingMode, false);
 DeclareBoolParam(streamTestMode, false);
+DeclareBoolParam(routeAll, false);
 DeclareStringParam(remoteMac1, "");
 DeclareStringParam(remoteMac2, "");
 DeclareStringParam(remoteMac3, "");
@@ -59,16 +60,45 @@ String *remoteMacs[ESPNOW_MAX_DEVICES] = {
     &remoteMac19,
     &remoteMac20};
 
-const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t remoteMacsBytes[ESPNOW_MAX_DEVICES][6] = {
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0}};
+
+uint8_t numConnectedDevices = 0;
+
 #else
+
+DeclareIntParam(channel, 1);
+DeclareBoolParam(autoPairing, false);
 
 bool bridgeInit = false;
 uint8_t bridgeMac[6] = {0, 0, 0, 0, 0, 0};
 #endif
 
+const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
 long lastReceiveTime;
 long lastSendTime = 0;
 uint8_t sendPacketData[250];
+uint8_t sendMac[6];
 
 ESPNowStreamReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
 
@@ -78,8 +108,14 @@ void initESPNow();
 void updateInternal() override;
 void clearInternal() override;
 
-void sendMessage(const String &mac, const String &address, const String &command, var *data, int numData);
-void sendStream(const String &mac, int universe, Color *colors, int numColors);
+void sendMessage(int id, const String &address, const String &command, var *data, int numData);
+
+#ifdef ESPNOW_BRIDGE
+void routeMessage(var *data, int numData);
+void sendStream(int id, int universe, Color *colors, int numColors);
+#endif
+
+void sendPacket(int id, const uint8_t *data, int len);
 
 void registerStreamReceiver(ESPNowStreamReceiver *receiver);
 void unregisterStreamReceiver(ESPNowStreamReceiver *receiver);
@@ -93,11 +129,12 @@ void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len) o
 
 #ifdef ESPNOW_BRIDGE
 void sendPairingRequest();
+void sendPing();
 void registerDevice(const uint8_t *deviceMac);
 void addDevicePeer(const uint8_t *deviceMac);
 void clearDevices();
 #else
-void registerBridgeMac(const uint8_t *_bridgeMac);
+void registerBridgeMac(const uint8_t *_bridgeMac, int chan);
 void sendPairingResponse(const uint8_t *bridgeMac);
 #endif
 
@@ -108,10 +145,13 @@ DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");
 
 HandleSetParamInternalStart
-#ifdef ESPNOW_BRIDGE
-    CheckTrigger(clearDevices);
+    CheckAndSetParam(broadcastMode);
 CheckAndSetParam(pairingMode);
+
+#ifdef ESPNOW_BRIDGE
+CheckTrigger(clearDevices);
 CheckAndSetParam(streamTestMode);
+CheckAndSetParam(routeAll);
 CheckAndSetParam(remoteMac1);
 CheckAndSetParam(remoteMac2);
 CheckAndSetParam(remoteMac3);
@@ -133,13 +173,16 @@ CheckAndSetParam(remoteMac18);
 CheckAndSetParam(remoteMac19);
 CheckAndSetParam(remoteMac20);
 #else
-    CheckAndSetParam(channel);
+CheckAndSetParam(channel);
+CheckAndSetParam(autoPairing);
 #endif
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
+    FillSettingsParam(broadcastMode);
 #ifdef ESPNOW_BRIDGE
-    FillSettingsParam(remoteMac1);
+FillSettingsParam(routeAll);
+FillSettingsParam(remoteMac1);
 FillSettingsParam(remoteMac2);
 FillSettingsParam(remoteMac3);
 FillSettingsParam(remoteMac4);
@@ -160,18 +203,24 @@ FillSettingsParam(remoteMac18);
 FillSettingsParam(remoteMac19);
 FillSettingsParam(remoteMac20);
 #else
-    FillSettingsParam(channel);
+FillSettingsParam(channel);
+FillSettingsParam(autoPairing);
 #endif
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
-#ifdef ESPNOW_BRIDGE
     FillOSCQueryBoolParam(pairingMode);
-    FillOSCQueryBoolParam(streamTestMode);
+#ifdef ESPNOW_BRIDGE
+FillOSCQueryBoolParam(streamTestMode);
 FillOSCQueryTrigger(clearDevices);
+FillOSCQueryBoolParam(routeAll);
 #else
-    FillOSCQueryIntParam(channel);
+FillOSCQueryBoolParam(autoPairing);
+FillOSCQueryIntParam(channel);
 #endif
+
+FillOSCQueryBoolParam(broadcastMode);
+
 FillOSCQueryInternalEnd
 
     EndDeclareComponent;

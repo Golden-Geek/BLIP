@@ -461,6 +461,8 @@ void Component::setParam(void *param, var *value, int numData)
     case ParamType::Bool:
 
         hasChanged = *((bool *)param) != value[0].boolValue();
+
+        // DBG("Set bool " + String(value[0].boolValue()) + " / " + String(*((bool *)param)) +" has Changed ? "+String(hasChanged));
         if (hasChanged)
             *((bool *)param) = value[0].boolValue();
         break;

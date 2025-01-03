@@ -154,15 +154,22 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
         )
         {
+
+            String address = e.data[0].stringValue();
+#ifdef ESPNOW_BRIDGE
+            if (address.startsWith("dev")) //routing message
+                return;
+#endif
+
             if (Component *targetComponent = getComponentWithName(e.data[0].stringValue()))
             {
                 bool handled = targetComponent->handleCommand(e.data[1], &e.data[2], e.numData - 2);
                 if (!handled)
-                    NDBG("Command was not handled " + e.data[0].stringValue() + " > " + e.data[1].stringValue());
+                    NDBG("Command was not handled " + address + " > " + e.data[1].stringValue());
             }
             else
             {
-                NDBG("No component found for " + e.data[0].stringValue());
+                NDBG("No component found for " + address);
             }
 
             return;

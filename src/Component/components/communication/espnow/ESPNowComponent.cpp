@@ -5,12 +5,12 @@ ImplementSingleton(ESPNowComponent);
 
 void ESPNowComponent::setupInternal(JsonObject o)
 {
-    AddIntParamConfig(channel);
+    AddBoolParamConfig(broadcastMode);
+    AddBoolParamConfig(pairingMode);
 
 #ifdef ESPNOW_BRIDGE
-    AddBoolParamConfig(pairingMode);
     AddBoolParamConfig(streamTestMode);
-    pairingMode = false; // force here
+    AddBoolParamConfig(routeAll);
 
     AddStringParamConfig(remoteMac1);
     AddStringParamConfig(remoteMac2);
@@ -33,6 +33,9 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddStringParamConfig(remoteMac19);
     AddStringParamConfig(remoteMac20);
 
+#else
+    AddIntParamConfig(channel);
+    AddBoolParamConfig(autoPairing);
 #endif
 
     lastReceiveTime = 0;
@@ -46,8 +49,6 @@ bool ESPNowComponent::initInternal()
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
     // wait for wifi connection
 #else
-    WiFi.mode(WIFI_STA);
-    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
     initESPNow();
 #endif
 
@@ -57,7 +58,11 @@ bool ESPNowComponent::initInternal()
 void ESPNowComponent::initESPNow()
 {
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
-    channel = WiFi.channel();
+    int channel = WiFi.channel();
+#else
+    // esp_now_deinit();
+    WiFi.mode(WIFI_STA);
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #endif
 
     NDBG("Init ESPNow on channel " + String(channel));
@@ -82,7 +87,6 @@ void ESPNowComponent::initESPNow()
 
 #ifdef ESPNOW_BRIDGE
     NDBG("Registering devices...");
-    int numRegisteredDevices = 0;
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
         if (remoteMacs[i]->length() > 0)
@@ -91,22 +95,21 @@ void ESPNowComponent::initESPNow()
             StringHelpers::macFromString(*(remoteMacs[i]), mac);
             DBG("Registering device " + StringHelpers::macToString(mac));
             addDevicePeer(mac);
-            numRegisteredDevices++;
         }
     }
 
-    NDBG("Registered " + String(numRegisteredDevices) + " devices");
+    NDBG("Registered " + String(numConnectedDevices) + " devices");
 #endif
 }
 
 void ESPNowComponent::updateInternal()
 {
-#ifdef ESPNOW_BRIDGE
     unsigned long currentTime = millis();
 
+#ifdef ESPNOW_BRIDGE
     if (pairingMode)
     {
-        if (currentTime - lastSendTime >= 500)
+        if (currentTime - lastSendTime >= 10)
         {
             lastSendTime = currentTime;
             sendPairingRequest();
@@ -129,7 +132,38 @@ void ESPNowComponent::updateInternal()
                 colors[i] = Color(255, 0, 0);
             }
 
-            sendStream("", 0, colors, 32);
+            sendStream(-1, 0, colors, 32);
+        }
+    }
+    else
+    {
+        // normal ping
+        if (currentTime - lastSendTime >= 1000)
+        {
+            lastSendTime = currentTime;
+            sendPing();
+        }
+    }
+#else
+    // DBG("Update !" + String(pairingMode) + " / " + String(currentTime - lastReceiveTime) + " / " + String(currentTime - lastSendTime));
+
+    if (autoPairing && currentTime - lastReceiveTime > 2000)
+    {
+        if (!pairingMode)
+        {
+            DBG("auto activate pairing mode");
+            SetParam(pairingMode, true)
+        }
+    }
+
+    if (pairingMode)
+    {
+        if (currentTime - lastSendTime >= 100)
+        {
+            // DBG("Channel Hopping " + String(channel));
+            lastSendTime = currentTime;
+            channel = (channel + 1) % 16;
+            initESPNow();
         }
     }
 #endif
@@ -152,19 +186,9 @@ void ESPNowComponent::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t 
 
 void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
-    // DBG("[ESPNow] Data received from " + String(mac[0]) + ":" + String(mac[1]) + ":" + String(mac[2]) + ":" + String(mac[3]) + ":" + String(mac[4]) + ":" + String(mac[5]) + " : " + String(len) + " bytes");
+    DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
 
     instance->lastReceiveTime = millis();
-
-    // if (len < 2)
-    // {
-    //     DBG("[ESPNow] Not enough data received");
-    //     return;
-    // }
-
-#ifndef ESPNOW_BRIDGE
-    instance->registerBridgeMac(mac);
-#endif
 
     switch (incomingData[0])
     {
@@ -241,15 +265,6 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
         // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2));
 
         ESPNowComponent::instance->sendEvent(MessageReceived, data, dataCount);
-
-#ifndef ESPNOW_BRIDGE
-        // test send "ok" feedback
-        // var feedbackData[1];
-        // feedbackData[0] = "ok";
-        // memcpy(instance->peerInfo.peer_addr, (void *)mac, 6);
-        // esp_err_t t = esp_now_add_peer(&instance->peerInfo);
-        // ESPNowComponent::instance->sendMessage("", "root", "log", feedbackData, 1);
-#endif
     }
     break;
 
@@ -268,7 +283,9 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     case 2:
     {
 #ifndef ESPNOW_BRIDGE
-        instance->sendPairingResponse(mac);
+
+        instance->registerBridgeMac(mac, incomingData[1]);
+
 #endif
     }
     break;
@@ -287,7 +304,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     }
 }
 
-void ESPNowComponent::sendMessage(const String &mac, const String &address, const String &command, var *data, int numData)
+void ESPNowComponent::sendMessage(int id, const String &address, const String &command, var *data, int numData)
 {
     // Data format for message
     //  0 - Message
@@ -343,13 +360,39 @@ void ESPNowComponent::sendMessage(const String &mac, const String &address, cons
         return;
     }
 
-    esp_now_send(NULL, sendPacketData, dataIndex);
+    sendPacket(id, sendPacketData, dataIndex);
 }
 
-void ESPNowComponent::sendStream(const String &mac, int universe, Color *colors, int numColors)
+#ifdef ESPNOW_BRIDGE
+void ESPNowComponent::routeMessage(var *data, int numData)
+{
+    String targetAddress = data[0].stringValue();
+
+    bool shouldSend = false;
+    int id = -1;
+    if (routeAll)
+        shouldSend = true;
+    else
+    {
+        if (targetAddress.startsWith("dev."))
+        {
+            int idEnd = targetAddress.indexOf('.', 4);
+            if (idEnd != -1)
+            {
+                id = targetAddress.substring(4, idEnd).toInt();
+                targetAddress = targetAddress.substring(idEnd + 1);
+                shouldSend = true;
+            }
+        }
+    }
+
+    sendMessage(id, targetAddress, data[1].stringValue(), &data[2], numData - 2);
+}
+
+void ESPNowComponent::sendStream(int id, int universe, Color *colors, int numColors)
 {
     // Data format for stream
-    //  0 - Stream
+    //  0 - Stream (1)
     //  1-4 - Universe
     //  for each color
     //  R
@@ -377,7 +420,42 @@ void ESPNowComponent::sendStream(const String &mac, int universe, Color *colors,
     }
 
     // wifi_set_channel(channel);
-    esp_now_send(NULL, sendPacketData, totalLen);
+    sendPacket(id, sendPacketData, totalLen);
+}
+#endif
+
+void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
+{
+
+#ifdef ESPNOW_BRIDGE
+    // DBG("Sending packet to " + String(id) + " : " + String(len) + " bytes");
+    if (id == -1)
+    {
+        if (broadcastMode)
+        {
+            // DBG("Broadcasting packet");
+            esp_now_send(broadcastMac, data, len);
+        }
+        else
+        {
+            esp_now_send(NULL, data, len);
+        }
+    }
+    else if (id >= 0 && id < numConnectedDevices)
+    {
+        // DBG("Sending to " + StringHelpers::macToString(remoteMacsBytes[id]));
+        esp_now_send(remoteMacsBytes[id], data, len);
+    }
+#else
+    if (broadcastMode)
+    {
+        esp_now_send(broadcastMac, data, len);
+    }
+    else
+    {
+        esp_now_send(bridgeMac, data, len);
+    }
+#endif
 }
 
 void ESPNowComponent::registerStreamReceiver(ESPNowStreamReceiver *receiver)
@@ -429,11 +507,18 @@ void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data
 #ifdef ESPNOW_BRIDGE
 void ESPNowComponent::sendPairingRequest()
 {
-    var data[1];
-    data[0] = SettingsComponent::instance->getDeviceID();
-    DBG("Sending pairing request");
+    DBG("Sending pairing request on channel " + String(WiFi.channel()));
     sendPacketData[0] = 2; // Pairing request
-    esp_now_send(broadcastMac, sendPacketData, 1);
+    sendPacketData[1] = WiFi.channel();
+    esp_now_send(broadcastMac, sendPacketData, 2);
+}
+
+void ESPNowComponent::sendPing()
+{
+    DBG("Sending ping on channel " + String(WiFi.channel()));
+    sendPacketData[0] = 2; // Pairing request
+    sendPacketData[1] = WiFi.channel();
+    esp_now_send(NULL, sendPacketData, 2);
 }
 
 void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
@@ -444,7 +529,7 @@ void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
     {
         if (*remoteMacs[i] == address)
         {
-            DBG("Device already registered : " + address);
+            // DBG("Device already registered : " + address);
             return;
         }
     }
@@ -454,7 +539,6 @@ void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
         if ((*remoteMacs[i]).isEmpty())
         {
             *remoteMacs[i] = address;
-
             addDevicePeer(deviceMac);
             return;
         }
@@ -470,7 +554,9 @@ void ESPNowComponent::addDevicePeer(const uint8_t *deviceMac)
     info.channel = 0;
     info.encrypt = false;
     memcpy(info.peer_addr, deviceMac, 6);
+    memcpy(remoteMacsBytes[numConnectedDevices], deviceMac, 6);
     esp_now_add_peer(&info);
+    numConnectedDevices++;
 
     String address = StringHelpers::macToString(deviceMac);
     DBG(String("Device added: ") + address);
@@ -493,13 +579,20 @@ void ESPNowComponent::clearDevices()
         *remoteMacs[i] = "";
     }
 
+    numConnectedDevices = 0;
     DBG("Devices cleared");
     SettingsComponent::instance->saveSettings();
 }
 #else
 
-void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac)
+void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan)
 {
+    if (pairingMode)
+    {
+        SetParam(pairingMode, false);
+        DBG("Found bridge on channel " + String(channel));
+    }
+
     if (bridgeInit)
         return;
 
@@ -514,16 +607,18 @@ void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac)
     info.encrypt = false;
     memcpy(info.peer_addr, bridgeMac, 6);
     esp_now_add_peer(&info);
+    bridgeInit = true;
+
+    SetParam(channel, chan);
+    initESPNow();
+
+    sendPairingResponse(bridgeMac);
 }
 
 void ESPNowComponent::sendPairingResponse(const uint8_t *_bridgeMac)
 {
-    DBG("[ESPNow] Pairing request received, sending response to " + StringHelpers::macToString(_bridgeMac));
-
-    // DBG("Sending pairing response");
+    // DBG("[ESPNow] Pairing request received, sending response to " + StringHelpers::macToString(_bridgeMac));
     sendPacketData[0] = 3; // Pairing response
-    // for (int i = 0; i < 6; i++)
-    //     sendPacketData[i + 1] = mac[i];
 
     esp_now_send(bridgeMac, sendPacketData, 1);
 }
@@ -531,9 +626,12 @@ void ESPNowComponent::sendPairingResponse(const uint8_t *_bridgeMac)
 
 void ESPNowComponent::paramValueChangedInternal(void *param)
 {
-#ifdef ESPNOW_BRIDGE
+    if (!isInit)
+        return;
+
     if (param == &pairingMode)
     {
+#ifdef ESPNOW_BRIDGE
         DBG("Pairing mode " + String(pairingMode));
 
         if (pairingMode)
@@ -549,11 +647,36 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
         }
         else
         {
-            DBG("Finished pairing, saving settings");
+            DBG("Finished pairing, got " + String(numConnectedDevices) + " devices");
+            esp_now_del_peer(broadcastMac);
             SettingsComponent::instance->saveSettings();
         }
-    }
+#else
+        DBG("Pairing mode changed " + String(pairingMode));
+        if (pairingMode)
+            bridgeInit = false;
 #endif
+    }
+
+    if (param == &broadcastMode)
+    {
+        if (!isInit)
+            return;
+        if (broadcastMode)
+        {
+            esp_now_peer_info_t info;
+            memset(&info, 0, sizeof(info));
+            memcpy(info.peer_addr, broadcastMac, 6);
+
+            info.channel = 0;
+            info.encrypt = false;
+            esp_now_add_peer(&info);
+        }
+        else
+        {
+            esp_now_del_peer(broadcastMac);
+        }
+    }
 }
 
 bool ESPNowComponent::handleCommandInternal(const String &command, var *data, int numData)
