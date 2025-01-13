@@ -24,24 +24,53 @@ void LedStripSystemLayer::updateConnectionStatus()
     if (WifiComponent::instance == NULL)
         return;
 
+    if (RootComponent::instance->testMode)
+    {
+        int numTest = 0;
+#ifdef USE_MOTION
+        numTest++;
+#endif
+
+#ifdef USE_FILES
+        numTest++;
+#endif
+
+        int curTest = 0;
+#ifdef USE_MOTION
+
+        fillAll(Color(0, 0, 0)); // clear strip
+
+        Color c = RootComponent::instance->motion.isInit ? Color(50, 255, 0) : Color(255, 0, 120);
+        point(c, curTest++ * 1.0f / std::max(numTest - 1.0f, .5f), .05f, false);
+#endif
+
+#ifdef USE_FILES
+        Color c2 = RootComponent::instance->files.isInit ? Color(50, 255, 0) : Color(255, 0, 120);
+        point(c2, curTest++ * 1.0f / std::max(numTest - 1.0f, .5f), .05f, false);
+#endif
+
+        return;
+    }
+
 #ifdef USE_ESPNOW
 
-// DBG("Update !" + String(ESPNowComponent::instance->pairingMode) + " / " + String(ESPNowComponent::instance->bridgeInit));
-if(ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
-{
-    if(ESPNowComponent::instance->pairingMode)
+    // DBG("Update !" + String(ESPNowComponent::instance->pairingMode) + " / " + String(ESPNowComponent::instance->bridgeInit));
+    if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
     {
-        if(ESPNowComponent::instance->bridgeInit)
-            fillAll(Color(50, 255, 0));
+        if (ESPNowComponent::instance->pairingMode)
+        {
+            if (ESPNowComponent::instance->bridgeInit)
+                fillAll(Color(50, 255, 0));
+            else
+                fillAll(Color(0, 120, 250));
+        }
         else
-            fillAll(Color(0,120,250));
+            fillAll(Color(250, 50, 0));
     }
-    else fillAll(Color(250,50,0));
-}
 
     // Color c = ESPNowComponent::instance->bridgeInit ? Color(50, 255, 0) : Color(255, 0, 120));
     // if (ESPNowComponent::instance->pairingMode && !ESPNowComponent::instance->bridgeInit) c = Color(0,120,250);
- 
+
     // if (!ESPNowComponent::instance->lastReceiveTime == 0)
     // {
     //     // float pulseSpeed = 0.5; // Adjust this value to change the pace

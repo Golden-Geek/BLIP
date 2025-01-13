@@ -66,7 +66,7 @@ void ButtonComponent::paramValueChangedInternal(void *param)
         {
             if (millis() < timeAtPress + SHORTPRESS_TIME)
             {
-                // sendEvent(ShortPress); //should be trigger
+                //sendEvent(ShortPress); //should be trigger
             }
         }
     }

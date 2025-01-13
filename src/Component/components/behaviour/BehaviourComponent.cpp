@@ -1,25 +1,24 @@
 ImplementManagerSingleton(Behaviour)
 
+
 void BehaviourComponent::setupInternal(JsonObject o)
 {
     AddStringParamConfig(paramName);
     AddIntParamConfig(comparator);
-    // comparator.options = operatorOptions;
-    // comparator.numOptions = OPERATOR_MAX;
 
     AddFloatParamConfig(compareValue);
     AddFloatParamConfig(validationTime);
     AddBoolParamConfig(alwaysTrigger);
     AddBoolParam(valid);
-    // valid.readOnly = true;
 
     AddIntParamConfig(triggerAction);
-    // triggerAction.options = triggerActionOptions;
-    // triggerAction.numOptions = ActionMax;
-
     AddStringParamConfig(triggerValue);
+}
 
+bool BehaviourComponent::initInternal()
+{
     updateTargetParameter();
+    return true;
 }
 
 void BehaviourComponent::updateInternal()

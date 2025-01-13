@@ -230,6 +230,13 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
         {
             NDBG("Shutdown from button");
             shutdown();
+        }else if(param == &bc->multiPressCount)
+        {
+            if(bc->multiPressCount == 2)
+            {
+                NDBG("Toggle testing mode");
+                testMode = !testMode;
+            }
         }
     }
 #endif

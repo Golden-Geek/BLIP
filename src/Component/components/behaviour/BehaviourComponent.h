@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef BEHAVIOUR_MAX_COUNT
+#define BEHAVIOUR_MAX_COUNT 4
+#endif
+
 DeclareComponent(Behaviour, "behaviour", )
 
     enum Comparator {
@@ -50,7 +54,8 @@ int listenerIndex = -1;
 float timeAtValidation = 0.f;
 bool delayedValidation = false;
 
-bool setupInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
 
 void updateTargetParameter();

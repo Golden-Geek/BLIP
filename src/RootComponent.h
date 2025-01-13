@@ -91,6 +91,8 @@ Timer<5> timer;
 long timeAtStart;
 long timeAtShutdown;
 
+DeclareBoolParam(testMode, false);
+
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
 
@@ -106,11 +108,10 @@ bool handleCommandInternal(const String &command, var *data, int numData) overri
 
 bool isShuttingDown() const { return timeAtShutdown > 0; }
 
-
-
 HandleSetParamInternalStart
     CheckTrigger(shutdown);
 CheckTrigger(restart);
+CheckAndSetParam(testMode);
 
 HandleSetParamInternalEnd;
 
@@ -119,8 +120,10 @@ FillSettingsInternalStart
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
+
     FillOSCQueryTrigger(shutdown);
 FillOSCQueryTrigger(restart);
+FillOSCQueryBoolParam(testMode);
 
 FillOSCQueryInternalEnd
 
