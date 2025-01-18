@@ -1,8 +1,8 @@
 #include "UnityIncludes.h"
 
-ImplementSingleton(SerialComponent);
+ImplementSingleton(HWSerialComponent);
 
-void SerialComponent::setupInternal(JsonObject o)
+void HWSerialComponent::setupInternal(JsonObject o)
 {
     AddBoolParamConfig(sendFeedback);
 
@@ -12,7 +12,7 @@ void SerialComponent::setupInternal(JsonObject o)
     Serial.begin(115200);
 }
 
-void SerialComponent::updateInternal()
+void HWSerialComponent::updateInternal()
 {
     while (Serial.available())
     {
@@ -32,11 +32,11 @@ void SerialComponent::updateInternal()
     }
 }
 
-void SerialComponent::clearInternal()
+void HWSerialComponent::clearInternal()
 {
 }
 
-void SerialComponent::processMessage(String buffer)
+void HWSerialComponent::processMessage(String buffer)
 {
     if (buffer.substring(0, 2) == "yo")
     {
@@ -50,7 +50,7 @@ void SerialComponent::processMessage(String buffer)
     // free(data);
 }
 
-void SerialComponent::sendMessage(String source, String command, var *data, int numData)
+void HWSerialComponent::sendMessage(String source, String command, var *data, int numData)
 {
     String msg = (source == "" ? "" : source + ".") + command;
     for (int i = 0; i < numData; i++)
@@ -61,7 +61,7 @@ void SerialComponent::sendMessage(String source, String command, var *data, int 
     Serial.println(msg);
 }
 
-void SerialComponent::send(const String &message)
+void HWSerialComponent::send(const String &message)
 {
     Serial.println(message);
 #ifdef USE_DISPLAY

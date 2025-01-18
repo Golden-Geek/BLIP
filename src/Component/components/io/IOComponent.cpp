@@ -40,7 +40,7 @@ void IOComponent::setupPin()
 {
     if (curPin != -1 && pwmChannel != -1) // prevPin was a PWM pin
     {
-        ledcDetachPin(curPin);
+        ledcDetach(curPin);
         RootComponent::availablePWMChannels[pwmChannel] = true;
         pwmChannel = -1;
     }
@@ -82,19 +82,19 @@ void IOComponent::setupPin()
         {
             if (m == A_OUTPUT || m == A_OSC)
             {
-                int channel = RootComponent::instance->getFirstAvailablePWMChannel();
-                if (channel >= 0)
-                {
-                    pwmChannel = channel;
-                    ledcSetup(pwmChannel, 5000, 10); // 0-1024 at a 5khz resolution
-                    ledcAttachPin(curPin, pwmChannel);
-                    RootComponent::availablePWMChannels[pwmChannel] = false;
+                // int channel = RootComponent::instance->getFirstAvailablePWMChannel();
+                // if (channel >= 0)
+                // {
+                    // pwmChannel = channel;
+                    // ledcSetup(pwmChannel, 5000, 10); // 0-1024 at a 5khz resolution
+                    ledcAttach(curPin, 5000, 10);
+                    // RootComponent::availablePWMChannels[pwmChannel] = false;
                     // NDBG("Attach pin " + String(pin) + " to " + String(pwmChannel));
-                }
-                else
-                {
-                    NDBG("Max channels reached, not able to create another A_OUTPUT");
-                }
+                // }
+                // else
+                // {
+                    // NDBG("Max channels reached, not able to create another A_OUTPUT");
+                // }
             }
         }
     }
@@ -134,11 +134,11 @@ void IOComponent::updatePin()
             }
             else
             {
-                if (pwmChannel != -1)
+                if (pin != -1)
                 {
                     uint32_t v = value * 1024;
                     // NDBG("Set PWM with value " + String(v));
-                    ledcWrite(pwmChannel, v);
+                    ledcWrite(pin, v);
                 }
             }
 
@@ -159,9 +159,11 @@ void IOComponent::updatePin()
     case D_OSC:
     {
         bool v = (millis() % (int)(value * 1000)) > (value * 300);
-        if(value == 0) v = 0;
-        else if(value == 1) v = 1;
-        
+        if (value == 0)
+            v = 0;
+        else if (value == 1)
+            v = 1;
+
         if (inverted)
             v = !v;
         digitalWrite(pin, v);
@@ -170,12 +172,12 @@ void IOComponent::updatePin()
 
     case A_OSC:
     {
-        if (pwmChannel != -1)
+        if (pin != -1)
         {
             float sv = sin(millis() * value) * 0.5f + 0.5f;
             uint32_t v = sv * 1024;
             // NDBG("Set PWM with value " + String(v));
-            ledcWrite(pwmChannel, v);
+            ledcWrite(pin, v);
         }
     }
     break;

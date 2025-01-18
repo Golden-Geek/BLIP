@@ -20,7 +20,7 @@ void CommunicationComponent::setupInternal(JsonObject o)
 void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 {
 #ifdef USE_SERIAL
-    if (e.component == &serial && e.type == SerialComponent::MessageReceived)
+    if (e.component == &serial && e.type == HWSerialComponent::MessageReceived)
     {
         
         sendEvent(MessageReceived, e.data, e.numData);

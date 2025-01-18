@@ -57,7 +57,7 @@ public:
         TagNameMax
     };
 
-    const String typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff"};
+    const String typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r"};
     const String tagNames[TagNameMax]{"", "config"};
 
     void *params[MAX_CHILD_PARAMS];

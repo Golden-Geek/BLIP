@@ -18,6 +18,8 @@ virtual void clearInternal() override;
 virtual void setupPins();
 void updatePins();
 
+    void paramValueChangedInternal(void *param) override;
+
 HandleSetParamInternalStart
     CheckAndSetParam(rPin);
 CheckAndSetParam(gPin);

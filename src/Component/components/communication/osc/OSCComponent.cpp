@@ -81,12 +81,16 @@ void OSCComponent::receiveOSC()
             msg.fill(udp.read());
         if (!msg.hasError())
             processMessage(msg);
+        else
+        {
+            NDBG("Error parsing OSC message");
+        }
     }
 }
 
 void OSCComponent::processMessage(OSCMessage &msg)
 {
-
+    DBG("Process");
     if (msg.match("/yo"))
     {
         char hostData[32];
@@ -141,6 +145,8 @@ void OSCComponent::processMessage(OSCMessage &msg)
         {
             data[i + 2] = OSCArgumentToVar(msg, i);
         }
+
+        DBG("Received with " + String(msg.size()) + " arguments : " + data[0].stringValue() + "." + data[1].stringValue());
 
         sendEvent(MessageReceived, data, msg.size() + 2);
     }
@@ -200,7 +206,7 @@ OSCMessage OSCComponent::createMessage(const String &source, const String &comma
             break;
 
         case 'i':
-            msg.add(data[i].intValue());
+            msg.add((int32_t)data[i].intValue());
             break;
 
         case 's':
@@ -233,7 +239,7 @@ var OSCComponent::OSCArgumentToVar(OSCMessage &m, int index)
         return str;
     }
     else if (m.isInt(index))
-        return m.getInt(index);
+        return (int)m.getInt(index);
     else if (m.isFloat(index))
         return m.getFloat(index);
     else if (m.isBoolean(index))

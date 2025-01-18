@@ -169,7 +169,7 @@ void WifiComponent::connect()
     if (wMode != WIFI_OFF)
     {
         NDBG("Connecting to wifi " + ssid + " : " + pass + "...");
-        WiFi.setAutoConnect(true);
+        // WiFi.setAutoConnect(true);
         WiFi.setAutoReconnect(true);
         WiFi.setSleep(false);
         WiFi.setTxPower(WIFI_POWER_19dBm);

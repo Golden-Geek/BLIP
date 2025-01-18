@@ -261,6 +261,13 @@ void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, const St
                 vArr.add(((float *)param)[2]);
                 break;
 
+            case ParamType::TypeColor:
+                vArr.add(((float *)param)[0]);
+                vArr.add(((float *)param)[1]);
+                vArr.add(((float *)param)[2]);
+                vArr.add(((float *)param)[3]);
+                break;
+
             default:
                 break;
             }
@@ -453,6 +460,12 @@ void Component::setParam(void *param, var *value, int numData)
         return;
     }
 
+    if (numData < 4 && t == TypeColor)
+    {
+        NDBG("Expecting at least 4 parameters");
+        return;
+    }
+
     switch (t)
     {
     case ParamType::Trigger:
@@ -505,6 +518,18 @@ void Component::setParam(void *param, var *value, int numData)
         else
         {
             // DBG("No change");
+        }
+        break;
+
+    case ParamType::TypeColor:
+        DBG("Set color " + String(value[0].floatValue()) + " / " + String(((float *)param)[0]) + " / " + String(value[1].floatValue()) + " / " + String(((float *)param)[1]) + " / " + String(value[2].floatValue()) + " / " + String(((float *)param)[2]) + " / " + String(value[3].floatValue()) + " / " + String(((float *)param)[3]));
+        hasChanged = ((float *)param)[0] != value[0].floatValue() || ((float *)param)[1] != value[1].floatValue() || ((float *)param)[2] != value[2].floatValue() || ((float *)param)[3] != value[3].floatValue();
+        if (hasChanged)
+        {
+            ((float *)param)[0] = value[0].floatValue();
+            ((float *)param)[1] = value[1].floatValue();
+            ((float *)param)[2] = value[2].floatValue();
+            ((float *)param)[3] = value[3].floatValue();
         }
         break;
 
@@ -589,6 +614,15 @@ String Component::getParamString(void *param) const
 
     case ParamType::Str:
         return *((String *)param);
+
+    case ParamType::P2D:
+        return String(((float *)param)[0]) + ", " + String(((float *)param)[1]);
+
+    case ParamType::P3D:
+        return String(((float *)param)[0]) + ", " + String(((float *)param)[1]) + ", " + String(((float *)param)[2]);
+
+    case ParamType::TypeColor:
+        return String(((float *)param)[0]) + ", " + String(((float *)param)[1]) + ", " + String(((float *)param)[2]) + ", " + String(((float *)param)[3]);
 
     default:
         break;

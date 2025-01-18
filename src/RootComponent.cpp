@@ -64,20 +64,24 @@ void RootComponent::setupInternal(JsonObject)
 #endif
 #endif
 
-#if USE_MOTION
+#ifdef USE_MOTION
     AddOwnedComponent(&motion);
 #endif
 
-#if USE_SERVO
+#ifdef USE_SERVO
     AddOwnedComponent(&servo);
 #endif
 
-#if USE_STEPPER
+#ifdef USE_STEPPER
     AddOwnedComponent(&stepper);
 #endif
 
-#if USE_DC_MOTOR
+#ifdef USE_DC_MOTOR
     AddOwnedComponent(&motor);
+#endif
+
+#ifdef USE_PWMLED
+    AddOwnedComponent(&pwmleds);
 #endif
 
 #ifdef USE_BEHAVIOUR
