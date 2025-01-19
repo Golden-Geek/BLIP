@@ -1,6 +1,11 @@
 #pragma once
 
 #include "Arduino.h"
+
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+#define ARDUINO_NEW_VERSION
+#endif
+
 #include <Wire.h>
 
 // Declarations
@@ -109,15 +114,16 @@
 #endif
 
 #ifdef USE_MOTION
-#include <utility/vector.h>
-#include <utility/matrix.h>
-#include <utility/quaternion.h>
 
 #ifndef IMU_TYPE
 #define IMU_TYPE BNO055
 #endif
 
 #ifdef IMU_TYPE_BNO055
+#include <utility/vector.h>
+#include <utility/matrix.h>
+#include <utility/quaternion.h>
+
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #elif defined IMU_TYPE_M5MPU

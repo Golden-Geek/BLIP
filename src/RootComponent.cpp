@@ -1,6 +1,12 @@
 #include "UnityIncludes.h"
 #include "RootComponent.h"
 
+#ifdef USE_POWER
+#ifndef POWER_EXT
+#define POWER_EXT 0
+#endif
+#endif
+
 ImplementSingleton(RootComponent);
 
 bool RootComponent::availablePWMChannels[16] = {true};
@@ -127,7 +133,11 @@ void RootComponent::powerdown()
 
 #ifdef USE_POWER
     if (settings.wakeUpButton > 0)
+#if POWER_EXT == 0
         esp_sleep_enable_ext0_wakeup((gpio_num_t)settings.wakeUpButton, settings.wakeUpState);
+#else
+        esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
+#endif
         // #elif defined TOUCH_WAKEUP_PIN
         //     touchAttachInterrupt((gpio_num_t)TOUCH_WAKEUP_PIN, touchCallback, 110);
         //     esp_sleep_enable_touchpad_wakeup();
@@ -161,7 +171,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 
             String address = e.data[0].stringValue();
 #ifdef ESPNOW_BRIDGE
-            if (address.startsWith("dev")) //routing message
+            if (address.startsWith("dev")) // routing message
                 return;
 #endif
 
@@ -234,9 +244,10 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
         {
             NDBG("Shutdown from button");
             shutdown();
-        }else if(param == &bc->multiPressCount)
+        }
+        else if (param == &bc->multiPressCount)
         {
-            if(bc->multiPressCount == 2)
+            if (bc->multiPressCount == 2)
             {
                 NDBG("Toggle testing mode");
                 testMode = !testMode;

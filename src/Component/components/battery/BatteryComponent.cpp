@@ -39,7 +39,7 @@ void BatteryComponent::updateInternal()
         if (batteryPin > 0)
         {
 
-            values[valuesIndex] = analogRead(batteryPin);
+            values[valuesIndex] = analogReadMilliVolts(batteryPin);
             valuesIndex++;
         }
 
@@ -64,12 +64,15 @@ void BatteryComponent::updateInternal()
 
             float val = sum / BATTERY_AVERAGE_WINDOW;
 
+#ifdef BATTERY_VOLTAGE_CUSTOM_FUNC
+            float voltage = BATTERY_VOLTAGE_CUSTOM_FUNC(val);
+#else
             const float maxVoltage = 4.2f;
             const float minVoltage = 3.5f;
 
             float relVal = (val - rawMin) / (rawMax - rawMin);
             float voltage = minVoltage + relVal * (maxVoltage - minVoltage);
-
+#endif
             SetParam(batteryLevel, voltage);
 
             bool isLow = batteryLevel < lowBatteryThreshold;
@@ -110,4 +113,9 @@ Color BatteryComponent::getBatteryColor()
         result = mid.lerp(full, (relBattery - .5f) * 2);
 
     return result;
+}
+
+float BatteryComponent::getVoltage_c6(float val)
+{
+    return 2 * val / 16 / 1000.0;
 }

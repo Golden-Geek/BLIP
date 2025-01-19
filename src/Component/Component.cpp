@@ -460,11 +460,11 @@ void Component::setParam(void *param, var *value, int numData)
         return;
     }
 
-    if (numData < 4 && t == TypeColor)
-    {
-        NDBG("Expecting at least 4 parameters");
-        return;
-    }
+    // if (numData < 4 && t == TypeColor)
+    // {
+    //     NDBG("Expecting at least 4 parameters");
+    //     return;
+    // }
 
     switch (t)
     {
@@ -522,14 +522,43 @@ void Component::setParam(void *param, var *value, int numData)
         break;
 
     case ParamType::TypeColor:
-        DBG("Set color " + String(value[0].floatValue()) + " / " + String(((float *)param)[0]) + " / " + String(value[1].floatValue()) + " / " + String(((float *)param)[1]) + " / " + String(value[2].floatValue()) + " / " + String(((float *)param)[2]) + " / " + String(value[3].floatValue()) + " / " + String(((float *)param)[3]));
-        hasChanged = ((float *)param)[0] != value[0].floatValue() || ((float *)param)[1] != value[1].floatValue() || ((float *)param)[2] != value[2].floatValue() || ((float *)param)[3] != value[3].floatValue();
-        if (hasChanged)
+        if (numData >= 4)
         {
-            ((float *)param)[0] = value[0].floatValue();
-            ((float *)param)[1] = value[1].floatValue();
-            ((float *)param)[2] = value[2].floatValue();
-            ((float *)param)[3] = value[3].floatValue();
+            hasChanged = ((float *)param)[0] != value[0].floatValue() || ((float *)param)[1] != value[1].floatValue() || ((float *)param)[2] != value[2].floatValue() || ((float *)param)[3] != value[3].floatValue();
+            if (hasChanged)
+            {
+                ((float *)param)[0] = value[0].floatValue();
+                ((float *)param)[1] = value[1].floatValue();
+                ((float *)param)[2] = value[2].floatValue();
+                ((float *)param)[3] = value[3].floatValue();
+            }
+        }else if(numData == 3)
+        {
+            hasChanged = ((float *)param)[0] != value[0].floatValue() || ((float *)param)[1] != value[1].floatValue() || ((float *)param)[2] != value[2].floatValue();
+            if (hasChanged)
+            {
+                ((float *)param)[0] = value[0].floatValue();
+                ((float *)param)[1] = value[1].floatValue();
+                ((float *)param)[2] = value[2].floatValue();
+                ((float*)param)[3] = 1.0;
+            }
+        }else if(numData == 1)
+        {
+            //convert rgba uint32_t to 4 floats
+            uint32_t rgba = value[0].intValue();
+            float r = ((rgba >> 24) & 0xFF)/ 255.0f;
+            float g = ((rgba >> 16) & 0xFF) / 255.0f;
+            float b = ((rgba >> 8) & 0xFF) / 255.0f;
+            float a = (rgba & 0xFF) / 255.0f;
+
+            hasChanged = ((float *)param)[0] != r || ((float *)param)[1] != g || ((float *)param)[2] != b || ((float *)param)[3] != a;
+            if (hasChanged)
+            {
+                ((float *)param)[0] = r;
+                ((float *)param)[1] = g;
+                ((float *)param)[2] = b;
+                ((float *)param)[3] = a;
+            }
         }
         break;
 

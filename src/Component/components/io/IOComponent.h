@@ -72,6 +72,11 @@ FillSettingsInternalStart
     FillSettingsParam(pin);
 FillSettingsParam(mode);
 FillSettingsParam(inverted);
+
+if(mode == D_OUTPUT || mode == A_OUTPUT)
+{
+    FillSettingsParam(value);
+}
 FillSettingsInternalEnd
 
     FillOSCQueryInternalStart

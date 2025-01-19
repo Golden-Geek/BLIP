@@ -90,7 +90,6 @@ void OSCComponent::receiveOSC()
 
 void OSCComponent::processMessage(OSCMessage &msg)
 {
-    DBG("Process");
     if (msg.match("/yo"))
     {
         char hostData[32];
@@ -145,8 +144,6 @@ void OSCComponent::processMessage(OSCMessage &msg)
         {
             data[i + 2] = OSCArgumentToVar(msg, i);
         }
-
-        DBG("Received with " + String(msg.size()) + " arguments : " + data[0].stringValue() + "." + data[1].stringValue());
 
         sendEvent(MessageReceived, data, msg.size() + 2);
     }
@@ -217,6 +214,10 @@ OSCMessage OSCComponent::createMessage(const String &source, const String &comma
             msg.add(data[i].boolValue());
             break;
 
+        case 'r':
+            msg.add((uint32_t)data[i].intValue());
+            break;
+
         case 'T':
             msg.add(true);
             break;
@@ -244,6 +245,11 @@ var OSCComponent::OSCArgumentToVar(OSCMessage &m, int index)
         return m.getFloat(index);
     else if (m.isBoolean(index))
         return m.getBoolean(index);
+
+#ifdef ARDUINO_NEW_VERSION
+    else if (m.isColor(index))
+        return (int)m.getColor(index);
+#endif
 
     NDBG("OSC Type not supported !");
     return var(0);

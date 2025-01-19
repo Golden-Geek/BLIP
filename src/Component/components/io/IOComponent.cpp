@@ -40,7 +40,11 @@ void IOComponent::setupPin()
 {
     if (curPin != -1 && pwmChannel != -1) // prevPin was a PWM pin
     {
+#ifdef ARDUINO_NEW_VERSION
         ledcDetach(curPin);
+#else
+        ledcDetachPin(pwmChannel);
+#endif
         RootComponent::availablePWMChannels[pwmChannel] = true;
         pwmChannel = -1;
     }
@@ -82,19 +86,24 @@ void IOComponent::setupPin()
         {
             if (m == A_OUTPUT || m == A_OSC)
             {
-                // int channel = RootComponent::instance->getFirstAvailablePWMChannel();
-                // if (channel >= 0)
-                // {
-                    // pwmChannel = channel;
-                    // ledcSetup(pwmChannel, 5000, 10); // 0-1024 at a 5khz resolution
-                    ledcAttach(curPin, 5000, 10);
-                    // RootComponent::availablePWMChannels[pwmChannel] = false;
-                    // NDBG("Attach pin " + String(pin) + " to " + String(pwmChannel));
-                // }
-                // else
-                // {
-                    // NDBG("Max channels reached, not able to create another A_OUTPUT");
-                // }
+#ifdef ARDUINO_NEW_VERSION
+                ledcAttach(curPin, 5000, 10);
+#else
+
+                int channel = RootComponent::instance->getFirstAvailablePWMChannel();
+                if (channel >= 0)
+                {
+                    pwmChannel = channel;
+                    ledcSetup(pwmChannel, 5000, 10); // 0-1024 at a 5khz resolution
+                    ledcAttachPin(curPin, pwmChannel);
+                    RootComponent::availablePWMChannels[pwmChannel] = false;
+                    NDBG("Attach pin " + String(pin) + " to " + String(pwmChannel));
+                }
+                else
+                {
+                    NDBG("Max channels reached, not able to create another A_OUTPUT");
+                }
+#endif
             }
         }
     }
@@ -176,8 +185,12 @@ void IOComponent::updatePin()
         {
             float sv = sin(millis() * value) * 0.5f + 0.5f;
             uint32_t v = sv * 1024;
-            // NDBG("Set PWM with value " + String(v));
+// NDBG("Set PWM with value " + String(v));
+#ifdef ARDUINO_NEW_VERSION
             ledcWrite(pin, v);
+#else
+            ledcWrite(pwmChannel, v);
+#endif
         }
     }
     break;

@@ -43,6 +43,8 @@ const long connectionTimeout = 10000; // ms
 long timeAtConnect;
 long lastConnectTime;
 long timeAtStateChange;
+long lastRSSIUpdate = 0;
+bool waitingForIP = false;
 
 ConnectionState state;
 
@@ -66,7 +68,8 @@ const String wifiModeNames[MODE_MAX]{
 
 DeclareStringParam(ssid, "");
 DeclareStringParam(pass, "");
-DeclareIntParam(mode, WIFI_DEFAULT_MODE);
+DeclareFloatParam(signal, 0)
+    DeclareIntParam(mode, WIFI_DEFAULT_MODE);
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -79,6 +82,8 @@ void setAP();
 
 void disable();
 void setState(ConnectionState s);
+
+bool handleCommandInternal(const String &cmd, var *val, int numData) override;
 
 #ifdef USE_ETHERNET
 void WiFiEvent(WiFiEvent_t event);
@@ -105,6 +110,7 @@ FillSettingsInternalEnd;
 FillOSCQueryInternalStart
     FillOSCQueryStringParam(ssid);
 FillOSCQueryStringParam(pass);
+FillOSCQueryFloatParamReadOnly(signal);
 #ifdef USE_ETHERNET
 FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
 #endif

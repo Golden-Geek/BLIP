@@ -14,6 +14,14 @@
 #endif
 #endif
 
+#ifndef BUTTON_MAX_COUNT
+#define BUTTON_MAX_COUNT 4
+#endif
+
+#ifndef BUTTON_DEFAULT_PIN
+#define BUTTON_DEFAULT_PIN -1
+#endif
+
 class ButtonComponent : public IOComponent
 {
 public:
