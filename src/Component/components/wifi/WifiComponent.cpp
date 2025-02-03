@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "WifiComponent.h"
 
 ImplementSingleton(WifiComponent)
 
@@ -10,21 +11,28 @@ ImplementSingleton(WifiComponent)
     // AddAndSetParameter(pass);
     // AddAndSetParameter(apOnNoWifi);
 
+#ifdef USE_ETHERNET
+    AddIntParamConfig(mode);
+    WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
+#endif
+
     AddStringParamConfig(ssid);
     AddStringParamConfig(pass);
+    AddFloatParam(signal);
+
+#ifdef WIFI_C6_USE_EXTERNAL_ANTENNA
+    pinMode(3, OUTPUT);
+    digitalWrite(3, LOW);
+    delay(100);
+    pinMode(14, OUTPUT);
+    digitalWrite(14, HIGH);
+#endif
+
 }
 
 bool WifiComponent::initInternal()
 {
-
-#ifdef USE_ETHERNET
-    AddIntParamConfig(mode);
-
-    WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
-#endif
-
     connect();
-
     return true;
 }
 
@@ -48,8 +56,16 @@ void WifiComponent::updateInternal()
             if (WiFi.status() == WL_CONNECTED)
 #endif
             {
-                setState(Connected);
+                // delay(100);
+                if (WiFi.localIP() == IPAddress(0, 0, 0, 0))
+                {
+                    if (!waitingForIP)
+                        NDBG("Waiting for IP...");
+                    waitingForIP = true;
+                    return;
+                }
 
+                setState(Connected);
                 timeAtConnect = -1;
             }
 
@@ -72,10 +88,18 @@ void WifiComponent::updateInternal()
                 {
                     connect();
                 }
+
+                if (curTime > lastRSSIUpdate + 1000)
+                {
+                    lastRSSIUpdate = curTime;
+                    float val = 1 / (1 + exp(-0.1 * (WiFi.RSSI() + 70)));
+                    SetParam(signal, val);
+                }
             }
             break;
 
         default:
+            waitingForIP = false;
             break;
         }
     }
@@ -157,6 +181,7 @@ void WifiComponent::connect()
 #endif
 
     setState(Connecting);
+    waitingForIP = false;
 
 #ifdef USE_ETHERNET
     if (mode == MODE_ETH || mode == MODE_ETH_STA)
@@ -169,7 +194,7 @@ void WifiComponent::connect()
     if (wMode != WIFI_OFF)
     {
         NDBG("Connecting to wifi " + ssid + " : " + pass + "...");
-        WiFi.setAutoConnect(true);
+        // WiFi.setAutoConnect(true);
         WiFi.setAutoReconnect(true);
         WiFi.setSleep(false);
         WiFi.setTxPower(WIFI_POWER_19dBm);
@@ -235,4 +260,17 @@ String WifiComponent::getIP() const
         return StringHelpers::ipToString(WiFi.softAPIP());
 
     return "[noip]";
+}
+bool WifiComponent::handleCommandInternal(const String &cmd, var *val, int numData)
+{
+    if (cmd == "info")
+    {
+        String s = connectionStateNames[state] + " to " + ssid;
+        s += "\nIP : " + getIP();
+        s += "\nRSSI : " + String(WiFi.RSSI());
+        NDBG(s);
+        return true;
+    }
+
+    return false;
 }

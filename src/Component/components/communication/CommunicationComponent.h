@@ -2,7 +2,7 @@
 DeclareComponentSingleton(Communication, "comm", )
 
 #ifdef USE_SERIAL
-    SerialComponent serial;
+    HWSerialComponent serial;
 #endif
 
 #ifdef USE_OSC

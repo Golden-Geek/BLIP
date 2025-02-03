@@ -5,10 +5,11 @@ ImplementSingleton(ESPNowComponent);
 
 void ESPNowComponent::setupInternal(JsonObject o)
 {
-    AddBoolParamConfig(broadcastMode);
     AddBoolParamConfig(pairingMode);
 
 #ifdef ESPNOW_BRIDGE
+    AddIntParamConfig(channel);
+    AddBoolParamConfig(broadcastMode);
     AddBoolParamConfig(streamTestMode);
     AddBoolParamConfig(routeAll);
 
@@ -58,7 +59,12 @@ bool ESPNowComponent::initInternal()
 void ESPNowComponent::initESPNow()
 {
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
-    int channel = WiFi.channel();
+#ifdef USE_ETHERNET
+    WiFi.mode(WIFI_AP_STA); // Recommended mode.
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+#else
+    SetParam(channel, WiFi.channel());
+#endif
 #else
     // esp_now_deinit();
     WiFi.mode(WIFI_STA);
@@ -74,6 +80,7 @@ void ESPNowComponent::initESPNow()
 
 #ifdef ESPNOW_BRIDGE
     NDBG("ESP-NOW initialized as bridge");
+    setupBroadcast();
 
 #if USE_STREAMING
     LedStreamReceiverComponent::instance->registerStreamListener(this);
@@ -184,9 +191,15 @@ void ESPNowComponent::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t 
     DBG("[ESPNow] Error sending to " + StringHelpers::macToString(mac_addr) + " : " + String(status));
 }
 
+#ifdef ARDUINO_NEW_VERSION
+void ESPNowComponent::onDataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len)
+{
+    const uint8_t *mac = info->src_addr;
+#else
 void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
-    DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
+#endif
+    // DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
 
     instance->lastReceiveTime = millis();
 
@@ -447,14 +460,14 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
         esp_now_send(remoteMacsBytes[id], data, len);
     }
 #else
-    if (broadcastMode)
-    {
-        esp_now_send(broadcastMac, data, len);
-    }
-    else
-    {
-        esp_now_send(bridgeMac, data, len);
-    }
+    // if (broadcastMode)
+    // {
+    //     esp_now_send(broadcastMac, data, len);
+    // }
+    // else
+    // {
+    esp_now_send(bridgeMac, data, len);
+    // }
 #endif
 }
 
@@ -505,6 +518,28 @@ void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data
 #endif
 
 #ifdef ESPNOW_BRIDGE
+
+void ESPNowComponent::setupBroadcast()
+{
+    if (!isInit)
+        return;
+
+    if (broadcastMode)
+    {
+        esp_now_peer_info_t info;
+        memset(&info, 0, sizeof(info));
+        memcpy(info.peer_addr, broadcastMac, 6);
+
+        info.channel = 0;
+        info.encrypt = false;
+        esp_now_add_peer(&info);
+    }
+    else
+    {
+        esp_now_del_peer(broadcastMac);
+    }
+}
+
 void ESPNowComponent::sendPairingRequest()
 {
     DBG("Sending pairing request on channel " + String(WiFi.channel()));
@@ -658,25 +693,12 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
 #endif
     }
 
+#ifdef ESPNOW_BRIDGE
     if (param == &broadcastMode)
     {
-        if (!isInit)
-            return;
-        if (broadcastMode)
-        {
-            esp_now_peer_info_t info;
-            memset(&info, 0, sizeof(info));
-            memcpy(info.peer_addr, broadcastMac, 6);
-
-            info.channel = 0;
-            info.encrypt = false;
-            esp_now_add_peer(&info);
-        }
-        else
-        {
-            esp_now_del_peer(broadcastMac);
-        }
+        setupBroadcast();
     }
+#endif
 }
 
 bool ESPNowComponent::handleCommandInternal(const String &command, var *data, int numData)

@@ -83,6 +83,10 @@ StepperComponent stepper;
 DCMotorComponent motor;
 #endif
 
+#ifdef USE_PWMLED
+PWMLedManagerComponent pwmleds;
+#endif
+
 static bool availablePWMChannels[16];
 int getFirstAvailablePWMChannel() const;
 

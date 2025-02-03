@@ -1,6 +1,6 @@
 #pragma once
 
-DeclareComponentSingleton(Serial, "serial", )
+DeclareComponentSingleton(HWSerial, "serial", )
 
     char buffer[512];
 byte bufferIndex;

@@ -4,8 +4,8 @@
 
 // #define DBG(t)
 // #define NDBG(t)
-#define DBG(text) SerialComponent::instance->send(text)
-#define NDBG(text) SerialComponent::instance->send("[" + name + "] " + text)
+#define DBG(text) HWSerialComponent::instance->send(text)
+#define NDBG(text) HWSerialComponent::instance->send("[" + name + "] " + text)
 
 #define DeviceID SettingsComponent::instance->deviceID
 #define DeviceType SettingsComponent::instance->deviceType
