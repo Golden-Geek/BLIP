@@ -14,6 +14,7 @@ DeclareComponentSingleton(ESPNow, "espnow", ListenerDerive)
     DeclareBoolParam(pairingMode, false);
 
 #ifdef ESPNOW_BRIDGE
+DeclareIntParam(channel, 1);
 DeclareBoolParam(broadcastMode, false);
 DeclareBoolParam(streamTestMode, false);
 DeclareBoolParam(routeAll, false);
@@ -86,7 +87,6 @@ uint8_t numConnectedDevices = 0;
 
 #else
 
-DeclareIntParam(channel, 1);
 DeclareBoolParam(autoPairing, false);
 
 bool bridgeInit = false;
@@ -156,6 +156,9 @@ HandleSetParamInternalStart
     CheckAndSetParam(pairingMode);
 
 #ifdef ESPNOW_BRIDGE
+#ifdef USE_ETHERNET
+CheckAndSetParam(channel);
+#endif
 CheckAndSetParam(broadcastMode);
 CheckAndSetParam(streamTestMode);
 CheckTrigger(clearDevices);
@@ -188,7 +191,10 @@ HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
 #ifdef ESPNOW_BRIDGE
-    FillSettingsParam(broadcastMode);
+#ifdef USE_ETHERNET
+    FillSettingsParam(channel);
+#endif
+FillSettingsParam(broadcastMode);
 FillSettingsParam(routeAll);
 FillSettingsParam(remoteMac1);
 FillSettingsParam(remoteMac2);
@@ -219,13 +225,18 @@ FillSettingsInternalEnd;
 FillOSCQueryInternalStart
     FillOSCQueryBoolParam(pairingMode);
 #ifdef ESPNOW_BRIDGE
+#ifdef USE_ETHERNET
+FillOSCQueryIntParam(channel);
+#else
+FillOSCQueryIntParamReadOnly(channel);
+#endif
 FillOSCQueryBoolParam(broadcastMode);
 FillOSCQueryBoolParam(streamTestMode);
 FillOSCQueryTrigger(clearDevices);
 FillOSCQueryBoolParam(routeAll);
 #else
-FillOSCQueryBoolParam(autoPairing);
 FillOSCQueryIntParam(channel);
+FillOSCQueryBoolParam(autoPairing);
 #endif
 
 FillOSCQueryInternalEnd

@@ -1,0 +1,1718 @@
+{
+  "metaData": {
+    "version": "1.9.25b8",
+    "versionNumber": 67865
+  },
+  "projectSettings": {
+    "containers": {
+      "dashboardSettings": {
+        "parameters": [
+          {
+            "value": "",
+            "controlAddress": "/showDashboardOnStartup",
+            "enabled": false
+          }
+        ]
+      },
+      "customDefinitions": {
+      }
+    }
+  },
+  "dashboardManager": {
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0
+  },
+  "parrots": {
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0
+  },
+  "layout": {
+    "mainLayout": {
+      "type": 1,
+      "width": 1922,
+      "height": 1039,
+      "direction": 2,
+      "shifters": [
+        {
+          "type": 1,
+          "width": 1922,
+          "height": 1039,
+          "direction": 2,
+          "shifters": [
+            {
+              "type": 1,
+              "width": 1922,
+              "height": 596,
+              "direction": 1,
+              "shifters": [
+                {
+                  "type": 1,
+                  "width": 307,
+                  "height": 596,
+                  "direction": 2,
+                  "shifters": [
+                    {
+                      "type": 0,
+                      "width": 307,
+                      "height": 305,
+                      "currentContent": "Modules",
+                      "tabs": [
+                        {
+                          "name": "Modules"
+                        }
+                      ]
+                    },
+                    {
+                      "type": 0,
+                      "width": 307,
+                      "height": 284,
+                      "currentContent": "Custom Variables",
+                      "tabs": [
+                        {
+                          "name": "Custom Variables"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": 0,
+                  "width": 1159,
+                  "height": 596,
+                  "currentContent": "State Machine",
+                  "tabs": [
+                    {
+                      "name": "State Machine"
+                    },
+                    {
+                      "name": "Dashboard"
+                    },
+                    {
+                      "name": "Module Router"
+                    },
+                    {
+                      "name": "Morpher"
+                    }
+                  ]
+                },
+                {
+                  "type": 0,
+                  "width": 444,
+                  "height": 596,
+                  "currentContent": "Inspector",
+                  "tabs": [
+                    {
+                      "name": "Inspector"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": 1,
+              "width": 1922,
+              "height": 437,
+              "direction": 1,
+              "shifters": [
+                {
+                  "type": 0,
+                  "width": 178,
+                  "height": 437,
+                  "currentContent": "Sequences",
+                  "tabs": [
+                    {
+                      "name": "Sequences"
+                    }
+                  ]
+                },
+                {
+                  "type": 0,
+                  "width": 1090,
+                  "height": 437,
+                  "currentContent": "Sequence Editor",
+                  "tabs": [
+                    {
+                      "name": "Sequence Editor"
+                    }
+                  ]
+                },
+                {
+                  "type": 0,
+                  "width": 642,
+                  "height": 437,
+                  "currentContent": "Logger",
+                  "tabs": [
+                    {
+                      "name": "Help"
+                    },
+                    {
+                      "name": "Logger"
+                    },
+                    {
+                      "name": "Warnings"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "windows": null
+  },
+  "modules": {
+    "items": [
+      {
+        "parameters": [
+          {
+            "value": false,
+            "controlAddress": "/enabled"
+          },
+          {
+            "value": true,
+            "controlAddress": "/logIncoming"
+          }
+        ],
+        "niceName": "Bridge",
+        "type": "Serial",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "parameters": [
+            {
+              "value": false,
+              "controlAddress": "/autoAdd"
+            },
+            {
+              "value": "Space separated",
+              "controlAddress": "/messageStructure"
+            },
+            {
+              "value": true,
+              "controlAddress": "/firstValueIsTheName"
+            },
+            {
+              "value": "USB-SERIAL CH340 (COM11)",
+              "controlAddress": "/port"
+            }
+          ],
+          "containers": {
+            "pass_through": {
+            }
+          }
+        },
+        "templates": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "values": {
+        },
+        "portID": "USB-SERIAL CH340 (COM11)"
+      },
+      {
+        "parameters": [
+          {
+            "value": true,
+            "controlAddress": "/logOutgoing"
+          }
+        ],
+        "niceName": "OSCQuery",
+        "type": "OSCQuery",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "parameters": [
+            {
+              "value": "BLIP",
+              "controlAddress": "/serverName"
+            },
+            {
+              "value": true,
+              "controlAddress": "/isConnected"
+            }
+          ],
+          "containers": {
+            "output": {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/local"
+                },
+                {
+                  "value": "192.168.3.100",
+                  "controlAddress": "/remoteHost"
+                },
+                {
+                  "value": 80,
+                  "hexMode": false,
+                  "controlAddress": "/remotePort"
+                },
+                {
+                  "value": 9000,
+                  "hexMode": false,
+                  "controlAddress": "/customOSCPort",
+                  "enabled": true
+                },
+                {
+                  "value": 81,
+                  "hexMode": false,
+                  "controlAddress": "/customWebsocketPort",
+                  "enabled": true
+                }
+              ]
+            }
+          }
+        },
+        "templates": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "values": {
+          "containers": {
+            "comm": {
+              "editorIsCollapsed": true,
+              "containers": {
+                "serial": {
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Serial"
+                },
+                "osc": {
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Osc"
+                },
+                "espnow": {
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Espnow"
+                }
+              },
+              "owned": true,
+              "niceName": "Comm"
+            },
+            "settings": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Settings"
+            },
+            "wifi": {
+              "parameters": [
+                {
+                  "value": "Ethernet",
+                  "controlAddress": "/mode"
+                }
+              ],
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Wifi"
+            },
+            "files": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Files"
+            },
+            "server": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Server"
+            },
+            "gpio": {
+              "editorIsCollapsed": true,
+              "containers": {
+                "gpio1": {
+                  "parameters": [
+                    {
+                      "value": "Digital Output",
+                      "controlAddress": "/mode"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Gpio 1"
+                }
+              },
+              "owned": true,
+              "niceName": "Gpio"
+            },
+            "buttons": {
+              "editorIsCollapsed": true,
+              "containers": {
+                "button1": {
+                  "parameters": [
+                    {
+                      "value": "Digital Input",
+                      "controlAddress": "/mode"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Button 1"
+                }
+              },
+              "owned": true,
+              "niceName": "Buttons"
+            }
+          }
+        },
+        "treeData": {
+          "DESCRIPTION": "Root",
+          "FULL_PATH": "",
+          "ACCESS": 0,
+          "CONTENTS": {
+            "shutdown": {
+              "DESCRIPTION": "Shutdown",
+              "ACCESS": 3,
+              "TYPE": "I",
+              "FULL_PATH": "/shutdown"
+            },
+            "restart": {
+              "DESCRIPTION": "Restart",
+              "ACCESS": 3,
+              "TYPE": "I",
+              "FULL_PATH": "/restart"
+            },
+            "testMode": {
+              "DESCRIPTION": "Test Mode",
+              "ACCESS": 3,
+              "TYPE": "F",
+              "FULL_PATH": "/testMode",
+              "VALUE": [
+                false
+              ]
+            },
+            "comm": {
+              "DESCRIPTION": "Comm",
+              "FULL_PATH": "/comm",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/comm/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "serial": {
+                  "DESCRIPTION": "Serial",
+                  "FULL_PATH": "/comm/serial",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/serial/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "sendFeedback": {
+                      "DESCRIPTION": "Send Feedback",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/serial/sendFeedback",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    }
+                  }
+                },
+                "osc": {
+                  "DESCRIPTION": "Osc",
+                  "FULL_PATH": "/comm/osc",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/osc/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "remoteHost": {
+                      "DESCRIPTION": "Remote Host",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/comm/osc/remoteHost",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        ""
+                      ]
+                    },
+                    "sendFeedback": {
+                      "DESCRIPTION": "Send Feedback",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/osc/sendFeedback",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "isAlive": {
+                      "DESCRIPTION": "Is Alive",
+                      "ACCESS": 1,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/osc/isAlive",
+                      "VALUE": [
+                        true
+                      ]
+                    }
+                  }
+                },
+                "espnow": {
+                  "DESCRIPTION": "Espnow",
+                  "FULL_PATH": "/comm/espnow",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/espnow/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "pairingMode": {
+                      "DESCRIPTION": "Pairing Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/pairingMode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "channel": {
+                      "DESCRIPTION": "Channel",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/comm/espnow/channel",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        1
+                      ]
+                    },
+                    "broadcastMode": {
+                      "DESCRIPTION": "Broadcast Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/broadcastMode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "streamTestMode": {
+                      "DESCRIPTION": "Stream Test Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/streamTestMode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "clearDevices": {
+                      "DESCRIPTION": "Clear Devices",
+                      "ACCESS": 3,
+                      "TYPE": "I",
+                      "FULL_PATH": "/comm/espnow/clearDevices"
+                    },
+                    "routeAll": {
+                      "DESCRIPTION": "Route All",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/routeAll",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "settings": {
+              "DESCRIPTION": "Settings",
+              "FULL_PATH": "/settings",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/settings/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "saveSettings": {
+                  "DESCRIPTION": "Save Settings",
+                  "ACCESS": 3,
+                  "TYPE": "I",
+                  "FULL_PATH": "/settings/saveSettings"
+                },
+                "clearSettings": {
+                  "DESCRIPTION": "Clear Settings",
+                  "ACCESS": 3,
+                  "TYPE": "I",
+                  "FULL_PATH": "/settings/clearSettings"
+                },
+                "propID": {
+                  "DESCRIPTION": "Prop ID",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/propID",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "macAddress": {
+                  "DESCRIPTION": "Mac Address",
+                  "ACCESS": 1,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/macAddress",
+                  "VALUE": [
+                    "BC:DD:C2:F3:49:F5"
+                  ]
+                },
+                "deviceName": {
+                  "DESCRIPTION": "Device Name",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/deviceName",
+                  "VALUE": [
+                    "BLIP"
+                  ]
+                },
+                "deviceType": {
+                  "DESCRIPTION": "Device Type",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/deviceType",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "BLIP"
+                  ]
+                },
+                "wakeUpButton": {
+                  "DESCRIPTION": "Wake Up Button",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/wakeUpButton",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    34
+                  ]
+                },
+                "wakeUpState": {
+                  "DESCRIPTION": "Wake Up State",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/settings/wakeUpState",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
+            "wifi": {
+              "DESCRIPTION": "Wifi",
+              "FULL_PATH": "/wifi",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/wifi/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "ssid": {
+                  "DESCRIPTION": "Ssid",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/ssid",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    ""
+                  ]
+                },
+                "pass": {
+                  "DESCRIPTION": "Pass",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/pass",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    ""
+                  ]
+                },
+                "signal": {
+                  "DESCRIPTION": "Signal",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/wifi/signal",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "mode": {
+                  "DESCRIPTION": "Mode",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/mode",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "Ethernet"
+                  ],
+                  "RANGE": [
+                    {
+                      "VALS": [
+                        "Wifi",
+                        "AP",
+                        "Wifi+AP",
+                        "Ethernet",
+                        "Wifi+Ethernet"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "files": {
+              "DESCRIPTION": "Files",
+              "FULL_PATH": "/files",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/files/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
+            "server": {
+              "DESCRIPTION": "Server",
+              "FULL_PATH": "/server",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/server/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "sendFeedback": {
+                  "DESCRIPTION": "Send Feedback",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/server/sendFeedback",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
+            "gpio": {
+              "DESCRIPTION": "Gpio",
+              "FULL_PATH": "/gpio",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/gpio/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "count": {
+                  "DESCRIPTION": "Count",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/gpio/count",
+                  "VALUE": [
+                    1
+                  ]
+                },
+                "gpio1": {
+                  "DESCRIPTION": "Gpio 1",
+                  "FULL_PATH": "/gpio/gpio1",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/gpio/gpio1/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "pin": {
+                      "DESCRIPTION": "Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/gpio/gpio1/pin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        0
+                      ]
+                    },
+                    "mode": {
+                      "DESCRIPTION": "Mode",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/gpio/gpio1/mode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        "Digital Output"
+                      ],
+                      "RANGE": [
+                        {
+                          "VALS": [
+                            "Digital Input",
+                            "Digital Input Pullup",
+                            "Analog Input",
+                            "Digital Output",
+                            "Analog Output",
+                            "Digital Oscillator",
+                            "Analog Oscillator"
+                          ]
+                        }
+                      ]
+                    },
+                    "inverted": {
+                      "DESCRIPTION": "Inverted",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/gpio/gpio1/inverted",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "value": {
+                      "DESCRIPTION": "Value",
+                      "ACCESS": 3,
+                      "TYPE": "f",
+                      "FULL_PATH": "/gpio/gpio1/value",
+                      "VALUE": [
+                        0
+                      ],
+                      "RANGE": [
+                        {
+                          "MIN": 0,
+                          "MAX": 1
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "buttons": {
+              "DESCRIPTION": "Buttons",
+              "FULL_PATH": "/buttons",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/buttons/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "count": {
+                  "DESCRIPTION": "Count",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/buttons/count",
+                  "VALUE": [
+                    1
+                  ]
+                },
+                "button1": {
+                  "DESCRIPTION": "Button 1",
+                  "FULL_PATH": "/buttons/button1",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/buttons/button1/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "pin": {
+                      "DESCRIPTION": "Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/buttons/button1/pin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        34
+                      ]
+                    },
+                    "mode": {
+                      "DESCRIPTION": "Mode",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/buttons/button1/mode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        "Digital Input"
+                      ],
+                      "RANGE": [
+                        {
+                          "VALS": [
+                            "Digital Input",
+                            "Digital Input Pullup",
+                            "Analog Input",
+                            "Digital Output",
+                            "Analog Output",
+                            "Digital Oscillator",
+                            "Analog Oscillator"
+                          ]
+                        }
+                      ]
+                    },
+                    "inverted": {
+                      "DESCRIPTION": "Inverted",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/buttons/button1/inverted",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "value": {
+                      "DESCRIPTION": "Value",
+                      "ACCESS": 3,
+                      "TYPE": "f",
+                      "FULL_PATH": "/buttons/button1/value",
+                      "VALUE": [
+                        1
+                      ],
+                      "RANGE": [
+                        {
+                          "MIN": 0,
+                          "MAX": 1
+                        }
+                      ]
+                    },
+                    "multiPressCount": {
+                      "DESCRIPTION": "Multi Press Count",
+                      "ACCESS": 1,
+                      "TYPE": "i",
+                      "FULL_PATH": "/buttons/button1/multiPressCount",
+                      "VALUE": [
+                        0
+                      ]
+                    },
+                    "longPress": {
+                      "DESCRIPTION": "Long Press",
+                      "ACCESS": 1,
+                      "TYPE": "T",
+                      "FULL_PATH": "/buttons/button1/longPress",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "veryLongPress": {
+                      "DESCRIPTION": "Very Long Press",
+                      "ACCESS": 1,
+                      "TYPE": "T",
+                      "FULL_PATH": "/buttons/button1/veryLongPress",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "canShutDown": {
+                      "DESCRIPTION": "Can Shut Down",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/buttons/button1/canShutDown",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "hasListenExtension": true
+      },
+      {
+        "parameters": [
+          {
+            "value": true,
+            "controlAddress": "/enabled"
+          },
+          {
+            "value": false,
+            "controlAddress": "/logIncoming"
+          }
+        ],
+        "niceName": "Node",
+        "type": "Serial",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "parameters": [
+            {
+              "value": false,
+              "controlAddress": "/autoAdd"
+            },
+            {
+              "value": "Space separated",
+              "controlAddress": "/messageStructure"
+            },
+            {
+              "value": true,
+              "controlAddress": "/firstValueIsTheName"
+            },
+            {
+              "value": "",
+              "controlAddress": "/port"
+            }
+          ],
+          "containers": {
+            "pass_through": {
+            }
+          }
+        },
+        "templates": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "values": {
+        },
+        "portID": ""
+      }
+    ],
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0
+  },
+  "customVariables": {
+    "items": [
+      {
+        "niceName": "Group",
+        "type": "CVGroup",
+        "params": {
+        },
+        "variables": {
+          "items": [
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.2192313671112061,
+                    0.6481529474258423,
+                    1.0,
+                    1.0
+                  ],
+                  "controlAddress": "/sendColor",
+                  "feedbackOnly": false,
+                  "type": "Color",
+                  "niceName": "Send Color",
+                  "customizable": true,
+                  "removable": false,
+                  "description": "Custom control of type Color",
+                  "hideInEditor": false
+                }
+              ],
+              "niceName": "Send Color",
+              "editorIsCollapsed": true,
+              "type": "Color Parameter"
+            }
+          ],
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "presets": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        }
+      }
+    ],
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0
+  },
+  "states": {
+    "items": [
+      {
+        "parameters": [
+          {
+            "value": [
+              -392.0,
+              -143.0
+            ],
+            "controlAddress": "/viewUIPosition"
+          },
+          {
+            "value": true,
+            "controlAddress": "/active"
+          }
+        ],
+        "niceName": "SERIAL",
+        "type": "State",
+        "processors": {
+          "items": [
+            {
+              "niceName": "Restart",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "root.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.4923059046268463,
+                    0.2930901944637299,
+                    0.1022470593452454,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Clear Devices",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "comm.espnow.clear",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.1160392165184021,
+                    0.2716352939605713,
+                    0.569231390953064,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Pair",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 2.0,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "comm.espnow.pairingMode 1",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 1",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "comm.espnow.pairingMode 0",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            }
+          ],
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        }
+      },
+      {
+        "parameters": [
+          {
+            "value": [
+              -99.0,
+              -143.0
+            ],
+            "controlAddress": "/viewUIPosition"
+          },
+          {
+            "value": true,
+            "controlAddress": "/active"
+          }
+        ],
+        "niceName": "OSC Control",
+        "type": "State",
+        "processors": {
+          "items": [
+            {
+              "niceName": "Mapping",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "/customVariables/customVariables/values/group/sendColor",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "Input Value",
+                    "type": "Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "items": [
+                  {
+                    "niceName": "FPS",
+                    "type": "FPS",
+                    "filterParams": {
+                      "parameters": [
+                        {
+                          "value": 30.0,
+                          "controlAddress": "/frequency"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": true,
+                        "controlAddress": "/enabled"
+                      }
+                    ],
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "oSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/pwmLed/pwmLed1/color",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": [
+                                  0.2192313671112061,
+                                  0.6481529474258423,
+                                  1.0,
+                                  1.0
+                                ],
+                                "controlAddress": "/#5"
+                              }
+                            ],
+                            "niceName": "#1",
+                            "type": "Color",
+                            "param": {
+                              "value": [
+                                0.2192313671112061,
+                                0.6481529474258423,
+                                1.0,
+                                1.0
+                              ],
+                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput/command/arguments/#1/#5"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 0
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "value": false,
+                        "controlAddress": "/enabled"
+                      }
+                    ],
+                    "niceName": "MappingOutput 1",
+                    "editorIsCollapsed": true,
+                    "type": "BaseItem",
+                    "commandModule": "oSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/pwmLed/pwmLed1/color",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": 0.6346156597137451,
+                                "controlAddress": "/#1"
+                              }
+                            ],
+                            "niceName": "#1",
+                            "type": "Float",
+                            "param": {
+                              "value": 0.6346156597137451,
+                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#1/#1"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 0
+                            }
+                          },
+                          {
+                            "parameters": [
+                              {
+                                "value": 0.2611686289310455,
+                                "controlAddress": "/#2"
+                              }
+                            ],
+                            "niceName": "#2",
+                            "type": "Float",
+                            "param": {
+                              "value": 0.2611686289310455,
+                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#2/#2"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 1
+                            }
+                          },
+                          {
+                            "parameters": [
+                              {
+                                "value": 0.5015842914581299,
+                                "controlAddress": "/#3"
+                              }
+                            ],
+                            "niceName": "#3",
+                            "type": "Float",
+                            "param": {
+                              "value": 0.5015842914581299,
+                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#3/#3"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 2
+                            }
+                          },
+                          {
+                            "parameters": [
+                              {
+                                "value": 1.0,
+                                "controlAddress": "/#4"
+                              }
+                            ],
+                            "niceName": "#4",
+                            "type": "Float",
+                            "param": {
+                              "value": 1.0,
+                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#4/#4"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 3
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            }
+          ],
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        }
+      }
+    ],
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0,
+    "transitions": {
+      "hideInEditor": true,
+      "viewOffset": [
+        0,
+        0
+      ],
+      "viewZoom": 1.0
+    },
+    "comments": {
+      "hideInEditor": true,
+      "viewOffset": [
+        0,
+        0
+      ],
+      "viewZoom": 1.0
+    }
+  },
+  "sequences": {
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0
+  },
+  "routers": {
+    "viewOffset": [
+      0,
+      0
+    ],
+    "viewZoom": 1.0
+  }
+}

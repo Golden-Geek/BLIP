@@ -11,6 +11,11 @@ ImplementSingleton(WifiComponent)
     // AddAndSetParameter(pass);
     // AddAndSetParameter(apOnNoWifi);
 
+#ifdef USE_ETHERNET
+    AddIntParamConfig(mode);
+    WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
+#endif
+
     AddStringParamConfig(ssid);
     AddStringParamConfig(pass);
     AddFloatParam(signal);
@@ -27,15 +32,7 @@ ImplementSingleton(WifiComponent)
 
 bool WifiComponent::initInternal()
 {
-
-#ifdef USE_ETHERNET
-    AddIntParamConfig(mode);
-
-    WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
-#endif
-
     connect();
-
     return true;
 }
 

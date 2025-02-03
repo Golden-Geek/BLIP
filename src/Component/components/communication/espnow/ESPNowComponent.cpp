@@ -8,6 +8,7 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(pairingMode);
 
 #ifdef ESPNOW_BRIDGE
+    AddIntParamConfig(channel);
     AddBoolParamConfig(broadcastMode);
     AddBoolParamConfig(streamTestMode);
     AddBoolParamConfig(routeAll);
@@ -58,7 +59,12 @@ bool ESPNowComponent::initInternal()
 void ESPNowComponent::initESPNow()
 {
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
-    int channel = WiFi.channel();
+#ifdef USE_ETHERNET
+    WiFi.mode(WIFI_AP_STA); // Recommended mode.
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+#else
+    SetParam(channel, WiFi.channel());
+#endif
 #else
     // esp_now_deinit();
     WiFi.mode(WIFI_STA);
@@ -188,7 +194,7 @@ void ESPNowComponent::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t 
 #ifdef ARDUINO_NEW_VERSION
 void ESPNowComponent::onDataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len)
 {
-    const uint8_t* mac = info->src_addr;
+    const uint8_t *mac = info->src_addr;
 #else
 void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
 {

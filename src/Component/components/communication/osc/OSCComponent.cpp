@@ -215,8 +215,12 @@ OSCMessage OSCComponent::createMessage(const String &source, const String &comma
             break;
 
         case 'r':
-            msg.add((uint32_t)data[i].intValue());
-            break;
+        {
+            uint32_t col = (uint32_t)data[i].intValue();
+            oscrgba_t rgba = {(uint8_t)(col >> 24), (uint8_t)((col >> 16) & 0xFF), (uint8_t)((col >> 8) & 0xFF), (uint8_t)(col & 0xFF)};
+            msg.add(rgba);
+        }
+        break;
 
         case 'T':
             msg.add(true);
@@ -245,11 +249,24 @@ var OSCComponent::OSCArgumentToVar(OSCMessage &m, int index)
         return m.getFloat(index);
     else if (m.isBoolean(index))
         return m.getBoolean(index);
-
-#ifdef ARDUINO_NEW_VERSION
-    else if (m.isColor(index))
-        return (int)m.getColor(index);
-#endif
+    else if (m.isRgba(index))
+    {
+        oscrgba_t rgba = m.getRgba(index);
+        // DBG(String(rgba.r) + " " + String(rgba.g) + " " + String(rgba.b) + " " + String(rgba.a));
+        int col = (rgba.a << 24) | (rgba.b << 16) | (rgba.g << 8) | rgba.r;
+        return col;
+    }
+    else if (m.isMidi(index))
+    {
+        oscmidi_t midi = m.getMidi(index);
+        return midi.status << 24 | midi.channel << 16 | midi.data1 << 8 | midi.data2;
+    }
+    else if (m.isTime(index))
+    {
+        osctime_t time = m.getTime(index);
+        float absTime = time.seconds + time.fractionofseconds / 1000000.0;
+        return absTime;
+    }
 
     NDBG("OSC Type not supported !");
     return var(0);
