@@ -29,7 +29,7 @@ DeclareColorParam(color, 0, 0, 0, 1);
 
 #ifdef PWMLED_USE_STREAMING
 DeclareIntParam(universe, 0);
-DeclareIntParam(startChannel, 1);
+DeclareIntParam(ledIndex, 0);
 #endif
 
 int pwmChannels[4];
@@ -69,7 +69,7 @@ CheckAndSetParam(rgbwMode);
 CheckAndSetParam(color);
 #ifdef PWMLED_USE_STREAMING
 CheckAndSetParam(universe);
-CheckAndSetParam(startChannel);
+CheckAndSetParam(ledIndex);
 #endif
 HandleSetParamInternalEnd;
 
@@ -83,7 +83,7 @@ FillSettingsParam(useAlpha);
 FillSettingsParam(rgbwMode);
 #ifdef PWMLED_USE_STREAMING
 FillSettingsParam(universe);
-FillSettingsParam(startChannel);
+FillSettingsParam(ledIndex);
 #endif
 FillSettingsInternalEnd
 
@@ -98,7 +98,7 @@ FillOSCQueryBoolParam(rgbwMode);
 FillOSCQueryColorParam(color);
 #ifdef PWMLED_USE_STREAMING
 FillOSCQueryIntParam(universe);
-FillOSCQueryIntParam(startChannel);
+FillOSCQueryIntParam(ledIndex);
 #endif
 FillOSCQueryInternalEnd
 

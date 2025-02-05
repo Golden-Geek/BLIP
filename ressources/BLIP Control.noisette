@@ -1,6 +1,6 @@
 {
   "metaData": {
-    "version": "1.9.25b8",
+    "version": "1.9.25b9",
     "versionNumber": 67865
   },
   "projectSettings": {
@@ -35,32 +35,32 @@
   "layout": {
     "mainLayout": {
       "type": 1,
-      "width": 1920,
-      "height": 1037,
+      "width": 2048,
+      "height": 1189,
       "direction": 2,
       "shifters": [
         {
           "type": 1,
-          "width": 1920,
-          "height": 1037,
+          "width": 2048,
+          "height": 1189,
           "direction": 2,
           "shifters": [
             {
               "type": 1,
-              "width": 1920,
-              "height": 677,
+              "width": 2048,
+              "height": 753,
               "direction": 1,
               "shifters": [
                 {
                   "type": 1,
                   "width": 307,
-                  "height": 677,
+                  "height": 753,
                   "direction": 2,
                   "shifters": [
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 346,
+                      "height": 384,
                       "currentContent": "Modules",
                       "tabs": [
                         {
@@ -71,7 +71,7 @@
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 325,
+                      "height": 363,
                       "currentContent": "Custom Variables",
                       "tabs": [
                         {
@@ -83,8 +83,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1085,
-                  "height": 677,
+                  "width": 1213,
+                  "height": 753,
                   "currentContent": "State Machine",
                   "tabs": [
                     {
@@ -104,7 +104,7 @@
                 {
                   "type": 0,
                   "width": 516,
-                  "height": 677,
+                  "height": 753,
                   "currentContent": "Inspector",
                   "tabs": [
                     {
@@ -116,14 +116,14 @@
             },
             {
               "type": 1,
-              "width": 1920,
-              "height": 354,
+              "width": 2048,
+              "height": 430,
               "direction": 1,
               "shifters": [
                 {
                   "type": 0,
                   "width": 178,
-                  "height": 354,
+                  "height": 430,
                   "currentContent": "Sequences",
                   "tabs": [
                     {
@@ -133,8 +133,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1277,
-                  "height": 354,
+                  "width": 1295,
+                  "height": 430,
                   "currentContent": "Sequence Editor",
                   "tabs": [
                     {
@@ -144,8 +144,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 453,
-                  "height": 354,
+                  "width": 563,
+                  "height": 430,
                   "currentContent": "Logger",
                   "tabs": [
                     {
@@ -172,11 +172,11 @@
       {
         "parameters": [
           {
-            "value": true,
+            "value": false,
             "controlAddress": "/enabled"
           },
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/logIncoming"
           }
         ],
@@ -204,7 +204,7 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "USB-SERIAL CH340 (COM11)",
+              "value": "Not connected or disconnected",
               "controlAddress": "/port"
             }
           ],
@@ -222,7 +222,7 @@
         },
         "values": {
         },
-        "portID": "USB-SERIAL CH340 (COM11)"
+        "portID": ""
       },
       {
         "parameters": [
@@ -1237,6 +1237,7 @@
                   "controlAddress": "/wakeUpButton"
                 }
               ],
+              "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Settings"
             },
@@ -1254,6 +1255,11 @@
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Wifi"
+            },
+            "battery": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Battery"
             },
             "files": {
               "editorIsCollapsed": true,
@@ -1319,12 +1325,8 @@
               "owned": true,
               "niceName": "Buttons"
             },
-            "battery": {
-              "editorIsCollapsed": true,
-              "owned": true,
-              "niceName": "Battery"
-            },
             "pwmLed": {
+              "editorIsCollapsed": true,
               "containers": {
                 "pwmLed1": {
                   "parameters": [
@@ -1342,6 +1344,7 @@
                       "controlAddress": "/color"
                     }
                   ],
+                  "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Pwm Led 1"
                 }
@@ -2234,9 +2237,9 @@
               "parameters": [
                 {
                   "value": [
-                    0.2826783657073975,
-                    0.02148297615349293,
-                    0.1028394997119904,
+                    0.4420731067657471,
+                    0.5221239328384399,
+                    0.08835974335670471,
                     1.0
                   ],
                   "controlAddress": "/sendColor",
@@ -2749,9 +2752,9 @@
                             "parameters": [
                               {
                                 "value": [
-                                  0.2826783657073975,
-                                  0.02148297615349293,
-                                  0.1028394997119904,
+                                  0.4420731067657471,
+                                  0.5221239328384399,
+                                  0.08835974335670471,
                                   1.0
                                 ],
                                 "controlAddress": "/#1"
@@ -2761,9 +2764,9 @@
                             "type": "Color",
                             "param": {
                               "value": [
-                                0.2826783657073975,
-                                0.02148297615349293,
-                                0.1028394997119904,
+                                0.4420731067657471,
+                                0.5221239328384399,
+                                0.08835974335670471,
                                 1.0
                               ],
                               "controlAddress": "/states/oscControl/processors/colorAll/outputs/mappingOutput/command/arguments/#1/#1"

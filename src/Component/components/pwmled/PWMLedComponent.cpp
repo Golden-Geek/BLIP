@@ -15,12 +15,16 @@ void PWMLedComponent::setupInternal(JsonObject o)
 
 #ifdef PWMLED_USE_STREAMING
     AddIntParamConfig(universe);
-    AddIntParamConfig(startChannel);
+    AddIntParamConfig(ledIndex);
 #endif
 }
 
 bool PWMLedComponent::initInternal()
 {
+#ifdef USE_STREAMING
+    LedStreamReceiverComponent::instance->registerStreamListener(this);
+#endif
+
     setupPins();
     updatePins();
 
@@ -134,6 +138,11 @@ void PWMLedComponent::clearInternal()
 
     delay(50);
 #endif
+
+#ifdef USE_STREAMING
+    if (LedStreamReceiverComponent::instance != nullptr)
+        LedStreamReceiverComponent::instance->unregisterStreamListener(this);
+#endif
 }
 
 void PWMLedComponent::setupPins()
@@ -240,9 +249,14 @@ void PWMLedComponent::RGBToRGBW(float r, float g, float b, float &rOut, float &g
 
 void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t len)
 {
+    if(RootComponent::instance->isShuttingDown() || !RootComponent::instance->isInit)
+        return;
+
+    // NDBG("Received stream data for universe " + String(dmxUniverse) + " with " + String(len) + " bytes");
+
     int count = len / (useAlpha ? 4 : 3);
-    int maxCount = useAlpha? 128 : 170;
-    int start = (dmxUniverse - universe) * maxCount - (startChannel -1);
+    int maxCount = useAlpha ? 128 : 170;
+    int start = (dmxUniverse - universe) * maxCount - ledIndex;
 
     int iStart = start < 0 ? -start : 0;
     if (iStart < count)

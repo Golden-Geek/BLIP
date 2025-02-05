@@ -174,7 +174,7 @@ void ESPNowComponent::updateInternal()
 #else
     if (!pairingMode && currentTime - lastCheck > 500)
     {
-        NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
+        // NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
 
         if (RootComponent::instance->remoteWakeUpMode || (autoPairing && currentTime - lastReceiveTime > 2000))
         {
@@ -541,7 +541,7 @@ void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data
     memcpy(sendPacketData + 5, data, cappedLen);
 
     // wifi_set_channel(channel);
-    // NDBG("Sending stream " + String(totalLen) + " bytes");
+    NDBG("Sending stream " + String(totalLen) + " bytes");
     esp_now_send(NULL, sendPacketData, totalLen);
 }
 #endif
