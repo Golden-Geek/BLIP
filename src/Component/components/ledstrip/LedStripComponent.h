@@ -17,15 +17,14 @@
 
 #define USE_SYSTEMLAYER 1
 
-
 #define RED_MILLIAMP 16
 #define GREEN_MILLIAMP 11
 #define BLUE_MILLIAMP 15
 #define DARK_MILLIAMP 1
 
-
-
-
+#ifndef LED_DEFAULT_CHANNELS
+#define LED_DEFAULT_CHANNELS 3
+#endif
 
 class LedStripComponent : public Component
 {
@@ -116,7 +115,6 @@ public:
     void clearColors();
     void showLeds();
     uint8_t getDitheredBrightness(uint8_t brightness, uint8_t frame);
-    
 
     int ledMap(int index) const;
 

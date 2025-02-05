@@ -101,6 +101,7 @@ public:
     ParamTag getParamTag(void *param) const;
     String getParamString(void *param) const;
 
+    void toggleEnabled() { SetParam(enabled, !enabled); }
     virtual void onEnabledChanged() {}
 
     void paramValueChanged(void *param);

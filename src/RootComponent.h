@@ -1,11 +1,8 @@
 #pragma once
 
-
 DeclareComponentSingleton(Root, "root", )
 
-// DeclareConfigParameter(deviceName, deviceID);
-// DeclareConfigParameter(wakeUpButton, POWER_WAKEUP_BUTTON);
-// DeclareConfigParameter(wakeUpState, POWER_WAKEUP_BUTTON_STATE);
+bool remoteWakeUpMode = false;
 
 // system
 SettingsComponent settings;
@@ -19,8 +16,6 @@ CommunicationComponent comm;
 #ifdef USE_DISPLAY
 DisplayComponent display;
 #endif
-
-
 
 #ifdef USE_FILES
 FilesComponent files;
@@ -39,14 +34,17 @@ SequenceComponent sequence;
 #endif
 
 #ifdef USE_STREAMING
-#if defined ESPNOW_BRIDGE || defined USE_LEDSTRIP
 LedStreamReceiverComponent streamReceiver;
-#endif
 #endif
 
 #ifdef USE_LEDSTRIP
 LedStripManagerComponent strips;
 #endif
+
+#ifdef USE_PWMLED
+PWMLedManagerComponent pwmleds;
+#endif
+
 
 #ifdef USE_SCRIPT
 ScriptComponent script;
@@ -83,10 +81,6 @@ StepperComponent stepper;
 DCMotorComponent motor;
 #endif
 
-#ifdef USE_PWMLED
-PWMLedManagerComponent pwmleds;
-#endif
-
 static bool availablePWMChannels[16];
 int getFirstAvailablePWMChannel() const;
 
@@ -102,6 +96,7 @@ void updateInternal() override;
 
 void shutdown();
 void restart();
+void standby();
 
 void powerdown();
 
@@ -115,6 +110,7 @@ bool isShuttingDown() const { return timeAtShutdown > 0; }
 HandleSetParamInternalStart
     CheckTrigger(shutdown);
 CheckTrigger(restart);
+CheckTrigger(standby);
 CheckAndSetParam(testMode);
 
 HandleSetParamInternalEnd;
@@ -127,6 +123,7 @@ FillOSCQueryInternalStart
 
     FillOSCQueryTrigger(shutdown);
 FillOSCQueryTrigger(restart);
+FillOSCQueryTrigger(standby);
 FillOSCQueryBoolParam(testMode);
 
 FillOSCQueryInternalEnd

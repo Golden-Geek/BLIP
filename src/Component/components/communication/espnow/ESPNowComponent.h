@@ -4,19 +4,27 @@
 
 #define ESPNOW_MAX_DEVICES 20
 
-#ifdef USE_STREAMING
-#define ListenerDerive , LedStreamListener
-#else
-#define ListenerDerive
+
+
+#ifndef ESPNOW_PAIRING_PRESSCOUNT
+#define ESPNOW_PAIRING_PRESSCOUNT -1
 #endif
 
-DeclareComponentSingleton(ESPNow, "espnow", ListenerDerive)
+#ifndef ESPNOW_ENABLE_PRESSCOUNT
+#define ESPNOW_PAIRING_PRESSCOUNT -1
+#endif
+
+DeclareComponentSingleton(ESPNow, "espnow", LedStreamListenerDerive)
     DeclareBoolParam(pairingMode, false);
 
-#ifdef ESPNOW_BRIDGE
+#ifdef USE_ETHERNET
 DeclareIntParam(channel, 1);
+#endif
+
+#ifdef ESPNOW_BRIDGE
 DeclareBoolParam(broadcastMode, false);
 DeclareBoolParam(streamTestMode, false);
+DeclareBoolParam(wakeUpMode, false);
 DeclareBoolParam(routeAll, false);
 DeclareStringParam(remoteMac1, "");
 DeclareStringParam(remoteMac2, "");
@@ -87,18 +95,25 @@ uint8_t numConnectedDevices = 0;
 
 #else
 
-DeclareBoolParam(autoPairing, false);
+DeclareIntParam(channel, 1);
+DeclareBoolParam(autoPairing, true);
+
+bool wakeUpReceived = false;
 
 bool bridgeInit = false;
 uint8_t bridgeMac[6] = {0, 0, 0, 0, 0, 0};
 #endif
 
+DeclareIntParam(enableMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT)
+    DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT)
+
 #ifdef ESPNOW_BRIDGE
-const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+        const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #endif
 
 long lastReceiveTime;
 long lastSendTime = 0;
+long lastCheck = 0;
 uint8_t sendPacketData[250];
 uint8_t sendMac[6];
 
@@ -138,6 +153,7 @@ void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len) o
 void setupBroadcast();
 void sendPairingRequest();
 void sendPing();
+void sendWakeUp();
 void registerDevice(const uint8_t *deviceMac);
 void addDevicePeer(const uint8_t *deviceMac);
 void clearDevices();
@@ -161,6 +177,7 @@ CheckAndSetParam(channel);
 #endif
 CheckAndSetParam(broadcastMode);
 CheckAndSetParam(streamTestMode);
+CheckAndSetParam(wakeUpMode);
 CheckTrigger(clearDevices);
 CheckAndSetParam(routeAll);
 CheckAndSetParam(remoteMac1);
@@ -225,6 +242,7 @@ FillSettingsInternalEnd;
 FillOSCQueryInternalStart
     FillOSCQueryBoolParam(pairingMode);
 #ifdef ESPNOW_BRIDGE
+FillOSCQueryBoolParam(wakeUpMode);
 #ifdef USE_ETHERNET
 FillOSCQueryIntParam(channel);
 #else

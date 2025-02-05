@@ -27,7 +27,6 @@ ImplementSingleton(WifiComponent)
     pinMode(14, OUTPUT);
     digitalWrite(14, HIGH);
 #endif
-
 }
 
 bool WifiComponent::initInternal()
@@ -140,10 +139,14 @@ void WifiComponent::connect()
 {
 
 #if defined USE_ESPNOW
+    if (ESPNowComponent::instance->enabled)
+    {
 #ifndef ESPNOW_BRIDGE
-    NDBG("ESPNow is running in normal mode, not connecting to wifi");
-    return;
+
+        NDBG("ESPNow is running in normal mode, not connecting to wifi");
+        return;
 #endif
+    }
 #endif
 
     lastConnectTime = millis();

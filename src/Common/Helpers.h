@@ -38,12 +38,6 @@
     {                                                        \
     public:
 
-#define DeclareSubComponent(ParentClass, ClassPrefix, Type, Derives)                                           \
-    DeclareComponentClass(ParentClass, ClassPrefix, Derives)                                                   \
-        ClassPrefix##Component(const String &name = Type, bool enabled = true) : ParentClass(name, enabled) {} \
-    ~ClassPrefix##Component() {}                                                                               \
-    virtual String getTypeString() const override { return Type; }
-
 #define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                     \
     DeclareComponentClass(Component, ClassPrefix, Derives)                                                                        \
         DeclareSingleton(ClassPrefix##Component)                                                                                  \
@@ -51,7 +45,11 @@
     ~ClassPrefix##Component() { DeleteSingleton() }                                                                               \
     virtual String getTypeString() const override { return Type; }
 
-#define DeclareComponent(ClassPrefix, Type, Derives) DeclareSubComponent(Component, ClassPrefix, Type, Derives)
+#define DeclareComponent(ClassPrefix, Type, Derives)                                                         \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                   \
+        ClassPrefix##Component(const String &name = Type, bool enabled = true) : Component(name, enabled) {} \
+    ~ClassPrefix##Component() {}                                                                             \
+    virtual String getTypeString() const override { return Type; }
 
 #define EndDeclareComponent \
     }                       \
@@ -75,7 +73,7 @@
         DeclareIntParam(count, 1);                            \
                                                               \
     DefineStaticItems(Type, MType);                           \
-    void setupInternal(JsonObject o) override                  \
+    void setupInternal(JsonObject o) override                 \
     {                                                         \
         AddIntParam(count);                                   \
         for (int i = 0; i < count; i++)                       \

@@ -11,6 +11,7 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddIntParamConfig(channel);
     AddBoolParamConfig(broadcastMode);
     AddBoolParamConfig(streamTestMode);
+    AddBoolParam(wakeUpMode);
     AddBoolParamConfig(routeAll);
 
     AddStringParamConfig(remoteMac1);
@@ -58,6 +59,9 @@ bool ESPNowComponent::initInternal()
 
 void ESPNowComponent::initESPNow()
 {
+    if (!enabled)
+        return;
+
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
 #ifdef USE_ETHERNET
     WiFi.mode(WIFI_AP_STA); // Recommended mode.
@@ -71,7 +75,11 @@ void ESPNowComponent::initESPNow()
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #endif
 
-    NDBG("Init ESPNow on channel " + String(channel));
+    if (!pairingMode)
+    {
+        NDBG("Init ESPNow on channel " + String(channel));
+    }
+
     if (esp_now_init() != ESP_OK)
     {
         NDBG("Error initializing ESP-NOW");
@@ -88,7 +96,11 @@ void ESPNowComponent::initESPNow()
 #endif
 
     esp_now_register_recv_cb(&ESPNowComponent::onDataReceived);
-    NDBG("ESP-NOW accessible at  : " + SettingsComponent::instance->getDeviceID());
+
+    if (!pairingMode)
+    {
+        NDBG("ESP-NOW accessible at  : " + SettingsComponent::instance->getDeviceID());
+    }
 
     esp_now_register_send_cb(&ESPNowComponent::onDataSent);
 
@@ -122,6 +134,14 @@ void ESPNowComponent::updateInternal()
             sendPairingRequest();
         }
     }
+    else if (wakeUpMode)
+    {
+        if (currentTime - lastSendTime >= 2)
+        {
+            lastSendTime = currentTime;
+            sendWakeUp();
+        }
+    }
     else if (streamTestMode)
     {
         if (currentTime - lastSendTime >= 20)
@@ -152,15 +172,16 @@ void ESPNowComponent::updateInternal()
         }
     }
 #else
-    // DBG("Update !" + String(pairingMode) + " / " + String(currentTime - lastReceiveTime) + " / " + String(currentTime - lastSendTime));
-
-    if (autoPairing && currentTime - lastReceiveTime > 2000)
+    if (!pairingMode && currentTime - lastCheck > 500)
     {
-        if (!pairingMode)
+        NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
+
+        if (RootComponent::instance->remoteWakeUpMode || (autoPairing && currentTime - lastReceiveTime > 2000))
         {
-            DBG("auto activate pairing mode");
+            NDBG("Auto activate pairing mode");
             SetParam(pairingMode, true)
         }
+        lastCheck = currentTime;
     }
 
     if (pairingMode)
@@ -293,7 +314,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     }
     break;
 
-    case 2:
+    case 2: // pairing request
     {
 #ifndef ESPNOW_BRIDGE
 
@@ -303,11 +324,19 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     }
     break;
 
-    case 3:
+    case 3: // pairing response
     {
 #ifdef ESPNOW_BRIDGE
         // DBG("[ESPNow] Pairing response received");
         instance->registerDevice(mac);
+#endif
+    }
+    break;
+
+    case 4: // remote wakeup
+    {
+#ifndef ESPNOW_BRIDGE
+        instance->wakeUpReceived = true;
 #endif
     }
     break;
@@ -542,7 +571,7 @@ void ESPNowComponent::setupBroadcast()
 
 void ESPNowComponent::sendPairingRequest()
 {
-    DBG("Sending pairing request on channel " + String(WiFi.channel()));
+    // DBG("Sending pairing request on channel " + String(WiFi.channel()));
     sendPacketData[0] = 2; // Pairing request
     sendPacketData[1] = WiFi.channel();
     esp_now_send(broadcastMac, sendPacketData, 2);
@@ -550,10 +579,18 @@ void ESPNowComponent::sendPairingRequest()
 
 void ESPNowComponent::sendPing()
 {
-    DBG("Sending ping on channel " + String(WiFi.channel()));
+    // DBG("Sending ping on channel " + String(WiFi.channel()));
     sendPacketData[0] = 2; // Pairing request
     sendPacketData[1] = WiFi.channel();
     esp_now_send(NULL, sendPacketData, 2);
+}
+
+void ESPNowComponent::sendWakeUp()
+{
+    // DBG("Sending ping on channel " + String(WiFi.channel()));
+    sendPacketData[0] = 4; // Pairing request
+    sendPacketData[1] = WiFi.channel();
+    esp_now_send(broadcastMac, sendPacketData, 2);
 }
 
 void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
@@ -664,12 +701,15 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
     if (!isInit)
         return;
 
-    if (param == &pairingMode)
-    {
 #ifdef ESPNOW_BRIDGE
-        DBG("Pairing mode " + String(pairingMode));
+    if (param == &pairingMode || param == &wakeUpMode)
+    {
+        if (param == &pairingMode)
+            NDBG("Pairing mode " + String(pairingMode));
+        else
+            NDBG("Wake up mode " + String(wakeUpMode));
 
-        if (pairingMode)
+        if (pairingMode || wakeUpMode)
         {
             esp_now_peer_info_t info;
             memset(&info, 0, sizeof(info));
@@ -682,16 +722,25 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
         }
         else
         {
-            DBG("Finished pairing, got " + String(numConnectedDevices) + " devices");
+
             esp_now_del_peer(broadcastMac);
-            SettingsComponent::instance->saveSettings();
+
+            if (param == &pairingMode)
+            {
+                NDBG("Finished pairing, got " + String(numConnectedDevices) + " devices");
+                SettingsComponent::instance->saveSettings();
+            }
         }
+    }
+
 #else
+    if (param == &pairingMode)
+    {
         DBG("Pairing mode changed " + String(pairingMode));
         if (pairingMode)
             bridgeInit = false;
-#endif
     }
+#endif
 
 #ifdef ESPNOW_BRIDGE
     if (param == &broadcastMode)

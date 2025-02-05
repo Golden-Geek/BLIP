@@ -47,7 +47,7 @@ void SettingsComponent::clearSettings()
 {
     Settings::clearSettings();
     NDBG("Settings cleared, will reboot now.");
-    delay(500);
+    delay(200);
     RootComponent::instance->restart();
 }
 

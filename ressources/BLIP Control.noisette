@@ -35,32 +35,32 @@
   "layout": {
     "mainLayout": {
       "type": 1,
-      "width": 1922,
-      "height": 1039,
+      "width": 1920,
+      "height": 1037,
       "direction": 2,
       "shifters": [
         {
           "type": 1,
-          "width": 1922,
-          "height": 1039,
+          "width": 1920,
+          "height": 1037,
           "direction": 2,
           "shifters": [
             {
               "type": 1,
-              "width": 1922,
-              "height": 596,
+              "width": 1920,
+              "height": 677,
               "direction": 1,
               "shifters": [
                 {
                   "type": 1,
                   "width": 307,
-                  "height": 596,
+                  "height": 677,
                   "direction": 2,
                   "shifters": [
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 305,
+                      "height": 346,
                       "currentContent": "Modules",
                       "tabs": [
                         {
@@ -71,7 +71,7 @@
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 284,
+                      "height": 325,
                       "currentContent": "Custom Variables",
                       "tabs": [
                         {
@@ -83,8 +83,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1159,
-                  "height": 596,
+                  "width": 1085,
+                  "height": 677,
                   "currentContent": "State Machine",
                   "tabs": [
                     {
@@ -103,8 +103,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 444,
-                  "height": 596,
+                  "width": 516,
+                  "height": 677,
                   "currentContent": "Inspector",
                   "tabs": [
                     {
@@ -116,14 +116,14 @@
             },
             {
               "type": 1,
-              "width": 1922,
-              "height": 437,
+              "width": 1920,
+              "height": 354,
               "direction": 1,
               "shifters": [
                 {
                   "type": 0,
                   "width": 178,
-                  "height": 437,
+                  "height": 354,
                   "currentContent": "Sequences",
                   "tabs": [
                     {
@@ -133,8 +133,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1090,
-                  "height": 437,
+                  "width": 1277,
+                  "height": 354,
                   "currentContent": "Sequence Editor",
                   "tabs": [
                     {
@@ -144,8 +144,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 642,
-                  "height": 437,
+                  "width": 453,
+                  "height": 354,
                   "currentContent": "Logger",
                   "tabs": [
                     {
@@ -172,11 +172,11 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
           },
           {
-            "value": true,
+            "value": false,
             "controlAddress": "/logIncoming"
           }
         ],
@@ -228,10 +228,14 @@
         "parameters": [
           {
             "value": true,
+            "controlAddress": "/enabled"
+          },
+          {
+            "value": false,
             "controlAddress": "/logOutgoing"
           }
         ],
-        "niceName": "OSCQuery",
+        "niceName": "Bridge OSCQuery",
         "type": "OSCQuery",
         "scripts": {
           "viewOffset": [
@@ -306,6 +310,16 @@
                   "niceName": "Osc"
                 },
                 "espnow": {
+                  "parameters": [
+                    {
+                      "value": false,
+                      "controlAddress": "/pairingMode"
+                    },
+                    {
+                      "value": false,
+                      "controlAddress": "/wakeUpMode"
+                    }
+                  ],
                   "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Espnow"
@@ -394,6 +408,12 @@
               "ACCESS": 3,
               "TYPE": "I",
               "FULL_PATH": "/restart"
+            },
+            "standby": {
+              "DESCRIPTION": "Standby",
+              "ACCESS": 3,
+              "TYPE": "I",
+              "FULL_PATH": "/standby"
             },
             "testMode": {
               "DESCRIPTION": "Test Mode",
@@ -517,6 +537,15 @@
                       "TAGS": [
                         "config"
                       ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "wakeUpMode": {
+                      "DESCRIPTION": "Wake Up Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/wakeUpMode",
                       "VALUE": [
                         false
                       ]
@@ -1042,11 +1071,11 @@
       {
         "parameters": [
           {
-            "value": true,
+            "value": false,
             "controlAddress": "/enabled"
           },
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/logIncoming"
           }
         ],
@@ -1074,7 +1103,7 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "",
+              "value": "Not connected or disconnected",
               "controlAddress": "/port"
             }
           ],
@@ -1093,6 +1122,1091 @@
         "values": {
         },
         "portID": ""
+      },
+      {
+        "parameters": [
+          {
+            "value": false,
+            "controlAddress": "/enabled"
+          },
+          {
+            "value": false,
+            "controlAddress": "/logOutgoing"
+          }
+        ],
+        "niceName": "Node OSCQuery",
+        "type": "OSCQuery",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "parameters": [
+            {
+              "value": "BLIP",
+              "controlAddress": "/serverName"
+            },
+            {
+              "value": false,
+              "controlAddress": "/isConnected"
+            }
+          ],
+          "containers": {
+            "output": {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/local"
+                },
+                {
+                  "value": "192.168.1.124",
+                  "controlAddress": "/remoteHost"
+                },
+                {
+                  "value": 80,
+                  "hexMode": false,
+                  "controlAddress": "/remotePort"
+                },
+                {
+                  "value": 9000,
+                  "hexMode": false,
+                  "controlAddress": "/customOSCPort",
+                  "enabled": true
+                },
+                {
+                  "value": 81,
+                  "hexMode": false,
+                  "controlAddress": "/customWebsocketPort",
+                  "enabled": true
+                }
+              ]
+            }
+          }
+        },
+        "templates": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "values": {
+          "containers": {
+            "comm": {
+              "editorIsCollapsed": true,
+              "containers": {
+                "serial": {
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Serial"
+                },
+                "osc": {
+                  "parameters": [
+                    {
+                      "value": "",
+                      "controlAddress": "/remoteHost"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Osc"
+                },
+                "espnow": {
+                  "parameters": [
+                    {
+                      "value": false,
+                      "controlAddress": "/enabled"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Espnow"
+                }
+              },
+              "owned": true,
+              "niceName": "Comm"
+            },
+            "settings": {
+              "parameters": [
+                {
+                  "value": 2,
+                  "hexMode": false,
+                  "controlAddress": "/wakeUpButton"
+                }
+              ],
+              "owned": true,
+              "niceName": "Settings"
+            },
+            "wifi": {
+              "parameters": [
+                {
+                  "value": "BenTo",
+                  "controlAddress": "/ssid"
+                },
+                {
+                  "value": "konamicode",
+                  "controlAddress": "/pass"
+                }
+              ],
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Wifi"
+            },
+            "files": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Files"
+            },
+            "server": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Server"
+            },
+            "gpio": {
+              "editorIsCollapsed": true,
+              "containers": {
+                "gpio1": {
+                  "parameters": [
+                    {
+                      "value": 15,
+                      "hexMode": false,
+                      "controlAddress": "/pin"
+                    },
+                    {
+                      "value": "Digital Output",
+                      "controlAddress": "/mode"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Gpio 1"
+                }
+              },
+              "owned": true,
+              "niceName": "Gpio"
+            },
+            "buttons": {
+              "editorIsCollapsed": true,
+              "containers": {
+                "button1": {
+                  "parameters": [
+                    {
+                      "value": 2,
+                      "hexMode": false,
+                      "controlAddress": "/pin"
+                    },
+                    {
+                      "value": "Digital Input",
+                      "controlAddress": "/mode"
+                    },
+                    {
+                      "value": 0.0,
+                      "controlAddress": "/value"
+                    },
+                    {
+                      "value": true,
+                      "controlAddress": "/canShutDown"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Button 1"
+                }
+              },
+              "owned": true,
+              "niceName": "Buttons"
+            },
+            "battery": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Battery"
+            },
+            "pwmLed": {
+              "containers": {
+                "pwmLed1": {
+                  "parameters": [
+                    {
+                      "value": true,
+                      "controlAddress": "/rgbwMode"
+                    },
+                    {
+                      "value": [
+                        0.8778627514839172,
+                        1.0,
+                        0.4192313551902771,
+                        0.0
+                      ],
+                      "controlAddress": "/color"
+                    }
+                  ],
+                  "owned": true,
+                  "niceName": "Pwm Led 1"
+                }
+              },
+              "owned": true,
+              "niceName": "Pwm Led"
+            }
+          }
+        },
+        "treeData": {
+          "DESCRIPTION": "Root",
+          "FULL_PATH": "",
+          "ACCESS": 0,
+          "CONTENTS": {
+            "shutdown": {
+              "DESCRIPTION": "Shutdown",
+              "ACCESS": 3,
+              "TYPE": "I",
+              "FULL_PATH": "/shutdown"
+            },
+            "restart": {
+              "DESCRIPTION": "Restart",
+              "ACCESS": 3,
+              "TYPE": "I",
+              "FULL_PATH": "/restart"
+            },
+            "testMode": {
+              "DESCRIPTION": "Test Mode",
+              "ACCESS": 3,
+              "TYPE": "F",
+              "FULL_PATH": "/testMode",
+              "VALUE": [
+                false
+              ]
+            },
+            "comm": {
+              "DESCRIPTION": "Comm",
+              "FULL_PATH": "/comm",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/comm/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "serial": {
+                  "DESCRIPTION": "Serial",
+                  "FULL_PATH": "/comm/serial",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/serial/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "sendFeedback": {
+                      "DESCRIPTION": "Send Feedback",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/serial/sendFeedback",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    }
+                  }
+                },
+                "osc": {
+                  "DESCRIPTION": "Osc",
+                  "FULL_PATH": "/comm/osc",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/osc/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "remoteHost": {
+                      "DESCRIPTION": "Remote Host",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/comm/osc/remoteHost",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        ""
+                      ]
+                    },
+                    "sendFeedback": {
+                      "DESCRIPTION": "Send Feedback",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/osc/sendFeedback",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "isAlive": {
+                      "DESCRIPTION": "Is Alive",
+                      "ACCESS": 1,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/osc/isAlive",
+                      "VALUE": [
+                        true
+                      ]
+                    }
+                  }
+                },
+                "espnow": {
+                  "DESCRIPTION": "Espnow",
+                  "FULL_PATH": "/comm/espnow",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/enabled",
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "pairingMode": {
+                      "DESCRIPTION": "Pairing Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/pairingMode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "channel": {
+                      "DESCRIPTION": "Channel",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/comm/espnow/channel",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        1
+                      ]
+                    },
+                    "autoPairing": {
+                      "DESCRIPTION": "Auto Pairing",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/autoPairing",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "settings": {
+              "DESCRIPTION": "Settings",
+              "FULL_PATH": "/settings",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/settings/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "saveSettings": {
+                  "DESCRIPTION": "Save Settings",
+                  "ACCESS": 3,
+                  "TYPE": "I",
+                  "FULL_PATH": "/settings/saveSettings"
+                },
+                "clearSettings": {
+                  "DESCRIPTION": "Clear Settings",
+                  "ACCESS": 3,
+                  "TYPE": "I",
+                  "FULL_PATH": "/settings/clearSettings"
+                },
+                "propID": {
+                  "DESCRIPTION": "Prop ID",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/propID",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "macAddress": {
+                  "DESCRIPTION": "Mac Address",
+                  "ACCESS": 1,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/macAddress",
+                  "VALUE": [
+                    "0:0:0:0:0:0"
+                  ]
+                },
+                "deviceName": {
+                  "DESCRIPTION": "Device Name",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/deviceName",
+                  "VALUE": [
+                    "BLIP"
+                  ]
+                },
+                "deviceType": {
+                  "DESCRIPTION": "Device Type",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/deviceType",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "BLIP"
+                  ]
+                },
+                "wakeUpButton": {
+                  "DESCRIPTION": "Wake Up Button",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/wakeUpButton",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    2
+                  ]
+                },
+                "wakeUpState": {
+                  "DESCRIPTION": "Wake Up State",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/settings/wakeUpState",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
+            "wifi": {
+              "DESCRIPTION": "Wifi",
+              "FULL_PATH": "/wifi",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/wifi/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "ssid": {
+                  "DESCRIPTION": "Ssid",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/ssid",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "BenTo"
+                  ]
+                },
+                "pass": {
+                  "DESCRIPTION": "Pass",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/pass",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "konamicode"
+                  ]
+                },
+                "signal": {
+                  "DESCRIPTION": "Signal",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/wifi/signal",
+                  "VALUE": [
+                    0
+                  ]
+                }
+              }
+            },
+            "battery": {
+              "DESCRIPTION": "Battery",
+              "FULL_PATH": "/battery",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/battery/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "batteryPin": {
+                  "DESCRIPTION": "Battery Pin",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/battery/batteryPin",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "chargePin": {
+                  "DESCRIPTION": "Charge Pin",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/battery/chargePin",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    -1
+                  ]
+                },
+                "rawMin": {
+                  "DESCRIPTION": "Raw Min",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/battery/rawMin",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "rawMax": {
+                  "DESCRIPTION": "Raw Max",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/battery/rawMax",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    4095
+                  ]
+                },
+                "lowBatteryThreshold": {
+                  "DESCRIPTION": "Low Battery Threshold",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/battery/lowBatteryThreshold",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    3.5
+                  ],
+                  "RANGE": [
+                    {
+                      "MIN": 3.3,
+                      "MAX": 4.2
+                    }
+                  ]
+                },
+                "sendFeedback": {
+                  "DESCRIPTION": "Send Feedback",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/battery/sendFeedback",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "batteryLevel": {
+                  "DESCRIPTION": "Battery Level",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/battery/batteryLevel",
+                  "VALUE": [
+                    4.2
+                  ],
+                  "RANGE": [
+                    {
+                      "MIN": 3.5,
+                      "MAX": 4.2
+                    }
+                  ]
+                },
+                "charging": {
+                  "DESCRIPTION": "Charging",
+                  "ACCESS": 1,
+                  "TYPE": "F",
+                  "FULL_PATH": "/battery/charging",
+                  "VALUE": [
+                    false
+                  ]
+                }
+              }
+            },
+            "files": {
+              "DESCRIPTION": "Files",
+              "FULL_PATH": "/files",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/files/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
+            "server": {
+              "DESCRIPTION": "Server",
+              "FULL_PATH": "/server",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/server/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "sendFeedback": {
+                  "DESCRIPTION": "Send Feedback",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/server/sendFeedback",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
+            "gpio": {
+              "DESCRIPTION": "Gpio",
+              "FULL_PATH": "/gpio",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/gpio/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "count": {
+                  "DESCRIPTION": "Count",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/gpio/count",
+                  "VALUE": [
+                    1
+                  ]
+                },
+                "gpio1": {
+                  "DESCRIPTION": "Gpio 1",
+                  "FULL_PATH": "/gpio/gpio1",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/gpio/gpio1/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "pin": {
+                      "DESCRIPTION": "Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/gpio/gpio1/pin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        15
+                      ]
+                    },
+                    "mode": {
+                      "DESCRIPTION": "Mode",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/gpio/gpio1/mode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        "Digital Output"
+                      ],
+                      "RANGE": [
+                        {
+                          "VALS": [
+                            "Digital Input",
+                            "Digital Input Pullup",
+                            "Analog Input",
+                            "Digital Output",
+                            "Analog Output",
+                            "Digital Oscillator",
+                            "Analog Oscillator"
+                          ]
+                        }
+                      ]
+                    },
+                    "inverted": {
+                      "DESCRIPTION": "Inverted",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/gpio/gpio1/inverted",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "value": {
+                      "DESCRIPTION": "Value",
+                      "ACCESS": 3,
+                      "TYPE": "f",
+                      "FULL_PATH": "/gpio/gpio1/value",
+                      "VALUE": [
+                        0
+                      ],
+                      "RANGE": [
+                        {
+                          "MIN": 0,
+                          "MAX": 1
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "buttons": {
+              "DESCRIPTION": "Buttons",
+              "FULL_PATH": "/buttons",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/buttons/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "count": {
+                  "DESCRIPTION": "Count",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/buttons/count",
+                  "VALUE": [
+                    1
+                  ]
+                },
+                "button1": {
+                  "DESCRIPTION": "Button 1",
+                  "FULL_PATH": "/buttons/button1",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/buttons/button1/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "pin": {
+                      "DESCRIPTION": "Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/buttons/button1/pin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        2
+                      ]
+                    },
+                    "mode": {
+                      "DESCRIPTION": "Mode",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/buttons/button1/mode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        "Digital Input"
+                      ],
+                      "RANGE": [
+                        {
+                          "VALS": [
+                            "Digital Input",
+                            "Digital Input Pullup",
+                            "Analog Input",
+                            "Digital Output",
+                            "Analog Output",
+                            "Digital Oscillator",
+                            "Analog Oscillator"
+                          ]
+                        }
+                      ]
+                    },
+                    "inverted": {
+                      "DESCRIPTION": "Inverted",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/buttons/button1/inverted",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "value": {
+                      "DESCRIPTION": "Value",
+                      "ACCESS": 3,
+                      "TYPE": "f",
+                      "FULL_PATH": "/buttons/button1/value",
+                      "VALUE": [
+                        0
+                      ],
+                      "RANGE": [
+                        {
+                          "MIN": 0,
+                          "MAX": 1
+                        }
+                      ]
+                    },
+                    "multiPressCount": {
+                      "DESCRIPTION": "Multi Press Count",
+                      "ACCESS": 1,
+                      "TYPE": "i",
+                      "FULL_PATH": "/buttons/button1/multiPressCount",
+                      "VALUE": [
+                        0
+                      ]
+                    },
+                    "longPress": {
+                      "DESCRIPTION": "Long Press",
+                      "ACCESS": 1,
+                      "TYPE": "F",
+                      "FULL_PATH": "/buttons/button1/longPress",
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "veryLongPress": {
+                      "DESCRIPTION": "Very Long Press",
+                      "ACCESS": 1,
+                      "TYPE": "F",
+                      "FULL_PATH": "/buttons/button1/veryLongPress",
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "canShutDown": {
+                      "DESCRIPTION": "Can Shut Down",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/buttons/button1/canShutDown",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        true
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "pwmLed": {
+              "DESCRIPTION": "Pwm Led",
+              "FULL_PATH": "/pwmLed",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/pwmLed/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "count": {
+                  "DESCRIPTION": "Count",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/pwmLed/count",
+                  "VALUE": [
+                    1
+                  ]
+                },
+                "pwmLed1": {
+                  "DESCRIPTION": "Pwm Led 1",
+                  "FULL_PATH": "/pwmLed/pwmLed1",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/pwmLed/pwmLed1/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "rPin": {
+                      "DESCRIPTION": "R Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/pwmLed/pwmLed1/rPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        17
+                      ]
+                    },
+                    "gPin": {
+                      "DESCRIPTION": "G Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/pwmLed/pwmLed1/gPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        19
+                      ]
+                    },
+                    "bPin": {
+                      "DESCRIPTION": "B Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/pwmLed/pwmLed1/bPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        20
+                      ]
+                    },
+                    "wPin": {
+                      "DESCRIPTION": "W Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/pwmLed/pwmLed1/wPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        18
+                      ]
+                    },
+                    "whiteTemperature": {
+                      "DESCRIPTION": "White Temperature",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/pwmLed/pwmLed1/whiteTemperature",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        4500
+                      ]
+                    },
+                    "useAlpha": {
+                      "DESCRIPTION": "Use Alpha",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/pwmLed/pwmLed1/useAlpha",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "rgbwMode": {
+                      "DESCRIPTION": "Rgbw Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/pwmLed/pwmLed1/rgbwMode",
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "color": {
+                      "DESCRIPTION": "Color",
+                      "ACCESS": 3,
+                      "TYPE": "r",
+                      "FULL_PATH": "/pwmLed/pwmLed1/color",
+                      "VALUE": [
+                        0,
+                        0,
+                        0,
+                        1
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "hasListenExtension": true
       }
     ],
     "viewOffset": [
@@ -1104,6 +2218,12 @@
   "customVariables": {
     "items": [
       {
+        "parameters": [
+          {
+            "value": false,
+            "controlAddress": "/enabled"
+          }
+        ],
         "niceName": "Group",
         "type": "CVGroup",
         "params": {
@@ -1114,9 +2234,9 @@
               "parameters": [
                 {
                   "value": [
-                    0.2192313671112061,
-                    0.6481529474258423,
-                    1.0,
+                    0.2826783657073975,
+                    0.02148297615349293,
+                    0.1028394997119904,
                     1.0
                   ],
                   "controlAddress": "/sendColor",
@@ -1161,17 +2281,24 @@
         "parameters": [
           {
             "value": [
-              -392.0,
-              -143.0
+              -275.0,
+              -210.0
             ],
             "controlAddress": "/viewUIPosition"
+          },
+          {
+            "value": [
+              276.0,
+              200.0
+            ],
+            "controlAddress": "/viewUISize"
           },
           {
             "value": true,
             "controlAddress": "/active"
           }
         ],
-        "niceName": "SERIAL",
+        "niceName": "Bridge Serial Control",
         "type": "State",
         "processors": {
           "items": [
@@ -1412,6 +2539,107 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.1160392165184021,
+                    0.2716352939605713,
+                    0.569231390953064,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Wakeup",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 5.0,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": true,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "comm.espnow.wakeUpMode 1",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 1",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "comm.espnow.wakeUpMode 0",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -1425,10 +2653,17 @@
         "parameters": [
           {
             "value": [
-              -99.0,
-              -143.0
+              11.0,
+              -210.0
             ],
             "controlAddress": "/viewUIPosition"
+          },
+          {
+            "value": [
+              347.0,
+              414.0
+            ],
+            "controlAddress": "/viewUISize"
           },
           {
             "value": true,
@@ -1440,7 +2675,13 @@
         "processors": {
           "items": [
             {
-              "niceName": "Mapping",
+              "parameters": [
+                {
+                  "value": true,
+                  "controlAddress": "/enabled"
+                }
+              ],
+              "niceName": "Color All",
               "editorIsCollapsed": true,
               "type": "Mapping",
               "im": {
@@ -1473,22 +2714,6 @@
                 "editorIsCollapsed": true
               },
               "filters": {
-                "items": [
-                  {
-                    "niceName": "FPS",
-                    "type": "FPS",
-                    "filterParams": {
-                      "parameters": [
-                        {
-                          "value": 30.0,
-                          "controlAddress": "/frequency"
-                        }
-                      ],
-                      "paramLinks": {
-                      }
-                    }
-                  }
-                ],
                 "viewOffset": [
                   0,
                   0
@@ -1506,7 +2731,7 @@
                     ],
                     "niceName": "MappingOutput",
                     "type": "BaseItem",
-                    "commandModule": "oSCQuery",
+                    "commandModule": "bridgeOSCQuery",
                     "commandPath": "",
                     "commandType": "Custom Message",
                     "command": {
@@ -1524,133 +2749,28 @@
                             "parameters": [
                               {
                                 "value": [
-                                  0.2192313671112061,
-                                  0.6481529474258423,
-                                  1.0,
+                                  0.2826783657073975,
+                                  0.02148297615349293,
+                                  0.1028394997119904,
                                   1.0
                                 ],
-                                "controlAddress": "/#5"
+                                "controlAddress": "/#1"
                               }
                             ],
                             "niceName": "#1",
                             "type": "Color",
                             "param": {
                               "value": [
-                                0.2192313671112061,
-                                0.6481529474258423,
-                                1.0,
+                                0.2826783657073975,
+                                0.02148297615349293,
+                                0.1028394997119904,
                                 1.0
                               ],
-                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput/command/arguments/#1/#5"
+                              "controlAddress": "/states/oscControl/processors/colorAll/outputs/mappingOutput/command/arguments/#1/#1"
                             },
                             "paramLink": {
                               "linkType": 1,
                               "mappingValueIndex": 0
-                            }
-                          }
-                        ],
-                        "viewOffset": [
-                          0,
-                          0
-                        ],
-                        "viewZoom": 1.0
-                      }
-                    }
-                  },
-                  {
-                    "parameters": [
-                      {
-                        "value": false,
-                        "controlAddress": "/enabled"
-                      }
-                    ],
-                    "niceName": "MappingOutput 1",
-                    "editorIsCollapsed": true,
-                    "type": "BaseItem",
-                    "commandModule": "oSCQuery",
-                    "commandPath": "",
-                    "commandType": "Custom Message",
-                    "command": {
-                      "parameters": [
-                        {
-                          "value": "/dev/-1/pwmLed/pwmLed1/color",
-                          "controlAddress": "/address"
-                        }
-                      ],
-                      "paramLinks": {
-                      },
-                      "argManager": {
-                        "items": [
-                          {
-                            "parameters": [
-                              {
-                                "value": 0.6346156597137451,
-                                "controlAddress": "/#1"
-                              }
-                            ],
-                            "niceName": "#1",
-                            "type": "Float",
-                            "param": {
-                              "value": 0.6346156597137451,
-                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#1/#1"
-                            },
-                            "paramLink": {
-                              "linkType": 1,
-                              "mappingValueIndex": 0
-                            }
-                          },
-                          {
-                            "parameters": [
-                              {
-                                "value": 0.2611686289310455,
-                                "controlAddress": "/#2"
-                              }
-                            ],
-                            "niceName": "#2",
-                            "type": "Float",
-                            "param": {
-                              "value": 0.2611686289310455,
-                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#2/#2"
-                            },
-                            "paramLink": {
-                              "linkType": 1,
-                              "mappingValueIndex": 1
-                            }
-                          },
-                          {
-                            "parameters": [
-                              {
-                                "value": 0.5015842914581299,
-                                "controlAddress": "/#3"
-                              }
-                            ],
-                            "niceName": "#3",
-                            "type": "Float",
-                            "param": {
-                              "value": 0.5015842914581299,
-                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#3/#3"
-                            },
-                            "paramLink": {
-                              "linkType": 1,
-                              "mappingValueIndex": 2
-                            }
-                          },
-                          {
-                            "parameters": [
-                              {
-                                "value": 1.0,
-                                "controlAddress": "/#4"
-                              }
-                            ],
-                            "niceName": "#4",
-                            "type": "Float",
-                            "param": {
-                              "value": 1.0,
-                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput1/command/arguments/#4/#4"
-                            },
-                            "paramLink": {
-                              "linkType": 1,
-                              "mappingValueIndex": 3
                             }
                           }
                         ],
@@ -1669,6 +2789,850 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "parameters": [
+                {
+                  "value": true,
+                  "controlAddress": "/enabled"
+                }
+              ],
+              "niceName": "Rgbw Mode All",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": false,
+                        "minValue": 0,
+                        "maxValue": 1,
+                        "default": false,
+                        "controlAddress": "/newBoolParameter"
+                      }
+                    ],
+                    "niceName": "Input Boolean",
+                    "type": "Input Boolean"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "items": [
+                  {
+                    "niceName": "Convert To Integer",
+                    "type": "Convert To Integer",
+                    "filterParams": {
+                      "parameters": [
+                        {
+                          "value": "",
+                          "controlAddress": "/retargetComponent"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    },
+                    "ghostOptions": {
+                      "retarget": null
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/pwmLed/pwmLed1/rgbwMode",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": 0,
+                                "hexMode": false,
+                                "controlAddress": "/#1"
+                              }
+                            ],
+                            "niceName": "#1",
+                            "type": "Integer",
+                            "param": {
+                              "value": 0,
+                              "hexMode": false,
+                              "controlAddress": "/states/oscControl/processors/rgbwModeAll/outputs/mappingOutput/command/arguments/#1/#1"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 0
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.1160392165184021,
+                    0.2716352939605713,
+                    0.569231390953064,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Pairing",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 2.0,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": true,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Set Value",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/comm/espnow/pairingMode",
+                          "controlAddress": "/target"
+                        },
+                        {
+                          "value": "All",
+                          "controlAddress": "/component"
+                        },
+                        {
+                          "value": "Equals",
+                          "controlAddress": "/operator"
+                        },
+                        {
+                          "value": true,
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 1",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Set Value",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/comm/espnow/pairingMode",
+                          "controlAddress": "/target"
+                        },
+                        {
+                          "value": "All",
+                          "controlAddress": "/component"
+                        },
+                        {
+                          "value": "Equals",
+                          "controlAddress": "/operator"
+                        },
+                        {
+                          "value": false,
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.569231390953064,
+                    0.07881665229797363,
+                    0.07881665229797363,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Clear Devices",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 0.0,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": true,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Trigger",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/comm/espnow/clearDevices",
+                          "controlAddress": "/target"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.3884627521038055,
+                    0.05977647006511688,
+                    0.3136941194534302,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Standby All",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/root/standby",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.699999988079071,
+                    0.691105842590332,
+                    0.2853803932666779,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Wakeup",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 5.0,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": true,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "editorIsCollapsed": true,
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Set Value",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/comm/espnow/wakeUpMode",
+                          "controlAddress": "/target"
+                        },
+                        {
+                          "value": "All",
+                          "controlAddress": "/component"
+                        },
+                        {
+                          "value": "Equals",
+                          "controlAddress": "/operator"
+                        },
+                        {
+                          "value": true,
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 1",
+                    "editorIsCollapsed": true,
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Set Value",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/comm/espnow/wakeUpMode",
+                          "controlAddress": "/target"
+                        },
+                        {
+                          "value": "All",
+                          "controlAddress": "/component"
+                        },
+                        {
+                          "value": "Equals",
+                          "controlAddress": "/operator"
+                        },
+                        {
+                          "value": false,
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "parameters": [
+                {
+                  "value": [
+                    0.3884627521038055,
+                    0.2025999873876572,
+                    0.1090666651725769,
+                    1.0
+                  ],
+                  "controlAddress": "/color"
+                }
+              ],
+              "niceName": "Shutdown all",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/root/shutdown",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            }
+          ],
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        }
+      },
+      {
+        "parameters": [
+          {
+            "value": [
+              -275.0,
+              0.0
+            ],
+            "controlAddress": "/viewUIPosition"
+          },
+          {
+            "value": [
+              276.0,
+              204.0
+            ],
+            "controlAddress": "/viewUISize"
+          },
+          {
+            "value": true,
+            "controlAddress": "/active"
+          }
+        ],
+        "niceName": "Node Serial Control",
+        "type": "State",
+        "processors": {
+          "items": [
+            {
+              "niceName": "Restart",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "settings.save\nroot.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Standby",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "root.standby",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Reset Prefs",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "settings.clear\nwifi.ssid BenTo\nwifi.pass konamicode\nsettings.save\nroot.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -1680,8 +3644,8 @@
       }
     ],
     "viewOffset": [
-      0,
-      0
+      -88,
+      3
     ],
     "viewZoom": 1.0,
     "transitions": {
@@ -1695,13 +3659,263 @@
     "comments": {
       "hideInEditor": true,
       "viewOffset": [
-        0,
-        0
+        -88,
+        3
       ],
       "viewZoom": 1.0
     }
   },
   "sequences": {
+    "items": [
+      {
+        "parameters": [
+          {
+            "value": true,
+            "controlAddress": "/enabled"
+          },
+          {
+            "value": 1.399999743652391,
+            "controlAddress": "/totalTime"
+          },
+          {
+            "value": 0.3999999165534973,
+            "controlAddress": "/playSpeed"
+          },
+          {
+            "value": true,
+            "controlAddress": "/loop"
+          },
+          {
+            "value": 1.399999737739563,
+            "controlAddress": "/viewEndTime"
+          },
+          {
+            "value": "",
+            "controlAddress": "/ltcSyncModule",
+            "enabled": false
+          }
+        ],
+        "niceName": "Sequence",
+        "type": "Sequence",
+        "layers": {
+          "hideInEditor": true,
+          "items": [
+            {
+              "parameters": [
+                {
+                  "value": true,
+                  "controlAddress": "/enabled"
+                },
+                {
+                  "value": 60.0,
+                  "controlAddress": "/listSize"
+                }
+              ],
+              "niceName": "Color",
+              "containers": {
+                "mapping": {
+                  "niceName": "Mapping",
+                  "type": "Mapping",
+                  "im": {
+                    "hideInEditor": true,
+                    "items": [
+                      {
+                        "parameters": [
+                          {
+                            "value": "",
+                            "controlAddress": "/inputValue"
+                          }
+                        ],
+                        "niceName": "Input Value",
+                        "type": "Input Value"
+                      }
+                    ],
+                    "viewOffset": [
+                      0,
+                      0
+                    ],
+                    "viewZoom": 1.0
+                  },
+                  "params": {
+                    "parameters": [
+                      {
+                        "value": 50,
+                        "hexMode": false,
+                        "controlAddress": "/updateRate"
+                      }
+                    ],
+                    "editorIsCollapsed": true
+                  },
+                  "filters": {
+                    "items": [
+                      {
+                        "niceName": "HSV Adjust",
+                        "type": "HSV Adjust",
+                        "filterParams": {
+                          "parameters": [
+                            {
+                              "value": -0.4778760671615601,
+                              "controlAddress": "/brightness"
+                            }
+                          ],
+                          "paramLinks": {
+                          }
+                        }
+                      }
+                    ],
+                    "viewOffset": [
+                      0,
+                      0
+                    ],
+                    "viewZoom": 1.0
+                  },
+                  "outputs": {
+                    "items": [
+                      {
+                        "niceName": "MappingOutput",
+                        "type": "BaseItem",
+                        "commandModule": "customVariables",
+                        "commandPath": "",
+                        "commandType": "Set Value",
+                        "command": {
+                          "parameters": [
+                            {
+                              "value": "/group/sendColor",
+                              "controlAddress": "/target"
+                            },
+                            {
+                              "value": "All",
+                              "controlAddress": "/component"
+                            },
+                            {
+                              "value": "Equals",
+                              "controlAddress": "/operator"
+                            }
+                          ],
+                          "paramLinks": {
+                            "value": {
+                              "linkType": 1,
+                              "mappingValueIndex": 0
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "viewOffset": [
+                      0,
+                      0
+                    ],
+                    "viewZoom": 1.0
+                  }
+                },
+                "colors": {
+                  "editorIsCollapsed": true,
+                  "hideInEditor": true,
+                  "items": [
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.06862745434045792,
+                          "controlAddress": "/time"
+                        },
+                        {
+                          "value": [
+                            0.8466823697090149,
+                            1.0,
+                            0.1692313700914383,
+                            1.0
+                          ],
+                          "controlAddress": "/color"
+                        }
+                      ],
+                      "niceName": "Color 4",
+                      "type": "GradientColor"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.4392157196998596,
+                          "controlAddress": "/time"
+                        },
+                        {
+                          "value": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/color"
+                        }
+                      ],
+                      "niceName": "Color 1",
+                      "type": "GradientColor"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.9046568274497986,
+                          "controlAddress": "/time"
+                        },
+                        {
+                          "value": [
+                            0.1346156895160675,
+                            0.2088980376720428,
+                            1.0,
+                            1.0
+                          ],
+                          "controlAddress": "/color"
+                        }
+                      ],
+                      "niceName": "Color 2",
+                      "type": "GradientColor"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 1.299999952316284,
+                          "controlAddress": "/time"
+                        },
+                        {
+                          "value": [
+                            0.8466823697090149,
+                            1.0,
+                            0.1692313700914383,
+                            1.0
+                          ],
+                          "controlAddress": "/color"
+                        }
+                      ],
+                      "niceName": "Color 3",
+                      "type": "GradientColor"
+                    }
+                  ],
+                  "viewOffset": [
+                    0,
+                    0
+                  ],
+                  "viewZoom": 1.0
+                }
+              },
+              "type": "Color"
+            }
+          ],
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "cues": {
+          "hideInEditor": true,
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "editing": true
+      }
+    ],
     "viewOffset": [
       0,
       0

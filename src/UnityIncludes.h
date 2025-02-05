@@ -132,6 +132,10 @@
 #include "Component/components/motion/MotionComponent.h"
 #endif
 
+#if defined USE_STREAMING
+#include "Component/components/ledstream/LedStreamReceiver.h"
+#endif
+
 #ifdef USE_LEDSTRIP
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_DotStar.h>
@@ -148,10 +152,6 @@
 #include "Component/components/ledstrip/FXComponent.h"
 #include "Component/components/ledstrip/LedStripComponent.h"
 #endif // LEDSTRIP
-
-#if (defined USE_STREAMING) && (defined USE_LEDSTRIP || (defined USE_ESPNOW && defined ESPNOW_BRIDGE))
-#include "Component/components/ledstrip/LedStreamReceiver.h"
-#endif
 
 #ifdef USE_PWMLED
 #include "Component/components/pwmled/PWMLedComponent.h"

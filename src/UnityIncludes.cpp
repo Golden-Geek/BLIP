@@ -4,9 +4,10 @@
 #include "Common/Settings.cpp"
 #include "Common/StringHelpers.cpp"
 
+
+
 #include "Component/ComponentEvent.cpp"
 #include "Component/Component.cpp"
-
 
 #include "Component/components/settings/SettingsComponent.cpp"
 
@@ -65,6 +66,10 @@
 #include "Component/components/motion/MotionComponent.cpp"
 #endif
 
+#if defined USE_STREAMING
+#include "Component/components/ledstream/LedStreamReceiver.cpp"
+#endif
+
 #ifdef USE_LEDSTRIP
 #include "Component/components/ledstrip/Layer/LedStripLayer.cpp"
 #include "Component/components/ledstrip/Layer/layers/playback/LedStripPlaybackLayer.cpp"
@@ -76,10 +81,6 @@
 #include "Component/components/ledstrip/FXComponent.cpp"
 
 #include "Component/components/ledstrip/LedStripComponent.cpp"
-#endif
-
-#if (defined USE_STREAMING) && (defined USE_LEDSTRIP || (defined USE_ESPNOW && defined ESPNOW_BRIDGE))
-#include "Component/components/ledstrip/LedStreamReceiver.cpp"
 #endif
 
 #ifdef USE_PWMLED

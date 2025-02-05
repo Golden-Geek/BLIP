@@ -7,6 +7,10 @@
 #endif
 #endif
 
+#ifndef TESTMODE_PRESSCOUNT
+#define TESTMODE_PRESSCOUNT -1
+#endif
+
 ImplementSingleton(RootComponent);
 
 bool RootComponent::availablePWMChannels[16] = {true};
@@ -21,11 +25,61 @@ void RootComponent::setupInternal(JsonObject)
     timeAtStart = millis();
     timeAtShutdown = 0;
 
+#ifdef USE_POWER
+    if (settings.wakeUpButton > 0)
+#if POWER_EXT == 0
+        esp_sleep_enable_ext0_wakeup((gpio_num_t)settings.wakeUpButton, settings.wakeUpState);
+#else
+        esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
+#endif
+
     // parameters.clear(); // remove enabled in root component
     Settings::loadSettings();
     JsonObject o = Settings::settings.as<JsonObject>();
 
     AddOwnedComponent(&comm);
+
+#ifndef ESPNOW_BRIDGE
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER)
+    {
+        remoteWakeUpMode = true;
+    }
+
+    if (remoteWakeUpMode)
+    {
+        // pinMode(18, OUTPUT);
+        // digitalWrite(18, HIGH);
+
+        comm.init();
+
+        DBG("Waiting for wake up " + String(millis() - timeAtStart));
+        while (!comm.espNow.wakeUpReceived)
+        {
+            comm.update();
+
+            if ((millis() - timeAtStart) > 200)
+            {
+                // pinMode(18, OUTPUT);
+                // digitalWrite(18, LOW);
+                DBG("No wake up received");
+                standby();
+                return;
+            }
+        }
+
+        DBG("Wake up received");
+        // pinMode(19, OUTPUT);
+        // digitalWrite(19, HIGH);
+        // delay(100);
+        // digitalWrite(19, LOW);
+        // delay(100);
+        // digitalWrite(19, HIGH);
+        // delay(100);
+        // digitalWrite(19, LOW);
+        ESP.restart();
+    }
+#endif
+
     AddOwnedComponent(&settings);
 
 #ifdef USE_WIFI
@@ -108,13 +162,6 @@ void RootComponent::updateInternal()
     timer.tick();
 }
 
-void RootComponent::restart()
-{
-    clear();
-    delay(500);
-    ESP.restart();
-}
-
 void RootComponent::shutdown()
 {
     NDBG("Sleep now, baby.");
@@ -123,25 +170,33 @@ void RootComponent::shutdown()
              {  RootComponent::instance->powerdown(); return false; });
 }
 
+void RootComponent::restart()
+{
+    clear();
+    delay(200);
+    ESP.restart();
+}
+
+void RootComponent::standby()
+{
+    DBG("Standby !");
+    clear();
+    esp_sleep_enable_timer_wakeup(3 * 1000000); // Set wakeup timer for 3 seconds
+    esp_deep_sleep_start();
+}
+
 void RootComponent::powerdown()
 {
     clear();
 
     // NDBG("Sleep now, baby.");
 
-    delay(500);
+    delay(200);
 
-#ifdef USE_POWER
-    if (settings.wakeUpButton > 0)
-#if POWER_EXT == 0
-        esp_sleep_enable_ext0_wakeup((gpio_num_t)settings.wakeUpButton, settings.wakeUpState);
-#else
-        esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
-#endif
-        // #elif defined TOUCH_WAKEUP_PIN
-        //     touchAttachInterrupt((gpio_num_t)TOUCH_WAKEUP_PIN, touchCallback, 110);
-        //     esp_sleep_enable_touchpad_wakeup();
-        // #endif
+    // #elif defined TOUCH_WAKEUP_PIN
+    //     touchAttachInterrupt((gpio_num_t)TOUCH_WAKEUP_PIN, touchCallback, 110);
+    //     esp_sleep_enable_touchpad_wakeup();
+    // #endif
 #endif
 
 #ifdef ESP8266
@@ -247,11 +302,27 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
         }
         else if (param == &bc->multiPressCount)
         {
-            if (bc->multiPressCount == 2)
+            if (bc->multiPressCount == TESTMODE_PRESSCOUNT)
             {
                 NDBG("Toggle testing mode");
                 testMode = !testMode;
             }
+
+#ifdef USE_ESPNOW
+#ifndef ESPNOW_BRIDGE
+            if (bc->multiPressCount == ESPNOW_PAIRING_PRESSCOUNT)
+            {
+                SetParam(comm.espNow.pairingMode, !comm.espNow.pairingMode);
+            }
+            else if (bc->multiPressCount == ESPNOW_ENABLED_PRESSCOUNT)
+            {
+                comm.espNow.toggleEnabled();
+                DBG("Set espNow enabled " + String(comm.espNow.enabled));
+                settings.saveSettings();
+                restart();
+            }
+#endif
+#endif
         }
     }
 #endif

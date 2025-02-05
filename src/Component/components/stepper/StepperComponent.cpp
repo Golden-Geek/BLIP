@@ -33,7 +33,7 @@ bool StepperComponent::initInternal()
             if (enPin > -1)
             {
                 NDBG("Set enable pin " + String(enPin));
-                delay(500);
+                delay(200);
                 stepper->setEnablePin(enPin);
                 stepper->enableOutputs();
                 // stepper->setAutoEnable(true);

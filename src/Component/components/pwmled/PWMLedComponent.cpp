@@ -1,5 +1,5 @@
 #include "UnityIncludes.h"
-#include "PWMLedComponent.h"
+
 ImplementManagerSingleton(PWMLed);
 
 void PWMLedComponent::setupInternal(JsonObject o)
@@ -8,9 +8,15 @@ void PWMLedComponent::setupInternal(JsonObject o)
     AddIntParamConfig(gPin);
     AddIntParamConfig(bPin);
     AddIntParamConfig(wPin);
-    AddIntParamConfig(whiteTemperature);
+    // AddIntParamConfig(whiteTemperature);
     AddBoolParamConfig(useAlpha);
+    AddBoolParamConfig(rgbwMode);
     AddColorParam(color);
+
+#ifdef PWMLED_USE_STREAMING
+    AddIntParamConfig(universe);
+    AddIntParamConfig(startChannel);
+#endif
 }
 
 bool PWMLedComponent::initInternal()
@@ -19,15 +25,26 @@ bool PWMLedComponent::initInternal()
     updatePins();
 
 #ifdef PWMLED_SHOW_INIT
+
+    float r = 0;
+    float g = .1f;
+    float b = .1f;
+
+#ifdef USE_ESPNOW
+    if (ESPNowComponent::instance->enabled)
+    {
+        r = .1f;
+        g = 0;
+        b = .1f;
+    }
+#endif
+
     for (int i = 0; i < 100; i++)
     {
-        float r = 0;
-        float g = 1;
-        float b = 1;
         // fade in out in 100 sine
-        float a = sin(i / 100.0 * 2 * PI);
+        float a = (cos(PI + i * PI * 2 / 100.0) + .5f) * .5f;
         setColor(r, g, b, a);
-        delay(10);
+        delay(5);
     }
 #endif
 
@@ -37,44 +54,64 @@ bool PWMLedComponent::initInternal()
 void PWMLedComponent::updateInternal()
 {
 
+    bool espNowMode = false;
+#ifdef USE_ESPNOW
+    espNowMode = ESPNowComponent::instance->enabled;
+#endif
+
 #ifdef PWMLED_SHOW_CONNECTION
 #ifdef USE_WIFI
+    if (espNowMode)
+    {
 #ifdef USE_ESPNOW
-    if (ESPNowComponent::instance->pairingMode != prevPairingMode)
-    {
-        if (ESPNowComponent::instance->pairingMode)
-            setColor(0, 1, 1, 1);
-        else
-            setColor(0, 0, 0, 1);
-
-        prevPairingMode = ESPNowComponent::instance->pairingMode;
-        return;
-    }
-#else
-    if (WifiComponent::instance->state != prevState)
-    {
-        switch (WifiComponent::instance->state)
+        if (ESPNowComponent::instance->enabled)
         {
-        case WifiComponent::Connected:
-            setColor(0, 0, 0, 1);
-            break;
+            if (ESPNowComponent::instance->pairingMode)
+            {
+                setColor(.1f, 0, .1f, (sin(millis() / 300.0) + .5f) * .1f + .1f);
+                prevPairingMode = true;
+                return;
+            }
 
-        case WifiComponent::Connecting:
-            setColor(0, 1, 1, 1);
-            break;
-        case WifiComponent::ConnectionError:
-            setColor(1, 0, 0, 1);
-            break;
-
-        default:
-            setColor(1, 0, 1, 1);
-            break;
+            if (ESPNowComponent::instance->pairingMode != prevPairingMode)
+            {
+                if (!ESPNowComponent::instance->pairingMode)
+                {
+                    setColor(0, 0, 0, 1);
+                    prevPairingMode = false;
+                }
+            }
         }
-
-        prevState = WifiComponent::instance->state;
-        return;
-    }
 #endif
+    }
+    else
+    {
+        if (WifiComponent::instance->state != prevState)
+        {
+            switch (WifiComponent::instance->state)
+            {
+            case WifiComponent::Connected:
+                setColor(.02f, .1f, 0, 1);
+                delay(100);
+                setColor(0, 0, 0, 1);
+                break;
+
+            case WifiComponent::Connecting:
+                setColor(0, .05f, .05f, 1);
+                break;
+            case WifiComponent::ConnectionError:
+                setColor(.05f, 0, 0, 1);
+                break;
+
+            default:
+                setColor(.05f, 0, .05f, 1);
+                break;
+            }
+
+            prevState = WifiComponent::instance->state;
+            return;
+        }
+    }
 #endif
 #endif
 
@@ -108,6 +145,7 @@ void PWMLedComponent::setupPins()
             continue;
 
 #ifdef ARDUINO_NEW_VERSION
+        // NDBG("Setting up pin " + String(pins[i]));
         ledcAttach(pins[i], 5000, 10); // pwmChannels[i]);
 #else
         pwmChannels[i] = RootComponent::instance->getFirstAvailablePWMChannel();
@@ -131,7 +169,7 @@ void PWMLedComponent::updatePins()
     float tb = b;
     float tw = 0;
 
-    if (wPin != -1)
+    if (wPin != -1 && rgbwMode)
     {
         RGBToRGBW(r, g, b, tr, tg, tb, tw);
     }
@@ -175,43 +213,45 @@ void PWMLedComponent::setColor(float r, float g, float b, float a, bool show)
 
 void PWMLedComponent::RGBToRGBW(float r, float g, float b, float &rOut, float &gOut, float &bOut, float &wOut)
 {
-    float temperatureColor[3];
-    // Calculate temperature color based on whiteTemperature
-    float t = (10000.0f / whiteTemperature);
-    float t2 = t * t;
-    float t3 = t2 * t;
+    // Define the approximate RGB equivalent of your white LED
+    const float warmWhiteR = 255.0f;
+    const float warmWhiteG = 88.0f;
+    const float warmWhiteB = 0.0f;
 
-    if (whiteTemperature <= 6500)
+    // Normalize the white LED RGB components
+    float wFactorR = warmWhiteR / 255.0f;
+    float wFactorG = warmWhiteG / 255.0f;
+    float wFactorB = warmWhiteB / 255.0f;
+
+    // Compute the white component as the minimum of the color scaled to match the warm white LED
+    float wRed = r / wFactorR;
+    float wGreen = g / wFactorG;
+    float wBlue = b / wFactorB;
+
+    // Find the smallest contribution
+    float wMin = std::min({wRed, wGreen, wBlue});
+    wOut = std::max(0.0f, wMin);
+
+    // Subtract the white component from the original RGB values
+    rOut = r - (wOut * wFactorR);
+    gOut = g - (wOut * wFactorG);
+    bOut = b - (wOut * wFactorB);
+}
+
+void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t len)
+{
+    int count = len / (useAlpha ? 4 : 3);
+    int maxCount = useAlpha? 128 : 170;
+    int start = (dmxUniverse - universe) * maxCount - (startChannel -1);
+
+    int iStart = start < 0 ? -start : 0;
+    if (iStart < count)
     {
-        temperatureColor[0] = 1.0f;
-        temperatureColor[1] = 0.39008157876901960784f * log(whiteTemperature) - 0.63184144378862745098f;
-        temperatureColor[2] = 0.54320678911019607843f * log(whiteTemperature) - 1.19625408914f;
+        float r = data[iStart * (useAlpha ? 4 : 3)] / 255.0f;
+        float g = data[iStart * (useAlpha ? 4 : 3) + 1] / 255.0f;
+        float b = data[iStart * (useAlpha ? 4 : 3) + 2] / 255.0f;
+        float a = useAlpha ? data[iStart * 4 + 3] / 255.0f : 1.0f;
+
+        setColor(r, g, b, a, true);
     }
-    else
-    {
-        temperatureColor[0] = 1.29293618606274509804f * pow(whiteTemperature - 6000, -0.1332047592f);
-        temperatureColor[1] = 1.12989086089529411765f * pow(whiteTemperature - 6000, -0.0755148492f);
-        temperatureColor[2] = 1.0f;
-    }
-
-    // Calculate all of the color's white values corrected taking into account the white color temperature.
-    float wRed = r / temperatureColor[0];
-    float wGreen = g / temperatureColor[1];
-    float wBlue = b / temperatureColor[2];
-
-    // Determine the smallest white value from above.
-    float wMin = std::min(wRed, std::min(wGreen, wBlue));
-
-    // Make the color with the smallest white value to be the output white value
-    if (wMin == wRed)
-        wOut = r;
-    else if (wMin == wGreen)
-        wOut = g;
-    else
-        wOut = b;
-
-    // Calculate the output red, green and blue values, taking into account the white color temperature.
-    rOut = r - wOut * temperatureColor[0];
-    gOut = g - wOut * temperatureColor[1];
-    bOut = b - wOut * temperatureColor[2];
 }
