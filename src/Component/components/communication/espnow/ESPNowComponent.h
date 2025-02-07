@@ -1,17 +1,15 @@
 #pragma once
 
-#define ESPNOW_MAX_STREAM_RECEIVERS 5
 
 #define ESPNOW_MAX_DEVICES 20
-
-
+#define ESPNOW_MAX_STREAM_RECEIVERS 10 //How many components can listen here
 
 #ifndef ESPNOW_PAIRING_PRESSCOUNT
 #define ESPNOW_PAIRING_PRESSCOUNT -1
 #endif
 
 #ifndef ESPNOW_ENABLE_PRESSCOUNT
-#define ESPNOW_PAIRING_PRESSCOUNT -1
+#define ESPNOW_ENABLE_PRESSCOUNT -1
 #endif
 
 DeclareComponentSingleton(ESPNow, "espnow", LedStreamListenerDerive)
@@ -104,11 +102,11 @@ bool bridgeInit = false;
 uint8_t bridgeMac[6] = {0, 0, 0, 0, 0, 0};
 #endif
 
-DeclareIntParam(enableMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT)
-    DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT)
+DeclareIntParam(enableMultiPressCount, ESPNOW_ENABLE_PRESSCOUNT);
+DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT);
 
 #ifdef ESPNOW_BRIDGE
-        const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #endif
 
 long lastReceiveTime;

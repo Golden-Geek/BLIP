@@ -3,11 +3,21 @@
 #ifdef ESP32
 
 #ifdef USE_ETHERNET
-
-#define ETH_CLK_MODE ETH_CLOCK_GPIO17_OUT
-#define ETH_PHY_POWER 12
+// #define ETH_CLK_MODE ETH_CLOCK_GPIO17_OUT
+// #define ETH_PHY_POWER 12
 
 #include <ETH.h>
+#ifdef ETHERNET_CHIP_W5500
+#include <SPI.h>
+#define ETH_PHY_TYPE ETH_PHY_W5500
+#define ETH_PHY_ADDR 1
+#define ETH_PHY_CS 15
+#define ETH_PHY_IRQ 4
+#define ETH_PHY_RST 5
+#define ETH_SPI_SCK 14
+#define ETH_SPI_MISO 12
+#define ETH_SPI_MOSI 13
+#endif
 #endif
 
 #include <WiFi.h>

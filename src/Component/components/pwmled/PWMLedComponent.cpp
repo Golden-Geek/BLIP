@@ -8,7 +8,8 @@ void PWMLedComponent::setupInternal(JsonObject o)
     AddIntParamConfig(gPin);
     AddIntParamConfig(bPin);
     AddIntParamConfig(wPin);
-    // AddIntParamConfig(whiteTemperature);
+    AddIntParamConfig(pwmResolution);
+    AddIntParamConfig(pwmFrequency);
     AddBoolParamConfig(useAlpha);
     AddBoolParamConfig(rgbwMode);
     AddColorParam(color);
@@ -16,14 +17,12 @@ void PWMLedComponent::setupInternal(JsonObject o)
 #ifdef PWMLED_USE_STREAMING
     AddIntParamConfig(universe);
     AddIntParamConfig(ledIndex);
+    AddBoolParamConfig(use16bit);
 #endif
 }
 
 bool PWMLedComponent::initInternal()
 {
-#ifdef USE_STREAMING
-    LedStreamReceiverComponent::instance->registerStreamListener(this);
-#endif
 
     setupPins();
     updatePins();
@@ -50,6 +49,10 @@ bool PWMLedComponent::initInternal()
         setColor(r, g, b, a);
         delay(5);
     }
+#endif
+
+#ifdef USE_STREAMING
+    LedStreamReceiverComponent::instance->registerStreamListener(this);
 #endif
 
     return true;
@@ -147,19 +150,31 @@ void PWMLedComponent::clearInternal()
 
 void PWMLedComponent::setupPins()
 {
+    // NDBG("Setting up pin " + String(pins[i]));
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (attachedPins[i] != -1)
+#ifdef ARDUINO_NEW_VERSION
+            ledcDetach(attachedPins[i]);
+#endif
+    }
+
     const int pins[4]{rPin, gPin, bPin, wPin};
     for (int i = 0; i < 4; i++)
     {
+        attachedPins[i] = pins[i];
+
         if (pins[i] == -1)
             continue;
 
 #ifdef ARDUINO_NEW_VERSION
-        // NDBG("Setting up pin " + String(pins[i]));
-        ledcAttach(pins[i], 5000, 10); // pwmChannels[i]);
+        // NDBG("Setting up pin " + String(pins[i])+ " with frequency " + String(pwmFrequency * 1000) + " and resolution " + String(pwmResolution));
+        ledcAttach(pins[i], pwmFrequency * 1000, pwmResolution); // pwmChannels[i]);
 #else
         pwmChannels[i] = RootComponent::instance->getFirstAvailablePWMChannel();
-        ledcSetup(pwmChannels[i], 5000, 10);    // 0-1024 at a 5khz resolution
-        ledcAttachPin(pins[i], pwmChannels[i]); // pwmChannels[i]);
+        ledcSetup(pwmChannels[i], pwmFrequency * 1000, pwmResolution); // 0-1024 at a 5khz resolution
+        ledcAttachPin(pins[i], pwmChannels[i]);                        // pwmChannels[i]);
         RootComponent::availablePWMChannels[pwmChannels[i]] = false;
 #endif
     }
@@ -167,11 +182,10 @@ void PWMLedComponent::setupPins()
 
 void PWMLedComponent::updatePins()
 {
-    float alpha = useAlpha ? color[3] : 1;
-
     float r = color[0];
     float g = color[1];
     float b = color[2];
+    float alpha = color[3];
 
     float tr = r;
     float tg = g;
@@ -186,15 +200,16 @@ void PWMLedComponent::updatePins()
     const int pins[4]{rPin, gPin, bPin, wPin};
     const float cols[4]{tr, tg, tb, tw};
 
+    float multiplier = pow(2, pwmResolution) * alpha;
     for (int i = 0; i < 4; i++)
     {
         if (pins[i] == -1)
             continue;
 
 #ifdef ARDUINO_NEW_VERSION
-        ledcWrite(pins[i], cols[i] * 1024 * alpha);
+        ledcWrite(pins[i], cols[i] * multiplier);
 #else
-        ledcWrite(pwmChannels[i], cols[i] * 1024 * alpha);
+        ledcWrite(pwmChannels[i], cols[i] * multiplier);
 #endif
     }
 }
@@ -202,12 +217,10 @@ void PWMLedComponent::updatePins()
 void PWMLedComponent::paramValueChangedInternal(void *param)
 {
 
-    // DBG("Param changed " + getParamString(param));
-
-    // if (param == &color)
-    // {
-    //     DBG("Color changed : " + getParamString(param));
-    // }
+    if (param == &rPin || param == &gPin || param == &bPin || param == &wPin || param == &pwmResolution || param == &pwmFrequency)
+    {
+        setupPins();
+    }
 }
 
 void PWMLedComponent::setColor(float r, float g, float b, float a, bool show)
@@ -249,23 +262,41 @@ void PWMLedComponent::RGBToRGBW(float r, float g, float b, float &rOut, float &g
 
 void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t len)
 {
-    if(RootComponent::instance->isShuttingDown() || !RootComponent::instance->isInit)
+    if (!isInit || RootComponent::instance->isShuttingDown() || !RootComponent::instance->isInit)
         return;
 
     // NDBG("Received stream data for universe " + String(dmxUniverse) + " with " + String(len) + " bytes");
 
-    int count = len / (useAlpha ? 4 : 3);
+    int numChannels = useAlpha ? 4 : 3;
+    if (use16bit)
+        numChannels *= 2;
+
+    int count = len / numChannels;
     int maxCount = useAlpha ? 128 : 170;
-    int start = (dmxUniverse - universe) * maxCount - ledIndex;
+    int start = (dmxUniverse - universe) * maxCount + ledIndex;
+    int index = start * numChannels;
 
-    int iStart = start < 0 ? -start : 0;
-    if (iStart < count)
+    // NDBG("Received stream data with " + String(len) + " bytes, start = " + String(start) + " index = " + String(index));
+    if (index >= 0 && index + numChannels <= len)
     {
-        float r = data[iStart * (useAlpha ? 4 : 3)] / 255.0f;
-        float g = data[iStart * (useAlpha ? 4 : 3) + 1] / 255.0f;
-        float b = data[iStart * (useAlpha ? 4 : 3) + 2] / 255.0f;
-        float a = useAlpha ? data[iStart * 4 + 3] / 255.0f : 1.0f;
+        if (use16bit)
+        {
+            // r, r-fine, g, g-fine, b, b-fine, a, a-fine
+            float r = (data[index] << 8 | data[index + 1]) / 65535.0f;
+            float g = (data[index + 2] << 8 | data[index + 3]) / 65535.0f;
+            float b = (data[index + 4] << 8 | data[index + 5]) / 65535.0f;
+            float a = useAlpha ? (data[index + 6] << 8 | data[index + 7]) / 65535.0f : 1.0f;
 
-        setColor(r, g, b, a, true);
+            setColor(r, g, b, a, true);
+        }
+        else
+        {
+            float r = data[index] / 255.0f;
+            float g = data[index + 1] / 255.0f;
+            float b = data[index + 2] / 255.0f;
+            float a = useAlpha ? data[index + 3] / 255.0f : 1.0f;
+
+            setColor(r, g, b, a, true);
+        }
     }
 }

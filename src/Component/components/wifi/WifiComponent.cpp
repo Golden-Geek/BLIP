@@ -13,7 +13,7 @@ ImplementSingleton(WifiComponent)
 
 #ifdef USE_ETHERNET
     AddIntParamConfig(mode);
-    WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
+    Network.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
 #endif
 
     AddStringParamConfig(ssid);
@@ -190,7 +190,13 @@ void WifiComponent::connect()
     if (mode == MODE_ETH || mode == MODE_ETH_STA)
     {
         NDBG("Connecting to ethernet...");
+#ifdef ETHERNET_CHIP_W5500
+        NDBG("Chip is W5500");
+        SPI.begin(ETH_SPI_SCK, ETH_SPI_MISO, ETH_SPI_MOSI);
+        ETH.begin(ETH_PHY_TYPE, ETH_PHY_ADDR, ETH_PHY_CS, ETH_PHY_IRQ, ETH_PHY_RST, SPI);
+#else
         ETH.begin();
+#endif
     }
 #endif
 

@@ -203,7 +203,7 @@ OSCMessage OSCComponent::createMessage(const String &source, const String &comma
             break;
 
         case 'i':
-            msg.add((int32_t)data[i].intValue());
+            msg.add(data[i].intValue());
             break;
 
         case 's':

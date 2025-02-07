@@ -132,9 +132,13 @@
 #define DeclareP3DParam(name, val1, val2, val3) float name[3]{val1, val2, val3};
 #define DeclareColorParam(name, r, g, b, a) float name[4]{r, b, g, a};
 
-#define AddParamWithTag(type, class, param, tag) \
-    addParam(&param, ParamType::type, tag);      \
-    SetParam(param, Settings::getVal<class>(o, #param, param));
+#define AddParamWithTag(type, class, param, tag)              \
+    addParam(&param, ParamType::type, tag);                   \
+    {                                                         \
+        var pData[1];                                         \
+        pData[0] = Settings::getVal<class>(o, #param, param); \
+        setParam(&param, pData, 1, false);                    \
+    }
 
 #define AddMultiParamWithTag(type, class, param, tag, numData) \
     {                                                          \
@@ -148,7 +152,7 @@
             dataV[1] = vArr[1].as<class>();                    \
             if (numData > 2)                                   \
                 dataV[2] = vArr[2].as<class>();                \
-            setParam(param, dataV, numData);                   \
+            setParam(param, dataV, numData, false);            \
         }                                                      \
     }
 

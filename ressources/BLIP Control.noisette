@@ -19,6 +19,12 @@
     }
   },
   "dashboardManager": {
+    "parameters": [
+      {
+        "value": false,
+        "controlAddress": "/editMode"
+      }
+    ],
     "viewOffset": [
       0,
       0
@@ -35,32 +41,32 @@
   "layout": {
     "mainLayout": {
       "type": 1,
-      "width": 2048,
-      "height": 1189,
+      "width": 1920,
+      "height": 1037,
       "direction": 2,
       "shifters": [
         {
           "type": 1,
-          "width": 2048,
-          "height": 1189,
+          "width": 1920,
+          "height": 1037,
           "direction": 2,
           "shifters": [
             {
               "type": 1,
-              "width": 2048,
-              "height": 753,
+              "width": 1920,
+              "height": 677,
               "direction": 1,
               "shifters": [
                 {
                   "type": 1,
                   "width": 307,
-                  "height": 753,
+                  "height": 677,
                   "direction": 2,
                   "shifters": [
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 384,
+                      "height": 347,
                       "currentContent": "Modules",
                       "tabs": [
                         {
@@ -71,7 +77,7 @@
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 363,
+                      "height": 324,
                       "currentContent": "Custom Variables",
                       "tabs": [
                         {
@@ -83,8 +89,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1213,
-                  "height": 753,
+                  "width": 1085,
+                  "height": 677,
                   "currentContent": "State Machine",
                   "tabs": [
                     {
@@ -104,7 +110,7 @@
                 {
                   "type": 0,
                   "width": 516,
-                  "height": 753,
+                  "height": 677,
                   "currentContent": "Inspector",
                   "tabs": [
                     {
@@ -116,14 +122,14 @@
             },
             {
               "type": 1,
-              "width": 2048,
-              "height": 430,
+              "width": 1920,
+              "height": 354,
               "direction": 1,
               "shifters": [
                 {
                   "type": 0,
                   "width": 178,
-                  "height": 430,
+                  "height": 354,
                   "currentContent": "Sequences",
                   "tabs": [
                     {
@@ -133,8 +139,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1295,
-                  "height": 430,
+                  "width": 825,
+                  "height": 354,
                   "currentContent": "Sequence Editor",
                   "tabs": [
                     {
@@ -144,8 +150,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 563,
-                  "height": 430,
+                  "width": 905,
+                  "height": 354,
                   "currentContent": "Logger",
                   "tabs": [
                     {
@@ -172,12 +178,16 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
           },
           {
             "value": true,
             "controlAddress": "/logIncoming"
+          },
+          {
+            "value": false,
+            "controlAddress": "/logOutgoing"
           }
         ],
         "niceName": "Bridge",
@@ -204,7 +214,7 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "Not connected or disconnected",
+              "value": "USB-SERIAL CH340 (COM25)",
               "controlAddress": "/port"
             }
           ],
@@ -222,7 +232,7 @@
         },
         "values": {
         },
-        "portID": ""
+        "portID": "USB-SERIAL CH340 (COM25)"
       },
       {
         "parameters": [
@@ -232,6 +242,10 @@
           },
           {
             "value": false,
+            "controlAddress": "/logIncoming"
+          },
+          {
+            "value": true,
             "controlAddress": "/logOutgoing"
           }
         ],
@@ -297,7 +311,6 @@
         "values": {
           "containers": {
             "comm": {
-              "editorIsCollapsed": true,
               "containers": {
                 "serial": {
                   "editorIsCollapsed": true,
@@ -318,9 +331,17 @@
                     {
                       "value": false,
                       "controlAddress": "/wakeUpMode"
+                    },
+                    {
+                      "value": 5,
+                      "hexMode": false,
+                      "controlAddress": "/channel"
+                    },
+                    {
+                      "value": true,
+                      "controlAddress": "/broadcastMode"
                     }
                   ],
-                  "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Espnow"
                 }
@@ -329,7 +350,6 @@
               "niceName": "Comm"
             },
             "settings": {
-              "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Settings"
             },
@@ -389,6 +409,11 @@
               },
               "owned": true,
               "niceName": "Buttons"
+            },
+            "streamReceiver": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Stream Receiver"
             }
           }
         },
@@ -565,13 +590,13 @@
                     "broadcastMode": {
                       "DESCRIPTION": "Broadcast Mode",
                       "ACCESS": 3,
-                      "TYPE": "F",
+                      "TYPE": "T",
                       "FULL_PATH": "/comm/espnow/broadcastMode",
                       "TAGS": [
                         "config"
                       ],
                       "VALUE": [
-                        false
+                        true
                       ]
                     },
                     "streamTestMode": {
@@ -811,6 +836,31 @@
                   ],
                   "VALUE": [
                     true
+                  ]
+                }
+              }
+            },
+            "streamReceiver": {
+              "DESCRIPTION": "Stream Receiver",
+              "FULL_PATH": "/streamReceiver",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/streamReceiver/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "receiveRate": {
+                  "DESCRIPTION": "Receive Rate",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/streamReceiver/receiveRate",
+                  "VALUE": [
+                    60
                   ]
                 }
               }
@@ -1071,12 +1121,16 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
           },
           {
-            "value": true,
+            "value": false,
             "controlAddress": "/logIncoming"
+          },
+          {
+            "value": false,
+            "controlAddress": "/logOutgoing"
           }
         ],
         "niceName": "Node",
@@ -1103,12 +1157,13 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "Not connected or disconnected",
+              "value": "",
               "controlAddress": "/port"
             }
           ],
           "containers": {
             "pass_through": {
+              "editorIsCollapsed": true
             }
           }
         },
@@ -2237,9 +2292,9 @@
               "parameters": [
                 {
                   "value": [
-                    0.4420731067657471,
-                    0.5221239328384399,
-                    0.08835974335670471,
+                    0.1392127871513367,
+                    0.003352141240611672,
+                    0.01604676991701126,
                     1.0
                   ],
                   "controlAddress": "/sendColor",
@@ -2346,6 +2401,69 @@
                       "parameters": [
                         {
                           "value": "root.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Save and restart",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "settings.save\nroot.restart",
                           "controlAddress": "/value"
                         }
                       ],
@@ -2752,9 +2870,9 @@
                             "parameters": [
                               {
                                 "value": [
-                                  0.4420731067657471,
-                                  0.5221239328384399,
-                                  0.08835974335670471,
+                                  0.1392127871513367,
+                                  0.003352141240611672,
+                                  0.01604676991701126,
                                   1.0
                                 ],
                                 "controlAddress": "/#1"
@@ -2764,9 +2882,9 @@
                             "type": "Color",
                             "param": {
                               "value": [
-                                0.4420731067657471,
-                                0.5221239328384399,
-                                0.08835974335670471,
+                                0.1392127871513367,
+                                0.003352141240611672,
+                                0.01604676991701126,
                                 1.0
                               ],
                               "controlAddress": "/states/oscControl/processors/colorAll/outputs/mappingOutput/command/arguments/#1/#1"
@@ -3414,6 +3532,510 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "parameters": [
+                {
+                  "value": 110.0,
+                  "controlAddress": "/listSize"
+                },
+                {
+                  "value": 20,
+                  "hexMode": false,
+                  "controlAddress": "/count"
+                },
+                {
+                  "value": 4,
+                  "hexMode": false,
+                  "controlAddress": "/previewIndex"
+                }
+              ],
+              "niceName": "Multiplex",
+              "editorIsCollapsed": true,
+              "containers": {
+                "lists": {
+                  "items": [
+                    {
+                      "parameters": [
+                        {
+                          "value": [
+                            0.1959764659404755,
+                            0.553847074508667,
+                            0.4570823609828949,
+                            1.0
+                          ],
+                          "controlAddress": "/#1"
+                        },
+                        {
+                          "value": [
+                            0.2329450994729996,
+                            0.696152925491333,
+                            0.5470510125160217,
+                            1.0
+                          ],
+                          "controlAddress": "/#2"
+                        },
+                        {
+                          "value": [
+                            0.0,
+                            0.2513690888881683,
+                            0.3115372657775879,
+                            1.0
+                          ],
+                          "controlAddress": "/#3"
+                        },
+                        {
+                          "value": [
+                            0.8769215941429138,
+                            0.7386274933815002,
+                            0.7564548850059509,
+                            1.0
+                          ],
+                          "controlAddress": "/#4"
+                        },
+                        {
+                          "value": [
+                            0.255176454782486,
+                            0.480768620967865,
+                            0.3732980489730835,
+                            1.0
+                          ],
+                          "controlAddress": "/#5"
+                        },
+                        {
+                          "value": [
+                            0.4115372598171234,
+                            0.2627490162849426,
+                            0.2627490162849426,
+                            1.0
+                          ],
+                          "controlAddress": "/#6"
+                        }
+                      ],
+                      "niceName": "Color List",
+                      "type": "Color",
+                      "listSize": 20
+                    }
+                  ],
+                  "viewOffset": [
+                    0,
+                    0
+                  ],
+                  "viewZoom": 1.0
+                },
+                "processors": {
+                  "hideInEditor": true,
+                  "items": [
+                    {
+                      "niceName": "Action",
+                      "editorIsCollapsed": true,
+                      "type": "Action",
+                      "conditions": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": "",
+                                "controlAddress": "/inputValue"
+                              }
+                            ],
+                            "niceName": "From Input Value",
+                            "type": "From Input Value"
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      },
+                      "consequences": {
+                        "parameters": [
+                          {
+                            "value": false,
+                            "controlAddress": "/cancelDelaysOnTrigger"
+                          }
+                        ],
+                        "items": [
+                          {
+                            "niceName": "Consequence 1",
+                            "type": "Consequence",
+                            "commandModule": "bridgeOSCQuery",
+                            "commandPath": "",
+                            "commandType": "Custom Message",
+                            "command": {
+                              "parameters": [
+                                {
+                                  "value": "/dev/{index}/pwmLed/pwmLed1/ledIndex",
+                                  "controlAddress": "/address"
+                                }
+                              ],
+                              "paramLinks": {
+                              },
+                              "argManager": {
+                                "items": [
+                                  {
+                                    "parameters": [
+                                      {
+                                        "value": 1,
+                                        "hexMode": false,
+                                        "controlAddress": "/#1"
+                                      }
+                                    ],
+                                    "niceName": "#1",
+                                    "type": "Integer",
+                                    "param": {
+                                      "value": 1,
+                                      "hexMode": false,
+                                      "controlAddress": "/states/oscControl/processors/multiplex/processors/action/consequencesTRUE/consequence1/command/arguments/#1/#1"
+                                    },
+                                    "paramLink": {
+                                      "linkType": 4
+                                    }
+                                  }
+                                ],
+                                "viewOffset": [
+                                  0,
+                                  0
+                                ],
+                                "viewZoom": 1.0
+                              },
+                              "addressWildcards": {
+                                "viewOffset": [
+                                  0,
+                                  0
+                                ],
+                                "viewZoom": 1.0
+                              }
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      },
+                      "consequencesOff": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": true,
+                          "controlAddress": "/enabled"
+                        }
+                      ],
+                      "niceName": "Color All 1",
+                      "editorIsCollapsed": true,
+                      "type": "Mapping",
+                      "im": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": "/colorList",
+                                "controlAddress": "/inputList"
+                              }
+                            ],
+                            "niceName": "Input List",
+                            "type": "Input List"
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      },
+                      "params": {
+                        "parameters": [
+                          {
+                            "value": 50,
+                            "hexMode": false,
+                            "controlAddress": "/updateRate"
+                          }
+                        ],
+                        "editorIsCollapsed": true
+                      },
+                      "filters": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      },
+                      "outputs": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": true,
+                                "controlAddress": "/enabled"
+                              }
+                            ],
+                            "niceName": "MappingOutput",
+                            "type": "BaseItem",
+                            "commandModule": "bridgeOSCQuery",
+                            "commandPath": "",
+                            "commandType": "Custom Message",
+                            "command": {
+                              "parameters": [
+                                {
+                                  "value": "/dev/{index}/pwmLed/pwmLed1/color",
+                                  "controlAddress": "/address"
+                                }
+                              ],
+                              "paramLinks": {
+                              },
+                              "argManager": {
+                                "items": [
+                                  {
+                                    "parameters": [
+                                      {
+                                        "value": [
+                                          0.4420731067657471,
+                                          0.5221239328384399,
+                                          0.08835974335670471,
+                                          1.0
+                                        ],
+                                        "controlAddress": "/#1"
+                                      }
+                                    ],
+                                    "niceName": "#1",
+                                    "type": "Color",
+                                    "param": {
+                                      "value": [
+                                        0.4420731067657471,
+                                        0.5221239328384399,
+                                        0.08835974335670471,
+                                        1.0
+                                      ],
+                                      "controlAddress": "/states/oscControl/processors/multiplex/processors/colorAll1/outputs/mappingOutput/command/arguments/#1/#1"
+                                    },
+                                    "paramLink": {
+                                      "linkType": 1,
+                                      "mappingValueIndex": 0
+                                    }
+                                  }
+                                ],
+                                "viewOffset": [
+                                  0,
+                                  0
+                                ],
+                                "viewZoom": 1.0
+                              },
+                              "addressWildcards": {
+                                "viewOffset": [
+                                  0,
+                                  0
+                                ],
+                                "viewZoom": 1.0
+                              }
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  ],
+                  "viewOffset": [
+                    0,
+                    0
+                  ],
+                  "viewZoom": 1.0
+                }
+              },
+              "type": "Multiplex"
+            },
+            {
+              "niceName": "Action",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 0.0,
+                    "controlAddress": "/delay"
+                  },
+                  {
+                    "value": 0.1000000014901161,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "stateMachine",
+                    "commandPath": "Action",
+                    "commandType": "Trigger Action",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/states/oscControl/processors/multiplex/processors/action",
+                          "controlAddress": "/target"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 1",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/settings/save",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 2",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/root/restart",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Mapping",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "niceName": "Input Boolean",
+                    "type": "Input Boolean"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Set Value",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "",
+                          "controlAddress": "/target"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -3435,7 +4057,7 @@
           {
             "value": [
               276.0,
-              204.0
+              242.0
             ],
             "controlAddress": "/viewUISize"
           },
@@ -3636,6 +4258,273 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "niceName": "Save and restart",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "settings.save\nroot.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Resolution",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": 14,
+                        "hexMode": false,
+                        "controlAddress": "/newIntParameter"
+                      }
+                    ],
+                    "niceName": "Input Integer",
+                    "type": "Input Integer"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "pwmLed.pwmLed1.pwmResolution {input:1}",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Frequency",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": 1,
+                        "hexMode": false,
+                        "controlAddress": "/newIntParameter"
+                      }
+                    ],
+                    "niceName": "Input Integer",
+                    "type": "Input Integer"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "pwmLed.pwmLed1.pwmFrequency {input:1}",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "ledIndex",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": -1,
+                        "hexMode": false,
+                        "controlAddress": "/newIntParameter"
+                      }
+                    ],
+                    "niceName": "Input Integer",
+                    "type": "Input Integer"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "pwmLed.pwmLed1.ledIndex {input:1}",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -3757,7 +4646,7 @@
                         "filterParams": {
                           "parameters": [
                             {
-                              "value": -0.4778760671615601,
+                              "value": -0.7700838446617126,
                               "controlAddress": "/brightness"
                             }
                           ],

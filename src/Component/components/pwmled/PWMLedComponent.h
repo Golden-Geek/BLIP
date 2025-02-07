@@ -16,23 +16,42 @@
 #define PWMLED_DEFAULT_WPIN -1
 #endif
 
-DeclareComponent(PWMLed, "pwmled", LedStreamListenerDerive )
+#ifndef PWMLED_DEFAULT_USE_ALPHA
+#define PWMLED_DEFAULT_USE_ALPHA false
+#endif
+
+#ifndef PWMLED_DEFAULT_RESOLUTION
+#define PWMLED_DEFAULT_RESOLUTION 10
+#endif
+
+#ifndef PWMLED_DEFAULT_FREQUENCY
+#define PWMLED_DEFAULT_FREQUENCY 5
+#endif
+
+#ifndef PWMLED_DEFAULT_16BIT_STREAM
+#define PWMLED_DEFAULT_16BIT_STREAM false
+#endif
+
+DeclareComponent(PWMLed, "pwmled", LedStreamListenerDerive)
 
     DeclareIntParam(rPin, PWMLED_DEFAULT_RPIN);
 DeclareIntParam(gPin, PWMLED_DEFAULT_GPIN);
 DeclareIntParam(bPin, PWMLED_DEFAULT_BPIN);
 DeclareIntParam(wPin, PWMLED_DEFAULT_WPIN);
-// DeclareIntParam(whiteTemperature, 4500);
-DeclareBoolParam(useAlpha, true);
+DeclareIntParam(pwmResolution, PWMLED_DEFAULT_RESOLUTION);
+DeclareIntParam(pwmFrequency, PWMLED_DEFAULT_FREQUENCY);
+DeclareBoolParam(useAlpha, PWMLED_DEFAULT_USE_ALPHA);
 DeclareBoolParam(rgbwMode, false);
 DeclareColorParam(color, 0, 0, 0, 1);
 
 #ifdef PWMLED_USE_STREAMING
 DeclareIntParam(universe, 0);
 DeclareIntParam(ledIndex, 0);
+DeclareBoolParam(use16bit, PWMLED_DEFAULT_16BIT_STREAM);
 #endif
 
 int pwmChannels[4];
+int attachedPins[4]{-1, -1, -1, -1};
 
 #ifdef USE_WIFI
 WifiComponent::ConnectionState prevState;
@@ -63,13 +82,15 @@ HandleSetParamInternalStart
 CheckAndSetParam(gPin);
 CheckAndSetParam(bPin);
 CheckAndSetParam(wPin);
-// CheckAndSetParam(whiteTemperature);
+CheckAndSetParam(pwmResolution);
+CheckAndSetParam(pwmFrequency);
 CheckAndSetParam(useAlpha);
 CheckAndSetParam(rgbwMode);
 CheckAndSetParam(color);
 #ifdef PWMLED_USE_STREAMING
 CheckAndSetParam(universe);
 CheckAndSetParam(ledIndex);
+CheckAndSetParam(use16bit);
 #endif
 HandleSetParamInternalEnd;
 
@@ -78,12 +99,14 @@ FillSettingsInternalStart
 FillSettingsParam(gPin);
 FillSettingsParam(bPin);
 FillSettingsParam(wPin);
-// FillSettingsParam(whiteTemperature);
+FillSettingsParam(pwmResolution);
+FillSettingsParam(pwmFrequency);
 FillSettingsParam(useAlpha);
 FillSettingsParam(rgbwMode);
 #ifdef PWMLED_USE_STREAMING
 FillSettingsParam(universe);
 FillSettingsParam(ledIndex);
+FillSettingsParam(use16bit);
 #endif
 FillSettingsInternalEnd
 
@@ -92,13 +115,15 @@ FillSettingsInternalEnd
 FillOSCQueryIntParam(gPin);
 FillOSCQueryIntParam(bPin);
 FillOSCQueryIntParam(wPin);
-// FillOSCQueryIntParam(whiteTemperature);
+FillOSCQueryIntParam(pwmResolution);
+FillOSCQueryIntParam(pwmFrequency);
 FillOSCQueryBoolParam(useAlpha);
 FillOSCQueryBoolParam(rgbwMode);
 FillOSCQueryColorParam(color);
 #ifdef PWMLED_USE_STREAMING
 FillOSCQueryIntParam(universe);
 FillOSCQueryIntParam(ledIndex);
+FillOSCQueryBoolParam(use16bit);
 #endif
 FillOSCQueryInternalEnd
 

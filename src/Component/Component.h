@@ -96,7 +96,7 @@ public:
     Component *getComponentWithName(const String &name);
 
     void addParam(void *param, ParamType type, ParamTag tag = TagNone);
-    void setParam(void *param, var *value, int nmData);
+    void setParam(void *param, var *value, int nmData, bool notify = true);
     ParamType getParamType(void *param) const;
     ParamTag getParamTag(void *param) const;
     String getParamString(void *param) const;

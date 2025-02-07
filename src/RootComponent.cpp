@@ -47,8 +47,6 @@ void RootComponent::setupInternal(JsonObject)
 
     if (remoteWakeUpMode)
     {
-        // pinMode(18, OUTPUT);
-        // digitalWrite(18, HIGH);
 
         comm.init();
 
@@ -59,8 +57,6 @@ void RootComponent::setupInternal(JsonObject)
 
             if ((millis() - timeAtStart) > 200)
             {
-                // pinMode(18, OUTPUT);
-                // digitalWrite(18, LOW);
                 DBG("No wake up received");
                 standby();
                 return;
@@ -68,14 +64,6 @@ void RootComponent::setupInternal(JsonObject)
         }
 
         DBG("Wake up received");
-        // pinMode(19, OUTPUT);
-        // digitalWrite(19, HIGH);
-        // delay(100);
-        // digitalWrite(19, LOW);
-        // delay(100);
-        // digitalWrite(19, HIGH);
-        // delay(100);
-        // digitalWrite(19, LOW);
         ESP.restart();
     }
 #endif
