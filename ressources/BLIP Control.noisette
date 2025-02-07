@@ -214,8 +214,21 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "USB-SERIAL CH340 (COM25)",
+              "value": "USB Serial Device (COM32)",
               "controlAddress": "/port"
+            },
+            {
+              "value": 115200,
+              "hexMode": false,
+              "controlAddress": "/baudRate"
+            },
+            {
+              "value": false,
+              "controlAddress": "/dtr"
+            },
+            {
+              "value": true,
+              "controlAddress": "/rts"
             }
           ],
           "containers": {
@@ -232,12 +245,12 @@
         },
         "values": {
         },
-        "portID": "USB-SERIAL CH340 (COM25)"
+        "portID": "USB Serial Device (COM32)"
       },
       {
         "parameters": [
           {
-            "value": true,
+            "value": false,
             "controlAddress": "/enabled"
           },
           {
@@ -265,7 +278,7 @@
               "controlAddress": "/serverName"
             },
             {
-              "value": true,
+              "value": false,
               "controlAddress": "/isConnected"
             }
           ],
@@ -277,7 +290,7 @@
                   "controlAddress": "/local"
                 },
                 {
-                  "value": "192.168.3.100",
+                  "value": "192.168.3.102",
                   "controlAddress": "/remoteHost"
                 },
                 {
@@ -318,12 +331,22 @@
                   "niceName": "Serial"
                 },
                 "osc": {
+                  "parameters": [
+                    {
+                      "value": "192.168.3.5",
+                      "controlAddress": "/remoteHost"
+                    }
+                  ],
                   "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Osc"
                 },
                 "espnow": {
                   "parameters": [
+                    {
+                      "value": true,
+                      "controlAddress": "/enabled"
+                    },
                     {
                       "value": false,
                       "controlAddress": "/pairingMode"
@@ -333,12 +356,12 @@
                       "controlAddress": "/wakeUpMode"
                     },
                     {
-                      "value": 5,
+                      "value": 1,
                       "hexMode": false,
                       "controlAddress": "/channel"
                     },
                     {
-                      "value": true,
+                      "value": false,
                       "controlAddress": "/broadcastMode"
                     }
                   ],
@@ -350,6 +373,7 @@
               "niceName": "Comm"
             },
             "settings": {
+              "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Settings"
             },
@@ -373,6 +397,11 @@
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Server"
+            },
+            "streamReceiver": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Stream Receiver"
             },
             "gpio": {
               "editorIsCollapsed": true,
@@ -400,6 +429,10 @@
                     {
                       "value": "Digital Input",
                       "controlAddress": "/mode"
+                    },
+                    {
+                      "value": 0.0,
+                      "controlAddress": "/value"
                     }
                   ],
                   "editorIsCollapsed": true,
@@ -409,11 +442,6 @@
               },
               "owned": true,
               "niceName": "Buttons"
-            },
-            "streamReceiver": {
-              "editorIsCollapsed": true,
-              "owned": true,
-              "niceName": "Stream Receiver"
             }
           }
         },
@@ -448,6 +476,97 @@
               "VALUE": [
                 false
               ]
+            },
+            "settings": {
+              "DESCRIPTION": "Settings",
+              "FULL_PATH": "/settings",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/settings/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "saveSettings": {
+                  "DESCRIPTION": "Save Settings",
+                  "ACCESS": 3,
+                  "TYPE": "I",
+                  "FULL_PATH": "/settings/saveSettings"
+                },
+                "clearSettings": {
+                  "DESCRIPTION": "Clear Settings",
+                  "ACCESS": 3,
+                  "TYPE": "I",
+                  "FULL_PATH": "/settings/clearSettings"
+                },
+                "propID": {
+                  "DESCRIPTION": "Prop ID",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/propID",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "macAddress": {
+                  "DESCRIPTION": "Mac Address",
+                  "ACCESS": 1,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/macAddress",
+                  "VALUE": [
+                    "0:0:0:0:0:0"
+                  ]
+                },
+                "deviceName": {
+                  "DESCRIPTION": "Device Name",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/deviceName",
+                  "VALUE": [
+                    "BLIP"
+                  ]
+                },
+                "deviceType": {
+                  "DESCRIPTION": "Device Type",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/settings/deviceType",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "BLIP"
+                  ]
+                },
+                "wakeUpButton": {
+                  "DESCRIPTION": "Wake Up Button",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/wakeUpButton",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    34
+                  ]
+                },
+                "wakeUpState": {
+                  "DESCRIPTION": "Wake Up State",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/settings/wakeUpState",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
             },
             "comm": {
               "DESCRIPTION": "Comm",
@@ -514,7 +633,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        ""
+                        "192.168.3.5"
                       ]
                     },
                     "sendFeedback": {
@@ -548,10 +667,10 @@
                     "enabled": {
                       "DESCRIPTION": "Enabled",
                       "ACCESS": 3,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/comm/espnow/enabled",
                       "VALUE": [
-                        true
+                        false
                       ]
                     },
                     "pairingMode": {
@@ -590,13 +709,13 @@
                     "broadcastMode": {
                       "DESCRIPTION": "Broadcast Mode",
                       "ACCESS": 3,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/comm/espnow/broadcastMode",
                       "TAGS": [
                         "config"
                       ],
                       "VALUE": [
-                        true
+                        false
                       ]
                     },
                     "streamTestMode": {
@@ -630,97 +749,6 @@
                       ]
                     }
                   }
-                }
-              }
-            },
-            "settings": {
-              "DESCRIPTION": "Settings",
-              "FULL_PATH": "/settings",
-              "ACCESS": 0,
-              "CONTENTS": {
-                "enabled": {
-                  "DESCRIPTION": "Enabled",
-                  "ACCESS": 3,
-                  "TYPE": "T",
-                  "FULL_PATH": "/settings/enabled",
-                  "VALUE": [
-                    true
-                  ]
-                },
-                "saveSettings": {
-                  "DESCRIPTION": "Save Settings",
-                  "ACCESS": 3,
-                  "TYPE": "I",
-                  "FULL_PATH": "/settings/saveSettings"
-                },
-                "clearSettings": {
-                  "DESCRIPTION": "Clear Settings",
-                  "ACCESS": 3,
-                  "TYPE": "I",
-                  "FULL_PATH": "/settings/clearSettings"
-                },
-                "propID": {
-                  "DESCRIPTION": "Prop ID",
-                  "ACCESS": 3,
-                  "TYPE": "i",
-                  "FULL_PATH": "/settings/propID",
-                  "VALUE": [
-                    0
-                  ]
-                },
-                "macAddress": {
-                  "DESCRIPTION": "Mac Address",
-                  "ACCESS": 1,
-                  "TYPE": "s",
-                  "FULL_PATH": "/settings/macAddress",
-                  "VALUE": [
-                    "BC:DD:C2:F3:49:F5"
-                  ]
-                },
-                "deviceName": {
-                  "DESCRIPTION": "Device Name",
-                  "ACCESS": 3,
-                  "TYPE": "s",
-                  "FULL_PATH": "/settings/deviceName",
-                  "VALUE": [
-                    "BLIP"
-                  ]
-                },
-                "deviceType": {
-                  "DESCRIPTION": "Device Type",
-                  "ACCESS": 3,
-                  "TYPE": "s",
-                  "FULL_PATH": "/settings/deviceType",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    "BLIP"
-                  ]
-                },
-                "wakeUpButton": {
-                  "DESCRIPTION": "Wake Up Button",
-                  "ACCESS": 3,
-                  "TYPE": "i",
-                  "FULL_PATH": "/settings/wakeUpButton",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    34
-                  ]
-                },
-                "wakeUpState": {
-                  "DESCRIPTION": "Wake Up State",
-                  "ACCESS": 3,
-                  "TYPE": "T",
-                  "FULL_PATH": "/settings/wakeUpState",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    true
-                  ]
                 }
               }
             },
@@ -1062,7 +1090,7 @@
                       "TYPE": "f",
                       "FULL_PATH": "/buttons/button1/value",
                       "VALUE": [
-                        1
+                        0
                       ],
                       "RANGE": [
                         {
@@ -1083,19 +1111,19 @@
                     "longPress": {
                       "DESCRIPTION": "Long Press",
                       "ACCESS": 1,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/buttons/button1/longPress",
                       "VALUE": [
-                        true
+                        false
                       ]
                     },
                     "veryLongPress": {
                       "DESCRIPTION": "Very Long Press",
                       "ACCESS": 1,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/buttons/button1/veryLongPress",
                       "VALUE": [
-                        true
+                        false
                       ]
                     },
                     "canShutDown": {
@@ -2292,9 +2320,9 @@
               "parameters": [
                 {
                   "value": [
-                    0.1392127871513367,
-                    0.003352141240611672,
-                    0.01604676991701126,
+                    0.2284581065177917,
+                    0.00008053190686041489,
+                    0.0003854474634863436,
                     1.0
                   ],
                   "controlAddress": "/sendColor",
@@ -2401,6 +2429,69 @@
                       "parameters": [
                         {
                           "value": "root.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Disable ESPNow",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "comm.espnow.enabled 1\nsettings.save",
                           "controlAddress": "/value"
                         }
                       ],
@@ -2870,9 +2961,9 @@
                             "parameters": [
                               {
                                 "value": [
-                                  0.1392127871513367,
-                                  0.003352141240611672,
-                                  0.01604676991701126,
+                                  0.2284581065177917,
+                                  0.00008053190686041489,
+                                  0.0003854474634863436,
                                   1.0
                                 ],
                                 "controlAddress": "/#1"
@@ -2882,9 +2973,9 @@
                             "type": "Color",
                             "param": {
                               "value": [
-                                0.1392127871513367,
-                                0.003352141240611672,
-                                0.01604676991701126,
+                                0.2284581065177917,
+                                0.00008053190686041489,
+                                0.0003854474634863436,
                                 1.0
                               ],
                               "controlAddress": "/states/oscControl/processors/colorAll/outputs/mappingOutput/command/arguments/#1/#1"
@@ -3536,7 +3627,7 @@
             {
               "parameters": [
                 {
-                  "value": 110.0,
+                  "value": 24.0,
                   "controlAddress": "/listSize"
                 },
                 {
@@ -4023,6 +4114,10 @@
                         {
                           "value": "",
                           "controlAddress": "/target"
+                        },
+                        {
+                          "value": "All",
+                          "controlAddress": "/component"
                         }
                       ],
                       "paramLinks": {

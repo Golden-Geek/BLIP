@@ -29,13 +29,15 @@ bool Component::init()
 
 void Component::update()
 {
-    // NDBG("Looping");
     if (!enabled)
         return;
 
     for (int i = 0; i < numComponents; i++)
+    {
+        // if(this == RootComponent::instance && WifiComponent::instance->state != WifiComponent::Connected)
+            // NDBG("Update " + components[i]->name);
         components[i]->update();
-
+    }
     updateInternal();
 }
 

@@ -37,6 +37,7 @@ void RootComponent::setupInternal(JsonObject)
     Settings::loadSettings();
     JsonObject o = Settings::settings.as<JsonObject>();
 
+    AddOwnedComponent(&settings);
     AddOwnedComponent(&comm);
 
 #ifndef ESPNOW_BRIDGE
@@ -68,7 +69,6 @@ void RootComponent::setupInternal(JsonObject)
     }
 #endif
 
-    AddOwnedComponent(&settings);
 
 #ifdef USE_WIFI
     AddOwnedComponent(&wifi);
@@ -145,6 +145,7 @@ void RootComponent::setupInternal(JsonObject)
 
 void RootComponent::updateInternal()
 {
+    // NDBG("root update");
     timer.tick();
 }
 
@@ -238,8 +239,9 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
             if (wifi.state == WifiComponent::Connected)
             {
                 NDBG("Setup connections now");
+#ifdef USE_SERVER
                 server.setupConnection();
-
+#endif
 #ifdef USE_STREAMING
                 streamReceiver.setupConnection();
 #endif
@@ -248,7 +250,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
                 comm.osc.setupConnection();
 #endif
 
-#if defined USE_ESPNOW && defined ESPNOW_BRIDGE
+#if defined USE_ESPNOW && defined ESPNOW_BRIDGE && not defined USE_ETHERNET
                 comm.espNow.initESPNow();
 #endif
             }

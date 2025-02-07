@@ -49,7 +49,10 @@ void ESPNowComponent::setupInternal(JsonObject o)
 bool ESPNowComponent::initInternal()
 {
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
-    // wait for wifi connection
+// wait for wifi connection
+#ifdef USE_ETHERNET
+    initESPNow();
+#endif
 #else
     initESPNow();
 #endif
@@ -62,9 +65,17 @@ void ESPNowComponent::initESPNow()
     if (!enabled)
         return;
 
+    if (!pairingMode)
+    {
+        NDBG("Init ESPNow on channel " + String(channel));
+    }
+
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
 #ifdef USE_ETHERNET
+    NDBG("WiFi mode to STA");
     WiFi.mode(WIFI_AP_STA); // Recommended mode.
+    channel = 5;
+    NDBG("Setting channel " + String(channel));
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #else
     SetParam(channel, WiFi.channel());
@@ -75,15 +86,11 @@ void ESPNowComponent::initESPNow()
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #endif
 
-    if (!pairingMode)
-    {
-        NDBG("Init ESPNow on channel " + String(channel));
-    }
-
+    NDBG("Init ESPNow on channel " + String(channel));
     if (esp_now_init() != ESP_OK)
     {
-        NDBG("Error initializing ESP-NOW");
-        return;
+    NDBG("Error initializing ESP-NOW");
+    return;
     }
 
 #ifdef ESPNOW_BRIDGE
