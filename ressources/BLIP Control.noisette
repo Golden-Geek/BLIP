@@ -35,26 +35,26 @@
   "layout": {
     "mainLayout": {
       "type": 1,
-      "width": 2048,
-      "height": 1189,
+      "width": 2046,
+      "height": 1187,
       "direction": 2,
       "shifters": [
         {
           "type": 1,
-          "width": 2048,
-          "height": 1189,
+          "width": 2046,
+          "height": 1187,
           "direction": 2,
           "shifters": [
             {
               "type": 1,
-              "width": 2048,
-              "height": 753,
+              "width": 2046,
+              "height": 752,
               "direction": 1,
               "shifters": [
                 {
                   "type": 1,
                   "width": 307,
-                  "height": 753,
+                  "height": 752,
                   "direction": 2,
                   "shifters": [
                     {
@@ -71,7 +71,7 @@
                     {
                       "type": 0,
                       "width": 307,
-                      "height": 363,
+                      "height": 362,
                       "currentContent": "Custom Variables",
                       "tabs": [
                         {
@@ -83,8 +83,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1213,
-                  "height": 753,
+                  "width": 1211,
+                  "height": 752,
                   "currentContent": "State Machine",
                   "tabs": [
                     {
@@ -104,7 +104,7 @@
                 {
                   "type": 0,
                   "width": 516,
-                  "height": 753,
+                  "height": 752,
                   "currentContent": "Inspector",
                   "tabs": [
                     {
@@ -116,14 +116,14 @@
             },
             {
               "type": 1,
-              "width": 2048,
-              "height": 430,
+              "width": 2046,
+              "height": 429,
               "direction": 1,
               "shifters": [
                 {
                   "type": 0,
                   "width": 178,
-                  "height": 430,
+                  "height": 429,
                   "currentContent": "Sequences",
                   "tabs": [
                     {
@@ -133,8 +133,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1295,
-                  "height": 430,
+                  "width": 1293,
+                  "height": 429,
                   "currentContent": "Sequence Editor",
                   "tabs": [
                     {
@@ -145,7 +145,7 @@
                 {
                   "type": 0,
                   "width": 563,
-                  "height": 430,
+                  "height": 429,
                   "currentContent": "Logger",
                   "tabs": [
                     {
@@ -231,7 +231,7 @@
             "controlAddress": "/enabled"
           },
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/logOutgoing"
           }
         ],
@@ -1071,7 +1071,7 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
           },
           {
@@ -1103,7 +1103,7 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "Not connected or disconnected",
+              "value": "",
               "controlAddress": "/port"
             }
           ],
@@ -2237,9 +2237,9 @@
               "parameters": [
                 {
                   "value": [
-                    0.4420731067657471,
-                    0.5221239328384399,
-                    0.08835974335670471,
+                    0.4223333299160004,
+                    0.7678784728050232,
+                    0.5053843259811401,
                     1.0
                   ],
                   "controlAddress": "/sendColor",
@@ -2370,6 +2370,10 @@
             },
             {
               "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                },
                 {
                   "value": [
                     0.4923059046268463,
@@ -2752,9 +2756,9 @@
                             "parameters": [
                               {
                                 "value": [
-                                  0.4420731067657471,
-                                  0.5221239328384399,
-                                  0.08835974335670471,
+                                  0.4223333299160004,
+                                  0.7678784728050232,
+                                  0.5053843259811401,
                                   1.0
                                 ],
                                 "controlAddress": "/#1"
@@ -2764,9 +2768,9 @@
                             "type": "Color",
                             "param": {
                               "value": [
-                                0.4420731067657471,
-                                0.5221239328384399,
-                                0.08835974335670471,
+                                0.4223333299160004,
+                                0.7678784728050232,
+                                0.5053843259811401,
                                 1.0
                               ],
                               "controlAddress": "/states/oscControl/processors/colorAll/outputs/mappingOutput/command/arguments/#1/#1"
@@ -2920,6 +2924,10 @@
             {
               "parameters": [
                 {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                },
+                {
                   "value": [
                     0.1160392165184021,
                     0.2716352939605713,
@@ -3044,6 +3052,10 @@
             },
             {
               "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                },
                 {
                   "value": [
                     0.569231390953064,
@@ -3414,6 +3426,296 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "niceName": "UseAlpha",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/pwmLed/pwmLed1/useAlpha",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": false,
+                                "minValue": 0,
+                                "maxValue": 1,
+                                "default": false,
+                                "controlAddress": "/#1"
+                              }
+                            ],
+                            "niceName": "#1",
+                            "type": "Boolean",
+                            "param": {
+                              "value": false,
+                              "minValue": 0,
+                              "maxValue": 1,
+                              "default": false,
+                              "controlAddress": "/states/oscControl/processors/useAlpha/consequencesTRUE/consequence/command/arguments/#1/#1"
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Save and Restart Devices",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": 0.2000000029802322,
+                    "controlAddress": "/stagger"
+                  },
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/settings/save",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Consequence 1",
+                    "type": "Consequence",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/root/restart",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
+            },
+            {
+              "niceName": "Mapping",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": 20,
+                        "minValue": 0,
+                        "maxValue": 100,
+                        "default": 0,
+                        "hexMode": false,
+                        "controlAddress": "/newIntParameter"
+                      }
+                    ],
+                    "niceName": "Input Integer",
+                    "type": "Input Integer"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/{input:1}/pwmLed/pwmLed1/ledIndex",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": 20,
+                                "hexMode": false,
+                                "controlAddress": "/#1"
+                              }
+                            ],
+                            "niceName": "#1",
+                            "type": "Integer",
+                            "param": {
+                              "value": 20,
+                              "hexMode": false,
+                              "controlAddress": "/states/oscControl/processors/mapping/outputs/mappingOutput/command/arguments/#1/#1"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 0
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -3647,8 +3949,8 @@
       }
     ],
     "viewOffset": [
-      -88,
-      3
+      -19,
+      198
     ],
     "viewZoom": 1.0,
     "transitions": {
@@ -3662,8 +3964,8 @@
     "comments": {
       "hideInEditor": true,
       "viewOffset": [
-        -88,
-        3
+        -19,
+        198
       ],
       "viewZoom": 1.0
     }
@@ -3687,6 +3989,10 @@
           {
             "value": true,
             "controlAddress": "/loop"
+          },
+          {
+            "value": 0.0,
+            "controlAddress": "/viewStartTime"
           },
           {
             "value": 1.399999737739563,
@@ -3750,22 +4056,6 @@
                     "editorIsCollapsed": true
                   },
                   "filters": {
-                    "items": [
-                      {
-                        "niceName": "HSV Adjust",
-                        "type": "HSV Adjust",
-                        "filterParams": {
-                          "parameters": [
-                            {
-                              "value": -0.4778760671615601,
-                              "controlAddress": "/brightness"
-                            }
-                          ],
-                          "paramLinks": {
-                          }
-                        }
-                      }
-                    ],
                     "viewOffset": [
                       0,
                       0
@@ -3775,7 +4065,14 @@
                   "outputs": {
                     "items": [
                       {
+                        "parameters": [
+                          {
+                            "value": false,
+                            "controlAddress": "/enabled"
+                          }
+                        ],
                         "niceName": "MappingOutput",
+                        "editorIsCollapsed": true,
                         "type": "BaseItem",
                         "commandModule": "customVariables",
                         "commandPath": "",
@@ -3800,6 +4097,103 @@
                               "linkType": 1,
                               "mappingValueIndex": 0
                             }
+                          }
+                        }
+                      },
+                      {
+                        "niceName": "MappingOutput 1",
+                        "type": "BaseItem",
+                        "commandModule": "bridgeOSCQuery",
+                        "commandPath": "",
+                        "commandType": "Custom Message",
+                        "command": {
+                          "parameters": [
+                            {
+                              "value": "/dev/0/pwmLed/pwmLed1/color",
+                              "controlAddress": "/address"
+                            }
+                          ],
+                          "paramLinks": {
+                          },
+                          "argManager": {
+                            "items": [
+                              {
+                                "parameters": [
+                                  {
+                                    "value": 0.2198868989944458,
+                                    "controlAddress": "/#1"
+                                  }
+                                ],
+                                "niceName": "#1",
+                                "type": "Float",
+                                "param": {
+                                  "value": 0.2198868989944458,
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#1/#1"
+                                },
+                                "paramLink": {
+                                  "linkType": 1,
+                                  "mappingValueIndex": 0
+                                }
+                              },
+                              {
+                                "parameters": [
+                                  {
+                                    "value": 0.3036338686943054,
+                                    "controlAddress": "/#2"
+                                  }
+                                ],
+                                "niceName": "#2",
+                                "type": "Float",
+                                "param": {
+                                  "value": 0.3036338686943054,
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#2/#2"
+                                },
+                                "paramLink": {
+                                  "linkType": 1,
+                                  "mappingValueIndex": 1
+                                }
+                              },
+                              {
+                                "parameters": [
+                                  {
+                                    "value": 0.9005140066146851,
+                                    "controlAddress": "/#3"
+                                  }
+                                ],
+                                "niceName": "#3",
+                                "type": "Float",
+                                "param": {
+                                  "value": 0.9005140066146851,
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#3/#3"
+                                },
+                                "paramLink": {
+                                  "linkType": 1,
+                                  "mappingValueIndex": 2
+                                }
+                              },
+                              {
+                                "parameters": [
+                                  {
+                                    "value": 0.2020013332366943,
+                                    "controlAddress": "/#4"
+                                  }
+                                ],
+                                "niceName": "#4",
+                                "type": "Float",
+                                "param": {
+                                  "value": 0.2020013332366943,
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#4/#4"
+                                },
+                                "paramLink": {
+                                  "linkType": 0
+                                }
+                              }
+                            ],
+                            "viewOffset": [
+                              0,
+                              0
+                            ],
+                            "viewZoom": 1.0
                           }
                         }
                       }
@@ -3851,6 +4245,25 @@
                         }
                       ],
                       "niceName": "Color 1",
+                      "type": "GradientColor"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.7116550803184509,
+                          "controlAddress": "/time"
+                        },
+                        {
+                          "value": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/color"
+                        }
+                      ],
+                      "niceName": "Color 5",
                       "type": "GradientColor"
                     },
                     {
