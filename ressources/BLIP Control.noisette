@@ -35,26 +35,26 @@
   "layout": {
     "mainLayout": {
       "type": 1,
-      "width": 2046,
-      "height": 1187,
+      "width": 2048,
+      "height": 1189,
       "direction": 2,
       "shifters": [
         {
           "type": 1,
-          "width": 2046,
-          "height": 1187,
+          "width": 2048,
+          "height": 1189,
           "direction": 2,
           "shifters": [
             {
               "type": 1,
-              "width": 2046,
-              "height": 752,
+              "width": 2048,
+              "height": 753,
               "direction": 1,
               "shifters": [
                 {
                   "type": 1,
                   "width": 307,
-                  "height": 752,
+                  "height": 753,
                   "direction": 2,
                   "shifters": [
                     {
@@ -83,8 +83,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1211,
-                  "height": 752,
+                  "width": 1080,
+                  "height": 753,
                   "currentContent": "State Machine",
                   "tabs": [
                     {
@@ -103,8 +103,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 516,
-                  "height": 752,
+                  "width": 649,
+                  "height": 753,
                   "currentContent": "Inspector",
                   "tabs": [
                     {
@@ -116,14 +116,14 @@
             },
             {
               "type": 1,
-              "width": 2046,
-              "height": 429,
+              "width": 2048,
+              "height": 430,
               "direction": 1,
               "shifters": [
                 {
                   "type": 0,
                   "width": 178,
-                  "height": 429,
+                  "height": 430,
                   "currentContent": "Sequences",
                   "tabs": [
                     {
@@ -133,8 +133,8 @@
                 },
                 {
                   "type": 0,
-                  "width": 1293,
-                  "height": 429,
+                  "width": 1295,
+                  "height": 430,
                   "currentContent": "Sequence Editor",
                   "tabs": [
                     {
@@ -145,7 +145,7 @@
                 {
                   "type": 0,
                   "width": 563,
-                  "height": 429,
+                  "height": 430,
                   "currentContent": "Logger",
                   "tabs": [
                     {
@@ -231,7 +231,7 @@
             "controlAddress": "/enabled"
           },
           {
-            "value": true,
+            "value": false,
             "controlAddress": "/logOutgoing"
           }
         ],
@@ -318,6 +318,15 @@
                     {
                       "value": false,
                       "controlAddress": "/wakeUpMode"
+                    },
+                    {
+                      "value": 5,
+                      "hexMode": false,
+                      "controlAddress": "/channel"
+                    },
+                    {
+                      "value": true,
+                      "controlAddress": "/broadcastMode"
                     }
                   ],
                   "editorIsCollapsed": true,
@@ -389,6 +398,11 @@
               },
               "owned": true,
               "niceName": "Buttons"
+            },
+            "streamReceiver": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Stream Receiver"
             }
           }
         },
@@ -559,19 +573,19 @@
                         "config"
                       ],
                       "VALUE": [
-                        1
+                        5
                       ]
                     },
                     "broadcastMode": {
                       "DESCRIPTION": "Broadcast Mode",
                       "ACCESS": 3,
-                      "TYPE": "F",
+                      "TYPE": "T",
                       "FULL_PATH": "/comm/espnow/broadcastMode",
                       "TAGS": [
                         "config"
                       ],
                       "VALUE": [
-                        false
+                        true
                       ]
                     },
                     "streamTestMode": {
@@ -811,6 +825,31 @@
                   ],
                   "VALUE": [
                     true
+                  ]
+                }
+              }
+            },
+            "streamReceiver": {
+              "DESCRIPTION": "Stream Receiver",
+              "FULL_PATH": "/streamReceiver",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/streamReceiver/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "receiveRate": {
+                  "DESCRIPTION": "Receive Rate",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/streamReceiver/receiveRate",
+                  "VALUE": [
+                    60
                   ]
                 }
               }
@@ -2210,6 +2249,84 @@
           }
         },
         "hasListenExtension": true
+      },
+      {
+        "niceName": "Sound Card",
+        "type": "Sound Card",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "parameters": [
+            {
+              "value": 5.079754829406738,
+              "controlAddress": "/inputGain"
+            }
+          ],
+          "containers": {
+            "inputVolumes": {
+            },
+            "outputVolumes": {
+              "editorIsCollapsed": true
+            },
+            "monitor": {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                }
+              ]
+            },
+            "fftAnalysis": {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                }
+              ],
+              "editorIsCollapsed": true,
+              "viewOffset": [
+                0,
+                0
+              ],
+              "viewZoom": 1.0
+            },
+            "ltc": {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                }
+              ]
+            }
+          }
+        },
+        "templates": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "audioSettings": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n\r\n<DEVICESETUP deviceType=\"Windows Audio\" audioOutputDeviceName=\"Speakers (3- Realtek(R) Audio)\"\r\n             audioInputDeviceName=\"Microphone Array (3- Realtek(R) Audio)\"\r\n             audioDeviceRate=\"48000.0\" audioDeviceInChans=\"1\"/>\r\n",
+        "analyzer": {
+          "parameters": [
+            {
+              "value": false,
+              "controlAddress": "/enabled"
+            }
+          ],
+          "editorIsCollapsed": true,
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        }
       }
     ],
     "viewOffset": [
@@ -3716,6 +3833,193 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                }
+              ],
+              "niceName": "Mapping 1",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "/modules/soundCard/values/volume",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "Input Value",
+                    "type": "Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "items": [
+                  {
+                    "niceName": "Remap",
+                    "type": "Remap",
+                    "filterParams": {
+                      "parameters": [
+                        {
+                          "value": true,
+                          "controlAddress": "/useCustomInputRange"
+                        },
+                        {
+                          "value": [
+                            0.1000000014901161,
+                            0.6000000238418579
+                          ],
+                          "controlAddress": "/inputMin_Max"
+                        },
+                        {
+                          "value": [
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/targetMin_Max"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Smooth",
+                    "type": "Smooth",
+                    "filterParams": {
+                      "parameters": [
+                        {
+                          "value": true,
+                          "controlAddress": "/asynchronous"
+                        },
+                        {
+                          "value": 0.8808988928794861,
+                          "controlAddress": "/fallSmoothing"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  },
+                  {
+                    "niceName": "Convert To Color",
+                    "type": "Convert To Color",
+                    "filterParams": {
+                      "parameters": [
+                        {
+                          "value": "Red",
+                          "controlAddress": "/retargetComponent"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    },
+                    "ghostOptions": {
+                      "retarget": 0,
+                      "color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": true,
+                        "controlAddress": "/enabled"
+                      }
+                    ],
+                    "niceName": "MappingOutput",
+                    "type": "BaseItem",
+                    "commandModule": "bridgeOSCQuery",
+                    "commandPath": "",
+                    "commandType": "Custom Message",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "/dev/-1/pwmLed/pwmLed1/color",
+                          "controlAddress": "/address"
+                        }
+                      ],
+                      "paramLinks": {
+                      },
+                      "argManager": {
+                        "items": [
+                          {
+                            "parameters": [
+                              {
+                                "value": [
+                                  0.001034927670843899,
+                                  0.0,
+                                  0.0,
+                                  1.0
+                                ],
+                                "controlAddress": "/#1"
+                              }
+                            ],
+                            "niceName": "#1",
+                            "type": "Color",
+                            "param": {
+                              "value": [
+                                0.001034927670843899,
+                                0.0,
+                                0.0,
+                                1.0
+                              ],
+                              "controlAddress": "/states/oscControl/processors/mapping1/outputs/mappingOutput/command/arguments/#1/#1"
+                            },
+                            "paramLink": {
+                              "linkType": 1,
+                              "mappingValueIndex": 0
+                            }
+                          }
+                        ],
+                        "viewOffset": [
+                          0,
+                          0
+                        ],
+                        "viewZoom": 1.0
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -3949,8 +4253,8 @@
       }
     ],
     "viewOffset": [
-      -19,
-      198
+      99,
+      -23
     ],
     "viewZoom": 1.0,
     "transitions": {
@@ -3964,8 +4268,8 @@
     "comments": {
       "hideInEditor": true,
       "viewOffset": [
-        -19,
-        198
+        99,
+        -23
       ],
       "viewZoom": 1.0
     }
@@ -3979,12 +4283,17 @@
             "controlAddress": "/enabled"
           },
           {
-            "value": 1.399999743652391,
+            "value": 1.399999658203208,
             "controlAddress": "/totalTime"
           },
           {
             "value": 0.3999999165534973,
             "controlAddress": "/playSpeed"
+          },
+          {
+            "value": 300,
+            "hexMode": false,
+            "controlAddress": "/fps"
           },
           {
             "value": true,
@@ -3995,7 +4304,7 @@
             "controlAddress": "/viewStartTime"
           },
           {
-            "value": 1.399999737739563,
+            "value": 1.399999618530273,
             "controlAddress": "/viewEndTime"
           },
           {
@@ -4109,7 +4418,7 @@
                         "command": {
                           "parameters": [
                             {
-                              "value": "/dev/0/pwmLed/pwmLed1/color",
+                              "value": "/dev/-1/pwmLed/pwmLed1/color",
                               "controlAddress": "/address"
                             }
                           ],
@@ -4120,14 +4429,14 @@
                               {
                                 "parameters": [
                                   {
-                                    "value": 0.2198868989944458,
+                                    "value": 0.854697048664093,
                                     "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#1",
                                 "type": "Float",
                                 "param": {
-                                  "value": 0.2198868989944458,
+                                  "value": 0.854697048664093,
                                   "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#1/#1"
                                 },
                                 "paramLink": {
@@ -4138,15 +4447,15 @@
                               {
                                 "parameters": [
                                   {
-                                    "value": 0.3036338686943054,
-                                    "controlAddress": "/#2"
+                                    "value": 0.9477249383926392,
+                                    "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#2",
                                 "type": "Float",
                                 "param": {
-                                  "value": 0.3036338686943054,
-                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#2/#2"
+                                  "value": 0.9477249383926392,
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#2/#1"
                                 },
                                 "paramLink": {
                                   "linkType": 1,
@@ -4156,15 +4465,15 @@
                               {
                                 "parameters": [
                                   {
-                                    "value": 0.9005140066146851,
-                                    "controlAddress": "/#3"
+                                    "value": 0.16038478910923,
+                                    "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#3",
                                 "type": "Float",
                                 "param": {
-                                  "value": 0.9005140066146851,
-                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#3/#3"
+                                  "value": 0.16038478910923,
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#3/#1"
                                 },
                                 "paramLink": {
                                   "linkType": 1,
@@ -4175,14 +4484,14 @@
                                 "parameters": [
                                   {
                                     "value": 0.2020013332366943,
-                                    "controlAddress": "/#4"
+                                    "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#4",
                                 "type": "Float",
                                 "param": {
                                   "value": 0.2020013332366943,
-                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#4/#4"
+                                  "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#4/#1"
                                 },
                                 "paramLink": {
                                   "linkType": 0
