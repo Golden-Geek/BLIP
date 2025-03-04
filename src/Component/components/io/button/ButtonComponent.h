@@ -22,6 +22,10 @@
 #define BUTTON_DEFAULT_PIN -1
 #endif
 
+#ifndef BUTTON_DEFAULT_MODE
+#define BUTTON_DEFAULT_MODE D_INPUT
+#endif
+
 class ButtonComponent : public IOComponent
 {
 public:

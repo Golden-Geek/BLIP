@@ -5,6 +5,8 @@ void ButtonComponent::setupInternal(JsonObject o)
     // value.val.type = 'b'; //force boolean
     // SetParam(value,false);
 
+    mode = BUTTON_DEFAULT_MODE;
+
     IOComponent::setupInternal(o);
 
     debounceCount = 0;

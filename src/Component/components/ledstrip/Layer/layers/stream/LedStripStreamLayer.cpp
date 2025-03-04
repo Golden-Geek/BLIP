@@ -31,7 +31,7 @@ void LedStripStreamLayer::clearInternal()
 {
     if (LedStreamReceiverComponent::instance != nullptr)
     {
-        LedStreamReceiverComponent::instance->unregisterStreamLisener(this);
+        LedStreamReceiverComponent::instance->unregisterStreamListener(this);
     }
 }
 
@@ -51,7 +51,7 @@ void LedStripStreamLayer::onLedStreamReceived(uint16_t dmxUniverse, const uint8_
 
     int numUniverses = std::ceil(strip->count * 1.0f / maxCount); // maxCount leds per universe
     if (universe < universe || universe > universe + numUniverses - 1)
-        continue;
+        return;
 
     // DBG("Received Artnet " + String(universe) + " " + String(length) + " " + String(sequence) + " " + String(stripIndex) + " " + String(strip->count));
 
@@ -60,7 +60,7 @@ void LedStripStreamLayer::onLedStreamReceived(uint16_t dmxUniverse, const uint8_
     int iStart = start < 0 ? -start : 0;
 
     // DBG("Received Artnet " + String(universe) + ", start = " + String(start));
-    for (int i = iStart; i < strip->count && i < maxCount && (i * numChannels) < length; i++)
+    for (int i = iStart; i < strip->count && i < maxCount && (i * numChannels + 2) < len; i++)
     {
         colors[i + start] = Color(data[i * numChannels] * multiplier, data[i * numChannels + 1] * multiplier, data[i * numChannels + 2] * multiplier);
     }

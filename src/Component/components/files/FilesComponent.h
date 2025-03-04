@@ -19,13 +19,13 @@ static fs::FS &fs;
 
 bool useInternalMemory;
 #ifdef FILES_TYPE_SD
-DeclareIntParam(sdEnPin, FILES_DEFAULT_SD_EN);
-DeclareBoolParam(sdEnVal, FILES_DEFAULT_SD_POWER_VALUE);
-DeclareIntParam(sdSCK, FILES_DEFAULT_SD_SCK);
-DeclareIntParam(sdMiso, FILES_DEFAULT_SD_MISO);
-DeclareIntParam(sdMosi, FILES_DEFAULT_SD_MOSI);
-DeclareIntParam(sdCS, FILES_DEFAULT_SD_CS);
-DeclareIntParam(sdSpeed, FILES_DEFAULT_SDSPEED);
+DeclareIntParam(sdEnPin, FILES_DEFAULT_EN);
+DeclareBoolParam(sdEnVal, FILES_DEFAULT_POWER_VALUE);
+DeclareIntParam(sdSCK, FILES_DEFAULT_SCK);
+DeclareIntParam(sdMiso, FILES_DEFAULT_MISO);
+DeclareIntParam(sdMosi, FILES_DEFAULT_MOSI);
+DeclareIntParam(sdCS, FILES_DEFAULT_CS);
+DeclareIntParam(sdSpeed, FILES_DEFAULT_SPEED);
 #endif
 
 File openFile(String fileName, bool forWriting = false, bool deleteIfExists = true);

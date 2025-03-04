@@ -16,6 +16,7 @@ DeclareComponent(IO, "io", )
 
     enum PinMode { D_INPUT,
                    D_INPUT_PULLUP,
+                   D_INPUT_PULLDOWN,
                    A_INPUT,
                    D_OUTPUT,
                    A_OUTPUT,
@@ -24,7 +25,7 @@ DeclareComponent(IO, "io", )
                    PINMODE_MAX };
 
 DeclareIntParam(pin, -1);
-DeclareIntParam(mode, D_INPUT);
+DeclareIntParam(mode, IO_DEFAULT_MODE);
 DeclareBoolParam(inverted, false);
 
 int pwmChannel;

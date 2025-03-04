@@ -68,6 +68,10 @@ void IOComponent::setupPin()
             pinm = INPUT_PULLUP;
             break;
 
+        case D_INPUT_PULLDOWN:
+            pinm = INPUT_PULLDOWN;
+            break;
+
         case D_OUTPUT:
         case D_OSC:
             pinm = OUTPUT;
