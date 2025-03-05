@@ -8,9 +8,6 @@
 #define IO_DEFAULT_PIN 0
 #endif
 
-#ifndef IO_DEFAULT_MODE
-#define IO_DEFAULT_MODE IOComponent::D_OUTPUT
-#endif
 
 DeclareComponent(IO, "io", )
 
@@ -25,7 +22,7 @@ DeclareComponent(IO, "io", )
                    PINMODE_MAX };
 
 DeclareIntParam(pin, -1);
-DeclareIntParam(mode, IO_DEFAULT_MODE);
+DeclareIntParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
 
 int pwmChannel;
@@ -46,6 +43,7 @@ void updatePin();
 
 // void onParameterEventInternal(const ParameterEvent &e) override;
 
+void paramValueChangedInternal(void *param) override;
 
 
 // #ifdef USE_SCRIPT
@@ -74,7 +72,10 @@ FillSettingsInternalStart
 FillSettingsParam(mode);
 FillSettingsParam(inverted);
 
-if(mode == D_OUTPUT || mode == A_OUTPUT)
+if(mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
+{
+    FillSettingsParam(value);
+}
 {
     FillSettingsParam(value);
 }

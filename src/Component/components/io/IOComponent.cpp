@@ -2,6 +2,7 @@ ImplementManagerSingleton(IO);
 
 void IOComponent::setupInternal(JsonObject o)
 {
+    curPin = -1;
     pwmChannel = -1;
 
     AddIntParamConfig(pin);
@@ -29,24 +30,43 @@ bool IOComponent::initInternal()
 
 void IOComponent::updateInternal()
 {
-    updatePin();
+    if (mode == D_OSC || mode == A_OSC)
+        updatePin();
 }
 
 void IOComponent::clearInternal()
 {
 }
 
+void IOComponent::paramValueChangedInternal(void *param)
+{
+    if (param == &pin || param == &mode)
+        setupPin();
+    if (param == &value)
+    {
+        if (mode == D_OUTPUT || mode == A_OUTPUT)
+        {
+            updatePin();
+        }
+    }
+}
+
 void IOComponent::setupPin()
 {
-    if (curPin != -1 && pwmChannel != -1) // prevPin was a PWM pin
+    // NDBG("Setup Pin");
+    if (curPin != -1) // prevPin was a PWM pin
     {
 #ifdef ARDUINO_NEW_VERSION
+        // NDBG("Detach Pin " + String(curPin));
         ledcDetach(curPin);
 #else
-        ledcDetachPin(pwmChannel);
+        if (pwmChannel != -1)
+        {
+            ledcDetachPin(pwmChannel);
+            RootComponent::availablePWMChannels[pwmChannel] = true;
+            pwmChannel = -1;
+        }
 #endif
-        RootComponent::availablePWMChannels[pwmChannel] = true;
-        pwmChannel = -1;
     }
 
     curPin = pin;
@@ -91,6 +111,7 @@ void IOComponent::setupPin()
             if (m == A_OUTPUT || m == A_OSC)
             {
 #ifdef ARDUINO_NEW_VERSION
+                // NDBG("Attach pin " + String(curPin) + " to PWM");
                 ledcAttach(curPin, 5000, 10);
 #else
 

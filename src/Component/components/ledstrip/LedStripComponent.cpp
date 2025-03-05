@@ -72,7 +72,7 @@ void LedStripComponent::setupLeds()
     // colors = (Color *)malloc(count * sizeof(Color));
     memset(colors, 0, LED_MAX_COUNT * sizeof(Color));
 #ifdef LED_USE_FASTLED
-    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count);
+    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count).setCorrection(TypicalLEDStrip);
 #else
     for (int i = 0; i < count; i++)
         colors[i] = Color(0, 0, 0, 0);
