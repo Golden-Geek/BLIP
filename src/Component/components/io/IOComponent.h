@@ -34,7 +34,7 @@ int curPin;
 DeclareFloatParam(value, 0);
 float prevValue;
 
-const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
+const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
 
 virtual void setupInternal(JsonObject o) override;
 virtual bool initInternal() override;

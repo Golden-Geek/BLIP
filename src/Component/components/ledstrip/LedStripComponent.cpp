@@ -1,10 +1,17 @@
+#include "UnityIncludes.h"
+
+#define SetupFastLED(Type, DataPin, count) FastLED.addLeds<Type, DataPin>(leds, count)
+
 ImplementManagerSingleton(LedStrip);
 
 void LedStripComponent::setupInternal(JsonObject o)
 {
-    // init
+// init
+#ifdef LED_USE_FASTLED
+#else
     neoPixelStrip = NULL;
     dotStarStrip = NULL;
+#endif
 
     for (int i = 0; i < LEDSTRIP_NUM_USER_LAYERS; i++)
         userLayers[i] = NULL;
@@ -36,7 +43,6 @@ void LedStripComponent::setupInternal(JsonObject o)
 #if USE_FX
     AddOwnedComponent(&fx);
 #endif
-
 }
 
 bool LedStripComponent::initInternal()
@@ -65,21 +71,26 @@ void LedStripComponent::setupLeds()
 
     // colors = (Color *)malloc(count * sizeof(Color));
     memset(colors, 0, LED_MAX_COUNT * sizeof(Color));
+#ifdef LED_USE_FASTLED
+    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count);
+#else
     for (int i = 0; i < count; i++)
         colors[i] = Color(0, 0, 0, 0);
 
     if (clkPin > 0)
     {
         NDBG("Using DotStar strip");
-        dotStarStrip = new Adafruit_DotStar(count, dataPin, clkPin, DOTSTAR_BGR);
+        dotStarStrip = new Adafruit_DotStar(count * LED_DUPLICATE, dataPin, clkPin, DOTSTAR_BGR);
         dotStarStrip->begin();
     }
     else
     {
         NDBG("Using NeoPixel strip");
-        neoPixelStrip = new Adafruit_NeoPixel(count, dataPin, NEO_GRB + NEO_KHZ800);
+
+        neoPixelStrip = new Adafruit_NeoPixel(count * LED_DUPLICATE, dataPin, LED_COLOR_ORDER + NEO_KHZ800);
         neoPixelStrip->begin();
     }
+#endif
 
     setStripPower(true);
 }
@@ -87,10 +98,13 @@ void LedStripComponent::setupLeds()
 void LedStripComponent::updateInternal()
 {
 
+#ifdef LED_USE_FASTLED
+#else
     if (dotStarStrip == NULL && neoPixelStrip == NULL)
     {
         return; // not active
     }
+#endif
 
     // all layer's internal colors are updated in Component's update() function
 
@@ -111,11 +125,14 @@ void LedStripComponent::clearInternal()
     showLeds();
     setStripPower(false);
 
+#ifdef LED_USE_FASTLED
+#else
     delete neoPixelStrip;
     neoPixelStrip = NULL;
 
     delete dotStarStrip;
     dotStarStrip = NULL;
+#endif
 }
 
 void LedStripComponent::setBrightness(float val)
@@ -125,6 +142,8 @@ void LedStripComponent::setBrightness(float val)
 
 void LedStripComponent::paramValueChangedInternal(void *param)
 {
+#ifdef LED_USE_FASTLED
+#else
     if (param == &count)
     {
         if (neoPixelStrip != NULL)
@@ -132,6 +151,7 @@ void LedStripComponent::paramValueChangedInternal(void *param)
         else if (dotStarStrip != NULL)
             dotStarStrip->updateLength(count);
     }
+#endif
 }
 
 void LedStripComponent::onEnabledChanged()
@@ -240,6 +260,15 @@ void LedStripComponent::showLeds()
         }
     }
 
+#ifdef LED_USE_FASTLED
+    FastLED.setBrightness(targetBrightness * 255);
+    for (int i = 0; i < count; i++)
+    {
+        float a = colors[i].a / 255.0f;
+        leds[ledMap(i)] = CRGB(colors[i].r * a, colors[i].g * a, colors[i].b * a);
+    }
+    FastLED.show();
+#else
     if (neoPixelStrip != NULL)
         neoPixelStrip->setBrightness(targetBrightness * 255);
     else if (dotStarStrip != NULL)
@@ -249,12 +278,11 @@ void LedStripComponent::showLeds()
     {
         for (int i = 0; i < count; i++)
         {
+
             float a = colors[i].a / 255.0f;
-            // float bFactor = getDitheredBrightness(targetBrightness * , ditherFrameCounter) / 255.0f;
-            neoPixelStrip->setPixelColor(ledMap(i),
-                                         Adafruit_NeoPixel::gamma8(colors[i].r * a),
-                                         Adafruit_NeoPixel::gamma8(colors[i].g * a),
-                                         Adafruit_NeoPixel::gamma8(colors[i].b * a));
+            uint8_t r = Adafruit_NeoPixel::gamma8(colors[i].r * a);
+            uint8_t g = Adafruit_NeoPixel::gamma8(colors[i].g * a);
+            uint8_t b = Adafruit_NeoPixel::gamma8(colors[i].b * a);
         }
         neoPixelStrip->show();
     }
@@ -271,7 +299,7 @@ void LedStripComponent::showLeds()
         }
         dotStarStrip->show();
     }
-
+#endif
     ditherFrameCounter = (ditherFrameCounter + 1) & 0x07;
 }
 

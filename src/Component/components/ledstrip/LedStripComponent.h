@@ -26,6 +26,10 @@
 #define LED_DEFAULT_CHANNELS 3
 #endif
 
+#ifndef LED_COLOR_ORDER
+#define LED_COLOR_ORDER NEO_GRB
+#endif
+
 class LedStripComponent : public Component
 {
 public:
@@ -91,8 +95,12 @@ public:
 
     LedStripLayer *userLayers[LEDSTRIP_NUM_USER_LAYERS];
 
+#ifdef LED_USE_FASTLED
+    CRGB leds[LED_MAX_COUNT];
+#else
     Adafruit_NeoPixel *neoPixelStrip;
     Adafruit_DotStar *dotStarStrip;
+#endif
 
     void setupInternal(JsonObject o) override;
     bool initInternal() override;

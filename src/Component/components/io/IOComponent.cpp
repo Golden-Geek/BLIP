@@ -123,6 +123,7 @@ void IOComponent::updatePin()
     {
     case D_INPUT:
     case D_INPUT_PULLUP:
+    case D_INPUT_PULLDOWN:
     {
         bool val = digitalRead(pin);
         if (inverted)

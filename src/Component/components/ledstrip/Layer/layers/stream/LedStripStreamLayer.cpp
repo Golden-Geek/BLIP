@@ -60,7 +60,7 @@ void LedStripStreamLayer::onLedStreamReceived(uint16_t dmxUniverse, const uint8_
     int iStart = start < 0 ? -start : 0;
 
     // DBG("Received Artnet " + String(universe) + ", start = " + String(start));
-    for (int i = iStart; i < strip->count && i < maxCount && (i * numChannels + 2) < len; i++)
+    for (int i = iStart; i < strip->count && i < maxCount; i++)
     {
         colors[i + start] = Color(data[i * numChannels] * multiplier, data[i * numChannels + 1] * multiplier, data[i * numChannels + 2] * multiplier);
     }

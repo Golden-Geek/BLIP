@@ -137,8 +137,12 @@
 #endif
 
 #ifdef USE_LEDSTRIP
+#ifdef LED_USE_FASTLED
+#include <FastLED.h>
+#else
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_DotStar.h>
+#endif
 #include "Component/components/ledstrip/LedHelpers.h"
 
 #include "Component/components/ledstrip/Layer/LedStripLayer.h"
