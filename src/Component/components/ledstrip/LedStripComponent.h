@@ -30,6 +30,10 @@
 #define LED_COLOR_ORDER NEO_GRB
 #endif
 
+#ifndef LED_DUPLICATE
+#define LED_DUPLICATE 1
+#endif
+
 class LedStripComponent : public Component
 {
 public:
