@@ -47,6 +47,7 @@ public:
         P2D,
         P3D,
         TypeColor,
+        TypeEnum,
         ParamTypeMax
     };
 
@@ -57,7 +58,7 @@ public:
         TagNameMax
     };
 
-    const String typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r"};
+    const String typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r", "i"};
     const String tagNames[TagNameMax]{"", "config"};
 
     void *params[MAX_CHILD_PARAMS];
@@ -110,6 +111,8 @@ public:
     virtual bool checkParamsFeedback(void *param);
     virtual bool checkParamsFeedbackInternal(void *param) { return false; }
     // virtual void sendParamFeedback(void* param);
+
+    virtual String getEnumString(void *param) const {  return "";}
 
     bool handleCommand(const String &command, var *data, int numData);
     virtual bool handleCommandInternal(const String &command, var *data, int numData) { return false; }

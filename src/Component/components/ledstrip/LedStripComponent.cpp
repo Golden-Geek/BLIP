@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "LedStripComponent.h"
 
 #define SetupFastLED(Type, DataPin, count) FastLED.addLeds<Type, DataPin>(leds, count)
 
@@ -22,7 +23,10 @@ void LedStripComponent::setupInternal(JsonObject o)
     AddIntParamConfig(clkPin);
     AddFloatParam(brightness);
     AddBoolParamConfig(invertStrip);
+    AddIntParam(multiLedMode);
     AddIntParamConfig(maxPower);
+
+    numColors = count;
 
 #if USE_BAKELAYER
     AddOwnedComponent(&bakeLayer);
@@ -97,7 +101,6 @@ void LedStripComponent::setupLeds()
 
 void LedStripComponent::updateInternal()
 {
-
 #ifdef LED_USE_FASTLED
 #else
     if (dotStarStrip == NULL && neoPixelStrip == NULL)
@@ -107,8 +110,10 @@ void LedStripComponent::updateInternal()
 #endif
 
     // all layer's internal colors are updated in Component's update() function
-
+    
     clearColors();
+    numColors = getNumColors();
+
     for (int i = 0; i < LEDSTRIP_NUM_USER_LAYERS; i++)
         processLayer(userLayers[i]);
 
@@ -138,6 +143,36 @@ void LedStripComponent::clearInternal()
 void LedStripComponent::setBrightness(float val)
 {
     SetParam(brightness, val);
+}
+
+int LedStripComponent::getNumColors() const
+{
+    switch (multiLedMode)
+    {
+    case FullColor:
+        return count;
+    case SingleColor:
+        return 1;
+    case TwoColors:
+        return 2;
+    }
+
+    return count;
+}
+
+int LedStripComponent::getColorIndex(int i) const
+{
+    switch (multiLedMode)
+    {
+    case FullColor:
+        return i;
+    case SingleColor:
+        return 0;
+    case TwoColors:
+        return i < count / 2 ? 0 : 1;
+    }
+
+    return i;
 }
 
 void LedStripComponent::paramValueChangedInternal(void *param)
@@ -179,7 +214,8 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
 
     for (int i = 0; i < count; i++)
     {
-        Color c = layer->colors[i];
+        int index = getColorIndex(i);
+        Color c = layer->colors[index];
 
         LedStripLayer::BlendMode bm = (LedStripLayer::BlendMode)layer->blendMode;
 

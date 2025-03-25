@@ -34,6 +34,10 @@
 #define LED_DUPLICATE 1
 #endif
 
+#ifndef LED_DEFAULT_MULTILED_MODE
+#define LED_DEFAULT_MULTILED_MODE FullColor
+#endif
+
 class LedStripComponent : public Component
 {
 public:
@@ -75,9 +79,26 @@ public:
     // mapping
     DeclareBoolParam(invertStrip, LED_DEFAULT_INVERT_DIRECTION);
 
-    Color colors[LED_MAX_COUNT];
+    enum MultiLedMode
+    {
+        FullColor,
+        SingleColor,
+        TwoColors,
+        MultiLedModeMax
+    };
 
+    const String multiLedModeOptions[MultiLedModeMax] = {
+        "Full Color",
+        "Single Color",
+        "Two Colors"};
+
+    DeclareIntParam(multiLedMode, LED_DEFAULT_MULTILED_MODE);
+
+    int numColors = 0;
+
+    Color colors[LED_MAX_COUNT];
     uint8_t ditherFrameCounter = 0;
+
 
     // user layers, may be more than one later
 #if USE_BAKELAYER
@@ -115,6 +136,9 @@ public:
 
     void setBrightness(float val);
 
+    int getNumColors() const;
+    int getColorIndex(int i) const;
+
     void paramValueChangedInternal(void *param) override;
     void onEnabledChanged() override;
 
@@ -137,6 +161,7 @@ public:
     CheckAndSetParam(enPin);
     CheckAndSetParam(brightness);
     CheckAndSetParam(invertStrip);
+    CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);   
     CheckAndSetParam(maxPower);
     HandleSetParamInternalEnd;
 
@@ -148,7 +173,7 @@ public:
     FillSettingsParam(brightness);
     FillSettingsParam(invertStrip);
     FillSettingsParam(maxPower);
-
+    FillSettingsParam(multiLedMode);
     FillSettingsInternalEnd
 
         FillOSCQueryInternalStart
@@ -157,12 +182,13 @@ public:
     FillOSCQueryIntParam(clkPin);
     FillOSCQueryIntParam(enPin);
     FillOSCQueryRangeParam(brightness, 0, 1);
-    FillOSCQueryIntParam(maxPower);
     FillOSCQueryBoolParam(invertStrip);
+    FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
+    FillOSCQueryIntParam(maxPower);
     FillOSCQueryInternalEnd
 };
 
-DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip)
+DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 
 #ifdef USE_SCRIPT
 

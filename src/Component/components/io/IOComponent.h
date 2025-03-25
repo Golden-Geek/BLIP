@@ -92,7 +92,7 @@ FillOSCQueryInternalEnd
 
 // Manager
 
-DeclareComponentManager(IO, IO, gpio, gpio)
+DeclareComponentManager(IO, IO, gpio, gpio, IO_MAX_COUNT)
 
     void addItemInternal(int index)
 {

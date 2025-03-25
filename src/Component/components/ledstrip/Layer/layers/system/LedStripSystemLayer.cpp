@@ -21,8 +21,11 @@ void LedStripSystemLayer::clearInternal()
 
 void LedStripSystemLayer::updateConnectionStatus()
 {
+    
     if (WifiComponent::instance == NULL)
         return;
+
+    int numColors = strip->numColors;
 
     if (RootComponent::instance->testMode)
     {

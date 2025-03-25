@@ -14,6 +14,7 @@ public:
 
     DeclareIntParam(universe, 0);
     DeclareIntParam(startChannel, 1);
+    DeclareBoolParam(use16Bits, false);
     DeclareBoolParam(includeAlpha, false);
     DeclareBoolParam(clearOnNoReception, true);
     DeclareFloatParam(noReceptionTime, 1.0f);
@@ -26,12 +27,13 @@ public:
     void updateInternal() override;
     void clearInternal() override;
 
-    void onLedStreamReceived(uint16_t universe, const uint8_t* data, uint16_t len) override;
+    void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len) override;
 
     HandleSetParamInternalStart
         HandleSetParamInternalMotherClass(LedStripLayer)
             CheckAndSetParam(universe);
-            CheckAndSetParam(startChannel);
+    CheckAndSetParam(startChannel);
+    CheckAndSetParam(use16Bits);
     CheckAndSetParam(includeAlpha);
     CheckAndSetParam(clearOnNoReception);
     CheckAndSetParam(noReceptionTime);
@@ -40,7 +42,8 @@ public:
     FillSettingsInternalStart
         FillSettingsInternalMotherClass(LedStripLayer)
             FillSettingsParam(universe);
-            FillSettingsParam(startChannel);
+    FillSettingsParam(startChannel);
+    FillSettingsParam(use16Bits);
     FillSettingsParam(includeAlpha);
     FillSettingsParam(clearOnNoReception);
     FillSettingsParam(noReceptionTime);
@@ -49,7 +52,8 @@ public:
     FillOSCQueryInternalStart
         FillOSCQueryInternalMotherClass(LedStripLayer)
             FillOSCQueryIntParam(universe);
-            FillOSCQueryIntParam(startChannel);
+    FillOSCQueryIntParam(startChannel);
+    FillOSCQueryBoolParam(use16Bits);
     FillOSCQueryBoolParam(includeAlpha);
     FillOSCQueryBoolParam(clearOnNoReception);
     FillOSCQueryFloatParam(noReceptionTime);

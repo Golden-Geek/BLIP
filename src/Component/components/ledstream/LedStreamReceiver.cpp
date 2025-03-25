@@ -41,6 +41,7 @@ void LedStreamReceiverComponent::updateInternal()
         while (r != 0)
         {
             r = artnet.read();
+            // DBG("Receiving artnet, returned " + String(r));
         }
     }
 #endif
@@ -58,8 +59,6 @@ void LedStreamReceiverComponent::onEnabledChanged()
 
 void LedStreamReceiverComponent::setupConnection()
 {
-
-    // NDBG("Setting up connection");
 #ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
     if (enabled)
@@ -87,7 +86,6 @@ void LedStreamReceiverComponent::setupConnection()
     if (shouldConnect)
     {
         artnet.begin();
-        NDBG("Artnet started");
         artnetIsInit = true;
     }
     else

@@ -54,6 +54,7 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
 {
     int numData = 1;
     var data[3];
+
     switch (pType)
     {
     case Component::ParamType::Trigger:
@@ -65,6 +66,10 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
 
     case Component::ParamType::Int:
         data[0] = (*(int *)param);
+        break;
+
+    case Component::ParamType::TypeEnum:
+        data[0] = c->getEnumString(param);
         break;
 
     case Component::ParamType::Float:

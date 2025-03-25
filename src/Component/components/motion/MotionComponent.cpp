@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 void MotionComponent::setupInternal(JsonObject o)
 {
     saveEnabled = false;
@@ -33,6 +35,15 @@ void MotionComponent::setupInternal(JsonObject o)
     AddFloatParamConfig(angleOffset);
     AddFloatParam(projectedAngle);
     AddFloatParamConfig(xOnCalibration);
+    AddIntParam(spinCount);
+    AddFloatParam(spin);
+
+    lastThrowState = 0;
+    launchOrientationX = 0;
+    launchProjectedAngle = 0;
+    currentSpinLastUpdate = 0;
+    prevActivity = 0;
+    countNonDouble = 0;
 }
 
 bool MotionComponent::initInternal()
@@ -233,6 +244,7 @@ void MotionComponent::readIMU()
     computeThrow();
     computeActivity();
     computeProjectedAngle();
+    computeSpin();
 
 #elif defined IMU_TYPE_M5MPU
 
@@ -391,12 +403,65 @@ void MotionComponent::computeThrow()
         }
     }
 
+    // DBG("maxAccel " + String(maxAccel) + ", maxLinearAccel " + String(maxLinearAccel) + ", accLinearDiff " + String(accLinearDiff) + ", isFlatting " + String(isFlatting) + ", newState " + String(newState));
+
     if (newState != throwState)
     {
-        throwState = newState;
-        var data[1]{throwState};
-        sendEvent(ThrowState, data, 1);
+        SetParam(throwState, newState);
+        DBG("Throw state " + String(throwState));
+        // throwState = newState;
+        // var data[1]{throwState};
+        // sendEvent(ThrowState, data, 1);
     }
+}
+
+void MotionComponent::computeSpin()
+{
+    float currentSpin = 0.5f;
+
+    if (throwState == 0)
+    {
+        SetParam(spinCount, 0);
+        currentSpinLastUpdate = 0;
+        lastThrowState = 0;
+        SetParam(spin, 0);
+        return;
+    }
+
+    if (throwState > 0 && lastThrowState == 0)
+    {
+        launchOrientationX = orientation[0];
+
+        if (launchOrientationX >= 0 && launchOrientationX < 180)
+        {
+            launchProjectedAngle = projectedAngle;
+        }
+        else
+        {
+            launchProjectedAngle = 1 - projectedAngle;
+        }
+    }
+
+    if (launchOrientationX >= 0 && launchOrientationX < 180)
+    {
+        currentSpin = projectedAngle;
+    }
+    else
+    {
+        currentSpin = 1 - projectedAngle;
+    }
+
+    if (currentSpin > 0 && currentSpin < 0.5 && currentSpinLastUpdate > 0.5)
+    {
+        int newSpinCount = spinCount += 1;
+        SetParam(spinCount, newSpinCount);
+    }
+
+    lastThrowState = throwState;
+    currentSpinLastUpdate = currentSpin;
+    float newSpin = currentSpin + spinCount - launchProjectedAngle;
+
+    SetParam(spin, newSpin);
 }
 
 void MotionComponent::computeActivity()
@@ -405,7 +470,8 @@ void MotionComponent::computeActivity()
     maxLinearAccel = (((maxLinearAccel - 0) * (1 - 0)) / (40 - 0)) + 0; // remap to 0..1 range
     maxLinearAccel = min(maxLinearAccel, (float)1.0);
 
-    activity = prevActivity + (maxLinearAccel - prevActivity) * 0.1;
+    float newActivity = prevActivity + (maxLinearAccel - prevActivity) * 0.1;
+    SetParam(activity, newActivity);
     prevActivity = activity;
 }
 
@@ -449,3 +515,4 @@ bool MotionComponent::handleCommandInternal(const String &command, var *data, in
 }
 
 // Script functions
+
