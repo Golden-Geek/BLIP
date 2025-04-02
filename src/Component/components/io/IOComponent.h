@@ -25,6 +25,7 @@ DeclareIntParam(pin, -1);
 DeclareIntParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
 
+bool ledCAttached;
 int pwmChannel;
 int curPin;
 

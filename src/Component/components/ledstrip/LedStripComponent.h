@@ -38,6 +38,10 @@
 #define LED_DEFAULT_MULTILED_MODE FullColor
 #endif
 
+#ifndef LED_DEFAULT_CORRECTION
+#define LED_DEFAULT_CORRECTION true
+#endif
+
 class LedStripComponent : public Component
 {
 public:
@@ -75,6 +79,7 @@ public:
 
     DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
+    DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
 
     // mapping
     DeclareBoolParam(invertStrip, LED_DEFAULT_INVERT_DIRECTION);
@@ -98,7 +103,6 @@ public:
 
     Color colors[LED_MAX_COUNT];
     uint8_t ditherFrameCounter = 0;
-
 
     // user layers, may be more than one later
 #if USE_BAKELAYER
@@ -135,6 +139,7 @@ public:
     void setupLeds();
 
     void setBrightness(float val);
+    void updateCorrection();
 
     int getNumColors() const;
     int getColorIndex(int i) const;
@@ -161,8 +166,9 @@ public:
     CheckAndSetParam(enPin);
     CheckAndSetParam(brightness);
     CheckAndSetParam(invertStrip);
-    CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);   
+    CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
     CheckAndSetParam(maxPower);
+    CheckAndSetParam(colorCorrection);
     HandleSetParamInternalEnd;
 
     FillSettingsInternalStart
@@ -174,6 +180,7 @@ public:
     FillSettingsParam(invertStrip);
     FillSettingsParam(maxPower);
     FillSettingsParam(multiLedMode);
+    FillSettingsParam(colorCorrection);
     FillSettingsInternalEnd
 
         FillOSCQueryInternalStart
@@ -185,6 +192,7 @@ public:
     FillOSCQueryBoolParam(invertStrip);
     FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
     FillOSCQueryIntParam(maxPower);
+    FillOSCQueryBoolParam(colorCorrection);
     FillOSCQueryInternalEnd
 };
 

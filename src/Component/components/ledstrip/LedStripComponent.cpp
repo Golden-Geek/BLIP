@@ -25,6 +25,7 @@ void LedStripComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(invertStrip);
     AddIntParam(multiLedMode);
     AddIntParamConfig(maxPower);
+    AddBoolParam(colorCorrection);
 
     numColors = count;
 
@@ -76,7 +77,8 @@ void LedStripComponent::setupLeds()
     // colors = (Color *)malloc(count * sizeof(Color));
     memset(colors, 0, LED_MAX_COUNT * sizeof(Color));
 #ifdef LED_USE_FASTLED
-    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count);
+    updateCorrection();
 #else
     for (int i = 0; i < count; i++)
         colors[i] = Color(0, 0, 0, 0);
@@ -145,6 +147,12 @@ void LedStripComponent::setBrightness(float val)
     SetParam(brightness, val);
 }
 
+void LedStripComponent::updateCorrection()
+{
+    if(colorCorrection) FastLED.setCorrection(TypicalLEDStrip);
+    else FastLED.setCorrection(UncorrectedColor);
+}
+
 int LedStripComponent::getNumColors() const
 {
     switch (multiLedMode)
@@ -178,6 +186,7 @@ int LedStripComponent::getColorIndex(int i) const
 void LedStripComponent::paramValueChangedInternal(void *param)
 {
 #ifdef LED_USE_FASTLED
+    if(param == &colorCorrection) updateCorrection();
 #else
     if (param == &count)
     {

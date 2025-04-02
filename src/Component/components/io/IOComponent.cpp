@@ -1,9 +1,12 @@
+#include "UnityIncludes.h"
+
 ImplementManagerSingleton(IO);
 
 void IOComponent::setupInternal(JsonObject o)
 {
     curPin = -1;
     pwmChannel = -1;
+    ledCAttached = false;
 
     AddIntParamConfig(pin);
     AddIntParamConfig(mode);
@@ -30,8 +33,7 @@ bool IOComponent::initInternal()
 
 void IOComponent::updateInternal()
 {
-    if (mode == D_OSC || mode == A_OSC)
-        updatePin();
+    updatePin();
 }
 
 void IOComponent::clearInternal()
@@ -53,12 +55,12 @@ void IOComponent::paramValueChangedInternal(void *param)
 
 void IOComponent::setupPin()
 {
-    // NDBG("Setup Pin");
     if (curPin != -1) // prevPin was a PWM pin
     {
 #ifdef ARDUINO_NEW_VERSION
         // NDBG("Detach Pin " + String(curPin));
-        ledcDetach(curPin);
+        if (ledCAttached)
+            ledcDetach(curPin);
 #else
         if (pwmChannel != -1)
         {
@@ -85,10 +87,12 @@ void IOComponent::setupPin()
             break;
 
         case D_INPUT_PULLUP:
+            DBG("INPUT_PULLUP");
             pinm = INPUT_PULLUP;
             break;
 
         case D_INPUT_PULLDOWN:
+            DBG("INPUT_PULLDOWN");
             pinm = INPUT_PULLDOWN;
             break;
 
@@ -113,6 +117,7 @@ void IOComponent::setupPin()
 #ifdef ARDUINO_NEW_VERSION
                 // NDBG("Attach pin " + String(curPin) + " to PWM");
                 ledcAttach(curPin, 5000, 10);
+                ledCAttached = true;
 #else
 
                 int channel = RootComponent::instance->getFirstAvailablePWMChannel();
@@ -147,6 +152,7 @@ void IOComponent::updatePin()
     case D_INPUT_PULLDOWN:
     {
         bool val = digitalRead(pin);
+
         if (inverted)
             val = !val;
 
