@@ -112,7 +112,7 @@ void LedStripComponent::updateInternal()
 #endif
 
     // all layer's internal colors are updated in Component's update() function
-    
+
     clearColors();
     numColors = getNumColors();
 
@@ -149,8 +149,12 @@ void LedStripComponent::setBrightness(float val)
 
 void LedStripComponent::updateCorrection()
 {
-    if(colorCorrection) FastLED.setCorrection(TypicalLEDStrip);
-    else FastLED.setCorrection(UncorrectedColor);
+#if defined(LED_USE_FASTLED)
+    if (colorCorrection)
+        FastLED.setCorrection(TypicalLEDStrip);
+    else
+        FastLED.setCorrection(UncorrectedColor);
+#endif
 }
 
 int LedStripComponent::getNumColors() const
@@ -186,7 +190,8 @@ int LedStripComponent::getColorIndex(int i) const
 void LedStripComponent::paramValueChangedInternal(void *param)
 {
 #ifdef LED_USE_FASTLED
-    if(param == &colorCorrection) updateCorrection();
+    if (param == &colorCorrection)
+        updateCorrection();
 #else
     if (param == &count)
     {
