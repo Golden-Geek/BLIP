@@ -32,6 +32,10 @@
 #define PWMLED_DEFAULT_16BIT_STREAM false
 #endif
 
+#ifndef PWMLED_MAX_COUNT
+#define PWMLED_MAX_COUNT 16
+#endif
+
 DeclareComponent(PWMLed, "pwmled", LedStreamListenerDerive)
 
     DeclareIntParam(rPin, PWMLED_DEFAULT_RPIN);
@@ -131,7 +135,7 @@ FillOSCQueryInternalEnd
 
 // Manager
 
-DeclareComponentManager(PWMLed, PWMLED, pwmLed, pwmLed)
+DeclareComponentManager(PWMLed, PWMLED, pwmLed, pwmLed, PWMLED_MAX_COUNT)
 
     void addItemInternal(int index)
 {

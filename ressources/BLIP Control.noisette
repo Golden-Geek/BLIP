@@ -1,6 +1,6 @@
 {
   "metaData": {
-    "version": "1.9.25b9",
+    "version": "1.9.25b12",
     "versionNumber": 67865
   },
   "projectSettings": {
@@ -11,6 +11,15 @@
             "value": "",
             "controlAddress": "/showDashboardOnStartup",
             "enabled": false
+          },
+          {
+            "value": true,
+            "controlAddress": "/enableDashboardServer"
+          },
+          {
+            "value": 9999,
+            "hexMode": false,
+            "controlAddress": "/serverPort"
           }
         ]
       },
@@ -19,6 +28,12 @@
     }
   },
   "dashboardManager": {
+    "parameters": [
+      {
+        "value": false,
+        "controlAddress": "/snapping"
+      }
+    ],
     "viewOffset": [
       0,
       0
@@ -53,14 +68,14 @@
               "shifters": [
                 {
                   "type": 1,
-                  "width": 307,
+                  "width": 291,
                   "height": 753,
                   "direction": 2,
                   "shifters": [
                     {
                       "type": 0,
-                      "width": 307,
-                      "height": 384,
+                      "width": 291,
+                      "height": 385,
                       "currentContent": "Modules",
                       "tabs": [
                         {
@@ -70,8 +85,8 @@
                     },
                     {
                       "type": 0,
-                      "width": 307,
-                      "height": 362,
+                      "width": 291,
+                      "height": 361,
                       "currentContent": "Custom Variables",
                       "tabs": [
                         {
@@ -83,7 +98,7 @@
                 },
                 {
                   "type": 0,
-                  "width": 1080,
+                  "width": 1264,
                   "height": 753,
                   "currentContent": "State Machine",
                   "tabs": [
@@ -103,7 +118,7 @@
                 },
                 {
                   "type": 0,
-                  "width": 649,
+                  "width": 481,
                   "height": 753,
                   "currentContent": "Inspector",
                   "tabs": [
@@ -133,7 +148,7 @@
                 },
                 {
                   "type": 0,
-                  "width": 1295,
+                  "width": 1112,
                   "height": 430,
                   "currentContent": "Sequence Editor",
                   "tabs": [
@@ -144,7 +159,7 @@
                 },
                 {
                   "type": 0,
-                  "width": 563,
+                  "width": 746,
                   "height": 430,
                   "currentContent": "Logger",
                   "tabs": [
@@ -251,7 +266,7 @@
               "controlAddress": "/serverName"
             },
             {
-              "value": true,
+              "value": false,
               "controlAddress": "/isConnected"
             }
           ],
@@ -363,6 +378,11 @@
               "owned": true,
               "niceName": "Server"
             },
+            "streamReceiver": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Stream Receiver"
+            },
             "gpio": {
               "editorIsCollapsed": true,
               "containers": {
@@ -398,11 +418,6 @@
               },
               "owned": true,
               "niceName": "Buttons"
-            },
-            "streamReceiver": {
-              "editorIsCollapsed": true,
-              "owned": true,
-              "niceName": "Stream Receiver"
             }
           }
         },
@@ -1105,7 +1120,7 @@
             }
           }
         },
-        "hasListenExtension": true
+        "hasListenExtension": false
       },
       {
         "parameters": [
@@ -1144,6 +1159,14 @@
             {
               "value": "",
               "controlAddress": "/port"
+            },
+            {
+              "value": false,
+              "controlAddress": "/dtr"
+            },
+            {
+              "value": true,
+              "controlAddress": "/rts"
             }
           ],
           "containers": {
@@ -1165,8 +1188,12 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
+          },
+          {
+            "value": false,
+            "controlAddress": "/logIncoming"
           },
           {
             "value": false,
@@ -1189,6 +1216,10 @@
               "controlAddress": "/serverName"
             },
             {
+              "value": true,
+              "controlAddress": "/onlySyncFromSameName"
+            },
+            {
               "value": false,
               "controlAddress": "/isConnected"
             }
@@ -1201,7 +1232,7 @@
                   "controlAddress": "/local"
                 },
                 {
-                  "value": "192.168.1.124",
+                  "value": "192.168.1.114",
                   "controlAddress": "/remoteHost"
                 },
                 {
@@ -1233,11 +1264,23 @@
           "viewZoom": 1.0
         },
         "values": {
+          "parameters": [
+            {
+              "value": false,
+              "controlAddress": "/testMode"
+            }
+          ],
           "containers": {
             "comm": {
               "editorIsCollapsed": true,
               "containers": {
                 "serial": {
+                  "parameters": [
+                    {
+                      "value": false,
+                      "controlAddress": "/sendFeedback"
+                    }
+                  ],
                   "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Serial"
@@ -1247,35 +1290,21 @@
                     {
                       "value": "",
                       "controlAddress": "/remoteHost"
+                    },
+                    {
+                      "value": false,
+                      "controlAddress": "/sendFeedback"
                     }
                   ],
                   "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Osc"
-                },
-                "espnow": {
-                  "parameters": [
-                    {
-                      "value": false,
-                      "controlAddress": "/enabled"
-                    }
-                  ],
-                  "editorIsCollapsed": true,
-                  "owned": true,
-                  "niceName": "Espnow"
                 }
               },
               "owned": true,
               "niceName": "Comm"
             },
             "settings": {
-              "parameters": [
-                {
-                  "value": 2,
-                  "hexMode": false,
-                  "controlAddress": "/wakeUpButton"
-                }
-              ],
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Settings"
@@ -1295,7 +1324,127 @@
               "owned": true,
               "niceName": "Wifi"
             },
+            "leds": {
+              "parameters": [
+                {
+                  "value": 1,
+                  "hexMode": false,
+                  "controlAddress": "/count"
+                }
+              ],
+              "editorIsCollapsed": true,
+              "containers": {
+                "strip1": {
+                  "parameters": [
+                    {
+                      "value": 0.5,
+                      "controlAddress": "/brightness"
+                    },
+                    {
+                      "value": true,
+                      "controlAddress": "/invertStrip"
+                    },
+                    {
+                      "value": "Single Color",
+                      "controlAddress": "/multiLedMode"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "containers": {
+                    "playbackLayer": {
+                      "parameters": [
+                        {
+                          "value": "Add",
+                          "controlAddress": "/blendMode"
+                        }
+                      ],
+                      "editorIsCollapsed": true,
+                      "owned": true,
+                      "niceName": "Playback Layer"
+                    },
+                    "streamLayer": {
+                      "parameters": [
+                        {
+                          "value": "Add",
+                          "controlAddress": "/blendMode"
+                        },
+                        {
+                          "value": false,
+                          "controlAddress": "/includeAlpha"
+                        },
+                        {
+                          "value": true,
+                          "controlAddress": "/clearOnNoReception"
+                        }
+                      ],
+                      "editorIsCollapsed": true,
+                      "owned": true,
+                      "niceName": "Stream Layer"
+                    },
+                    "scriptLayer": {
+                      "parameters": [
+                        {
+                          "value": "Add",
+                          "controlAddress": "/blendMode"
+                        }
+                      ],
+                      "editorIsCollapsed": true,
+                      "owned": true,
+                      "niceName": "Script Layer"
+                    },
+                    "systemLayer": {
+                      "parameters": [
+                        {
+                          "value": "Alpha",
+                          "controlAddress": "/blendMode"
+                        }
+                      ],
+                      "editorIsCollapsed": true,
+                      "owned": true,
+                      "niceName": "System Layer"
+                    },
+                    "fx": {
+                      "parameters": [
+                        {
+                          "value": "Projected Angle",
+                          "controlAddress": "/isolationAxis"
+                        }
+                      ],
+                      "editorIsCollapsed": true,
+                      "owned": true,
+                      "niceName": "Fx"
+                    }
+                  },
+                  "owned": true,
+                  "niceName": "Strip 1"
+                }
+              },
+              "owned": true,
+              "niceName": "Leds"
+            },
             "battery": {
+              "parameters": [
+                {
+                  "value": 6,
+                  "hexMode": false,
+                  "controlAddress": "/batteryPin"
+                },
+                {
+                  "value": 14,
+                  "hexMode": false,
+                  "controlAddress": "/chargePin"
+                },
+                {
+                  "value": 222,
+                  "hexMode": false,
+                  "controlAddress": "/rawMin"
+                },
+                {
+                  "value": 335,
+                  "hexMode": false,
+                  "controlAddress": "/rawMax"
+                }
+              ],
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Battery"
@@ -1305,10 +1454,20 @@
               "owned": true,
               "niceName": "Files"
             },
+            "script": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Script"
+            },
             "server": {
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Server"
+            },
+            "streamReceiver": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Stream Receiver"
             },
             "gpio": {
               "editorIsCollapsed": true,
@@ -1316,12 +1475,12 @@
                 "gpio1": {
                   "parameters": [
                     {
-                      "value": 15,
+                      "value": 18,
                       "hexMode": false,
                       "controlAddress": "/pin"
                     },
                     {
-                      "value": "Digital Output",
+                      "value": "Analog Output",
                       "controlAddress": "/mode"
                     }
                   ],
@@ -1339,20 +1498,24 @@
                 "button1": {
                   "parameters": [
                     {
-                      "value": 2,
+                      "value": 7,
                       "hexMode": false,
                       "controlAddress": "/pin"
                     },
                     {
-                      "value": "Digital Input",
+                      "value": "Digital Input Pullup",
                       "controlAddress": "/mode"
                     },
                     {
-                      "value": 0.0,
+                      "value": false,
+                      "controlAddress": "/inverted"
+                    },
+                    {
+                      "value": 1.0,
                       "controlAddress": "/value"
                     },
                     {
-                      "value": true,
+                      "value": false,
                       "controlAddress": "/canShutDown"
                     }
                   ],
@@ -1364,32 +1527,34 @@
               "owned": true,
               "niceName": "Buttons"
             },
-            "pwmLed": {
-              "editorIsCollapsed": true,
-              "containers": {
-                "pwmLed1": {
-                  "parameters": [
-                    {
-                      "value": true,
-                      "controlAddress": "/rgbwMode"
-                    },
-                    {
-                      "value": [
-                        0.8778627514839172,
-                        1.0,
-                        0.4192313551902771,
-                        0.0
-                      ],
-                      "controlAddress": "/color"
-                    }
+            "motion": {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                },
+                {
+                  "value": "None",
+                  "controlAddress": "/sendLevel"
+                },
+                {
+                  "value": [
+                    0.800000011920929,
+                    2.0
                   ],
-                  "editorIsCollapsed": true,
-                  "owned": true,
-                  "niceName": "Pwm Led 1"
+                  "controlAddress": "/flatThresholds"
+                },
+                {
+                  "value": [
+                    0.800000011920929,
+                    2.0
+                  ],
+                  "controlAddress": "/accelThresholds"
                 }
-              },
+              ],
+              "editorIsCollapsed": true,
               "owned": true,
-              "niceName": "Pwm Led"
+              "niceName": "Motion"
             }
           }
         },
@@ -1409,6 +1574,12 @@
               "ACCESS": 3,
               "TYPE": "I",
               "FULL_PATH": "/restart"
+            },
+            "standby": {
+              "DESCRIPTION": "Standby",
+              "ACCESS": 3,
+              "TYPE": "I",
+              "FULL_PATH": "/standby"
             },
             "testMode": {
               "DESCRIPTION": "Test Mode",
@@ -1509,58 +1680,6 @@
                       ]
                     }
                   }
-                },
-                "espnow": {
-                  "DESCRIPTION": "Espnow",
-                  "FULL_PATH": "/comm/espnow",
-                  "ACCESS": 0,
-                  "CONTENTS": {
-                    "enabled": {
-                      "DESCRIPTION": "Enabled",
-                      "ACCESS": 3,
-                      "TYPE": "F",
-                      "FULL_PATH": "/comm/espnow/enabled",
-                      "VALUE": [
-                        false
-                      ]
-                    },
-                    "pairingMode": {
-                      "DESCRIPTION": "Pairing Mode",
-                      "ACCESS": 3,
-                      "TYPE": "F",
-                      "FULL_PATH": "/comm/espnow/pairingMode",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        false
-                      ]
-                    },
-                    "channel": {
-                      "DESCRIPTION": "Channel",
-                      "ACCESS": 3,
-                      "TYPE": "i",
-                      "FULL_PATH": "/comm/espnow/channel",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        1
-                      ]
-                    },
-                    "autoPairing": {
-                      "DESCRIPTION": "Auto Pairing",
-                      "ACCESS": 3,
-                      "TYPE": "F",
-                      "FULL_PATH": "/comm/espnow/autoPairing",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        false
-                      ]
-                    }
-                  }
                 }
               }
             },
@@ -1628,30 +1747,6 @@
                   "VALUE": [
                     "BLIP"
                   ]
-                },
-                "wakeUpButton": {
-                  "DESCRIPTION": "Wake Up Button",
-                  "ACCESS": 3,
-                  "TYPE": "i",
-                  "FULL_PATH": "/settings/wakeUpButton",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    2
-                  ]
-                },
-                "wakeUpState": {
-                  "DESCRIPTION": "Wake Up State",
-                  "ACCESS": 3,
-                  "TYPE": "T",
-                  "FULL_PATH": "/settings/wakeUpState",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    true
-                  ]
                 }
               }
             },
@@ -1704,6 +1799,460 @@
                 }
               }
             },
+            "leds": {
+              "DESCRIPTION": "Leds",
+              "FULL_PATH": "/leds",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/leds/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "count": {
+                  "DESCRIPTION": "Count",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/leds/count",
+                  "VALUE": [
+                    1
+                  ]
+                },
+                "strip1": {
+                  "DESCRIPTION": "Strip 1",
+                  "FULL_PATH": "/leds/strip1",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/leds/strip1/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "count": {
+                      "DESCRIPTION": "Count",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/leds/strip1/count",
+                      "VALUE": [
+                        12
+                      ]
+                    },
+                    "dataPin": {
+                      "DESCRIPTION": "Data Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/leds/strip1/dataPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        3
+                      ]
+                    },
+                    "clkPin": {
+                      "DESCRIPTION": "Clk Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/leds/strip1/clkPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        -1
+                      ]
+                    },
+                    "enPin": {
+                      "DESCRIPTION": "En Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/leds/strip1/enPin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        20
+                      ]
+                    },
+                    "brightness": {
+                      "DESCRIPTION": "Brightness",
+                      "ACCESS": 3,
+                      "TYPE": "f",
+                      "FULL_PATH": "/leds/strip1/brightness",
+                      "VALUE": [
+                        0.5
+                      ],
+                      "RANGE": [
+                        {
+                          "MIN": 0,
+                          "MAX": 1
+                        }
+                      ]
+                    },
+                    "invertStrip": {
+                      "DESCRIPTION": "Invert Strip",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/leds/strip1/invertStrip",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "multiLedMode": {
+                      "DESCRIPTION": "Multi Led Mode",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/leds/strip1/multiLedMode",
+                      "VALUE": [
+                        "Full Color"
+                      ],
+                      "RANGE": [
+                        {
+                          "VALS": [
+                            "Full Color",
+                            "Single Color",
+                            "Two Colors"
+                          ]
+                        }
+                      ]
+                    },
+                    "maxPower": {
+                      "DESCRIPTION": "Max Power",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/leds/strip1/maxPower",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        1200
+                      ]
+                    },
+                    "playbackLayer": {
+                      "DESCRIPTION": "Playback Layer",
+                      "FULL_PATH": "/leds/strip1/playbackLayer",
+                      "ACCESS": 0,
+                      "CONTENTS": {
+                        "enabled": {
+                          "DESCRIPTION": "Enabled",
+                          "ACCESS": 3,
+                          "TYPE": "T",
+                          "FULL_PATH": "/leds/strip1/playbackLayer/enabled",
+                          "VALUE": [
+                            true
+                          ]
+                        },
+                        "blendMode": {
+                          "DESCRIPTION": "Blend Mode",
+                          "ACCESS": 3,
+                          "TYPE": "s",
+                          "FULL_PATH": "/leds/strip1/playbackLayer/blendMode",
+                          "VALUE": [
+                            "Add"
+                          ],
+                          "RANGE": [
+                            {
+                              "VALS": [
+                                "Add",
+                                "Multiply",
+                                "Max",
+                                "Min",
+                                "Alpha"
+                              ]
+                            }
+                          ]
+                        },
+                        "idMode": {
+                          "DESCRIPTION": "Id Mode",
+                          "ACCESS": 3,
+                          "TYPE": "F",
+                          "FULL_PATH": "/leds/strip1/playbackLayer/idMode",
+                          "VALUE": [
+                            false
+                          ]
+                        },
+                        "loop": {
+                          "DESCRIPTION": "Loop",
+                          "ACCESS": 3,
+                          "TYPE": "F",
+                          "FULL_PATH": "/leds/strip1/playbackLayer/loop",
+                          "VALUE": [
+                            false
+                          ]
+                        }
+                      }
+                    },
+                    "streamLayer": {
+                      "DESCRIPTION": "Stream Layer",
+                      "FULL_PATH": "/leds/strip1/streamLayer",
+                      "ACCESS": 0,
+                      "CONTENTS": {
+                        "enabled": {
+                          "DESCRIPTION": "Enabled",
+                          "ACCESS": 3,
+                          "TYPE": "T",
+                          "FULL_PATH": "/leds/strip1/streamLayer/enabled",
+                          "VALUE": [
+                            true
+                          ]
+                        },
+                        "blendMode": {
+                          "DESCRIPTION": "Blend Mode",
+                          "ACCESS": 3,
+                          "TYPE": "s",
+                          "FULL_PATH": "/leds/strip1/streamLayer/blendMode",
+                          "VALUE": [
+                            "Add"
+                          ],
+                          "RANGE": [
+                            {
+                              "VALS": [
+                                "Add",
+                                "Multiply",
+                                "Max",
+                                "Min",
+                                "Alpha"
+                              ]
+                            }
+                          ]
+                        },
+                        "universe": {
+                          "DESCRIPTION": "Universe",
+                          "ACCESS": 3,
+                          "TYPE": "i",
+                          "FULL_PATH": "/leds/strip1/streamLayer/universe",
+                          "TAGS": [
+                            "config"
+                          ],
+                          "VALUE": [
+                            0
+                          ]
+                        },
+                        "startChannel": {
+                          "DESCRIPTION": "Start Channel",
+                          "ACCESS": 3,
+                          "TYPE": "i",
+                          "FULL_PATH": "/leds/strip1/streamLayer/startChannel",
+                          "TAGS": [
+                            "config"
+                          ],
+                          "VALUE": [
+                            1
+                          ]
+                        },
+                        "includeAlpha": {
+                          "DESCRIPTION": "Include Alpha",
+                          "ACCESS": 3,
+                          "TYPE": "F",
+                          "FULL_PATH": "/leds/strip1/streamLayer/includeAlpha",
+                          "TAGS": [
+                            "config"
+                          ],
+                          "VALUE": [
+                            false
+                          ]
+                        },
+                        "clearOnNoReception": {
+                          "DESCRIPTION": "Clear On No Reception",
+                          "ACCESS": 3,
+                          "TYPE": "T",
+                          "FULL_PATH": "/leds/strip1/streamLayer/clearOnNoReception",
+                          "TAGS": [
+                            "config"
+                          ],
+                          "VALUE": [
+                            true
+                          ]
+                        },
+                        "noReceptionTime": {
+                          "DESCRIPTION": "No Reception Time",
+                          "ACCESS": 3,
+                          "TYPE": "f",
+                          "FULL_PATH": "/leds/strip1/streamLayer/noReceptionTime",
+                          "TAGS": [
+                            "config"
+                          ],
+                          "VALUE": [
+                            1
+                          ]
+                        }
+                      }
+                    },
+                    "scriptLayer": {
+                      "DESCRIPTION": "Script Layer",
+                      "FULL_PATH": "/leds/strip1/scriptLayer",
+                      "ACCESS": 0,
+                      "CONTENTS": {
+                        "enabled": {
+                          "DESCRIPTION": "Enabled",
+                          "ACCESS": 3,
+                          "TYPE": "T",
+                          "FULL_PATH": "/leds/strip1/scriptLayer/enabled",
+                          "VALUE": [
+                            true
+                          ]
+                        },
+                        "blendMode": {
+                          "DESCRIPTION": "Blend Mode",
+                          "ACCESS": 3,
+                          "TYPE": "s",
+                          "FULL_PATH": "/leds/strip1/scriptLayer/blendMode",
+                          "VALUE": [
+                            "Add"
+                          ],
+                          "RANGE": [
+                            {
+                              "VALS": [
+                                "Add",
+                                "Multiply",
+                                "Max",
+                                "Min",
+                                "Alpha"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "systemLayer": {
+                      "DESCRIPTION": "System Layer",
+                      "FULL_PATH": "/leds/strip1/systemLayer",
+                      "ACCESS": 0,
+                      "CONTENTS": {
+                        "enabled": {
+                          "DESCRIPTION": "Enabled",
+                          "ACCESS": 3,
+                          "TYPE": "T",
+                          "FULL_PATH": "/leds/strip1/systemLayer/enabled",
+                          "VALUE": [
+                            true
+                          ]
+                        },
+                        "blendMode": {
+                          "DESCRIPTION": "Blend Mode",
+                          "ACCESS": 3,
+                          "TYPE": "s",
+                          "FULL_PATH": "/leds/strip1/systemLayer/blendMode",
+                          "VALUE": [
+                            "Alpha"
+                          ],
+                          "RANGE": [
+                            {
+                              "VALS": [
+                                "Add",
+                                "Multiply",
+                                "Max",
+                                "Min",
+                                "Alpha"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "fx": {
+                      "DESCRIPTION": "Fx",
+                      "FULL_PATH": "/leds/strip1/fx",
+                      "ACCESS": 0,
+                      "CONTENTS": {
+                        "enabled": {
+                          "DESCRIPTION": "Enabled",
+                          "ACCESS": 3,
+                          "TYPE": "T",
+                          "FULL_PATH": "/leds/strip1/fx/enabled",
+                          "VALUE": [
+                            true
+                          ]
+                        },
+                        "staticOffset": {
+                          "DESCRIPTION": "Static Offset",
+                          "ACCESS": 3,
+                          "TYPE": "f",
+                          "FULL_PATH": "/leds/strip1/fx/staticOffset",
+                          "VALUE": [
+                            0
+                          ]
+                        },
+                        "offsetSpeed": {
+                          "DESCRIPTION": "Offset Speed",
+                          "ACCESS": 3,
+                          "TYPE": "f",
+                          "FULL_PATH": "/leds/strip1/fx/offsetSpeed",
+                          "VALUE": [
+                            0
+                          ]
+                        },
+                        "isolationSpeed": {
+                          "DESCRIPTION": "Isolation Speed",
+                          "ACCESS": 3,
+                          "TYPE": "f",
+                          "FULL_PATH": "/leds/strip1/fx/isolationSpeed",
+                          "VALUE": [
+                            0
+                          ]
+                        },
+                        "isolationSmoothing": {
+                          "DESCRIPTION": "Isolation Smoothing",
+                          "ACCESS": 3,
+                          "TYPE": "f",
+                          "FULL_PATH": "/leds/strip1/fx/isolationSmoothing",
+                          "VALUE": [
+                            0
+                          ]
+                        },
+                        "isolationAxis": {
+                          "DESCRIPTION": "Isolation Axis",
+                          "ACCESS": 3,
+                          "TYPE": "s",
+                          "FULL_PATH": "/leds/strip1/fx/isolationAxis",
+                          "VALUE": [
+                            "Projected Angle"
+                          ],
+                          "RANGE": [
+                            {
+                              "VALS": [
+                                "Projected Angle",
+                                "Yaw",
+                                "Pitch",
+                                "Roll"
+                              ]
+                            }
+                          ]
+                        },
+                        "swapOnFlip": {
+                          "DESCRIPTION": "Swap On Flip",
+                          "ACCESS": 3,
+                          "TYPE": "F",
+                          "FULL_PATH": "/leds/strip1/fx/swapOnFlip",
+                          "VALUE": [
+                            false
+                          ]
+                        },
+                        "showCalibration": {
+                          "DESCRIPTION": "Show Calibration",
+                          "ACCESS": 3,
+                          "TYPE": "F",
+                          "FULL_PATH": "/leds/strip1/fx/showCalibration",
+                          "VALUE": [
+                            false
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "battery": {
               "DESCRIPTION": "Battery",
               "FULL_PATH": "/battery",
@@ -1727,7 +2276,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    0
+                    6
                   ]
                 },
                 "chargePin": {
@@ -1739,7 +2288,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    -1
+                    14
                   ]
                 },
                 "rawMin": {
@@ -1751,7 +2300,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    0
+                    222
                   ]
                 },
                 "rawMax": {
@@ -1763,7 +2312,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    4095
+                    335
                   ]
                 },
                 "lowBatteryThreshold": {
@@ -1799,7 +2348,7 @@
                   "TYPE": "f",
                   "FULL_PATH": "/battery/batteryLevel",
                   "VALUE": [
-                    4.2
+                    15.0627
                   ],
                   "RANGE": [
                     {
@@ -1832,6 +2381,106 @@
                   "VALUE": [
                     true
                   ]
+                },
+                "sdEnPin": {
+                  "DESCRIPTION": "Sd En Pin",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/files/sdEnPin",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    16
+                  ]
+                },
+                "sdEnVal": {
+                  "DESCRIPTION": "Sd En Val",
+                  "ACCESS": 3,
+                  "TYPE": "F",
+                  "FULL_PATH": "/files/sdEnVal",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    false
+                  ]
+                },
+                "sdSCK": {
+                  "DESCRIPTION": "Sd SCK",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/files/sdSCK",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    4
+                  ]
+                },
+                "sdMiso": {
+                  "DESCRIPTION": "Sd Miso",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/files/sdMiso",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    8
+                  ]
+                },
+                "sdMosi": {
+                  "DESCRIPTION": "Sd Mosi",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/files/sdMosi",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    5
+                  ]
+                },
+                "sdCS": {
+                  "DESCRIPTION": "Sd CS",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/files/sdCS",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    15
+                  ]
+                },
+                "sdSpeed": {
+                  "DESCRIPTION": "Sd Speed",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/files/sdSpeed",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    27000000
+                  ]
+                }
+              }
+            },
+            "script": {
+              "DESCRIPTION": "Script",
+              "FULL_PATH": "/script",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/script/enabled",
+                  "VALUE": [
+                    true
+                  ]
                 }
               }
             },
@@ -1859,6 +2508,31 @@
                   ],
                   "VALUE": [
                     true
+                  ]
+                }
+              }
+            },
+            "streamReceiver": {
+              "DESCRIPTION": "Stream Receiver",
+              "FULL_PATH": "/streamReceiver",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/streamReceiver/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "receiveRate": {
+                  "DESCRIPTION": "Receive Rate",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/streamReceiver/receiveRate",
+                  "VALUE": [
+                    60
                   ]
                 }
               }
@@ -1909,7 +2583,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        15
+                        18
                       ]
                     },
                     "mode": {
@@ -1921,13 +2595,14 @@
                         "config"
                       ],
                       "VALUE": [
-                        "Digital Output"
+                        "Analog Output"
                       ],
                       "RANGE": [
                         {
                           "VALS": [
                             "Digital Input",
                             "Digital Input Pullup",
+                            "Digital Input Pulldown",
                             "Analog Input",
                             "Digital Output",
                             "Analog Output",
@@ -2014,7 +2689,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        2
+                        7
                       ]
                     },
                     "mode": {
@@ -2026,13 +2701,14 @@
                         "config"
                       ],
                       "VALUE": [
-                        "Digital Input"
+                        "Digital Input Pullup"
                       ],
                       "RANGE": [
                         {
                           "VALS": [
                             "Digital Input",
                             "Digital Input Pullup",
+                            "Digital Input Pulldown",
                             "Analog Input",
                             "Digital Output",
                             "Analog Output",
@@ -2060,7 +2736,7 @@
                       "TYPE": "f",
                       "FULL_PATH": "/buttons/button1/value",
                       "VALUE": [
-                        0
+                        1
                       ],
                       "RANGE": [
                         {
@@ -2081,174 +2757,341 @@
                     "longPress": {
                       "DESCRIPTION": "Long Press",
                       "ACCESS": 1,
-                      "TYPE": "F",
+                      "TYPE": "T",
                       "FULL_PATH": "/buttons/button1/longPress",
                       "VALUE": [
-                        false
+                        true
                       ]
                     },
                     "veryLongPress": {
                       "DESCRIPTION": "Very Long Press",
                       "ACCESS": 1,
-                      "TYPE": "F",
+                      "TYPE": "T",
                       "FULL_PATH": "/buttons/button1/veryLongPress",
                       "VALUE": [
-                        false
+                        true
                       ]
                     },
                     "canShutDown": {
                       "DESCRIPTION": "Can Shut Down",
                       "ACCESS": 3,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/buttons/button1/canShutDown",
                       "TAGS": [
                         "config"
                       ],
                       "VALUE": [
-                        true
+                        false
                       ]
                     }
                   }
                 }
               }
             },
-            "pwmLed": {
-              "DESCRIPTION": "Pwm Led",
-              "FULL_PATH": "/pwmLed",
+            "motion": {
+              "DESCRIPTION": "Motion",
+              "FULL_PATH": "/motion",
               "ACCESS": 0,
               "CONTENTS": {
                 "enabled": {
                   "DESCRIPTION": "Enabled",
                   "ACCESS": 3,
-                  "TYPE": "T",
-                  "FULL_PATH": "/pwmLed/enabled",
+                  "TYPE": "F",
+                  "FULL_PATH": "/motion/enabled",
                   "VALUE": [
-                    true
+                    false
                   ]
                 },
-                "count": {
-                  "DESCRIPTION": "Count",
+                "connected": {
+                  "DESCRIPTION": "Connected",
+                  "ACCESS": 1,
+                  "TYPE": "F",
+                  "FULL_PATH": "/motion/connected",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    false
+                  ]
+                },
+                "sendLevel": {
+                  "DESCRIPTION": "Send Level",
                   "ACCESS": 3,
-                  "TYPE": "i",
-                  "FULL_PATH": "/pwmLed/count",
+                  "TYPE": "s",
+                  "FULL_PATH": "/motion/sendLevel",
                   "VALUE": [
-                    1
-                  ]
-                },
-                "pwmLed1": {
-                  "DESCRIPTION": "Pwm Led 1",
-                  "FULL_PATH": "/pwmLed/pwmLed1",
-                  "ACCESS": 0,
-                  "CONTENTS": {
-                    "enabled": {
-                      "DESCRIPTION": "Enabled",
-                      "ACCESS": 3,
-                      "TYPE": "T",
-                      "FULL_PATH": "/pwmLed/pwmLed1/enabled",
-                      "VALUE": [
-                        true
-                      ]
-                    },
-                    "rPin": {
-                      "DESCRIPTION": "R Pin",
-                      "ACCESS": 3,
-                      "TYPE": "i",
-                      "FULL_PATH": "/pwmLed/pwmLed1/rPin",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        17
-                      ]
-                    },
-                    "gPin": {
-                      "DESCRIPTION": "G Pin",
-                      "ACCESS": 3,
-                      "TYPE": "i",
-                      "FULL_PATH": "/pwmLed/pwmLed1/gPin",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        19
-                      ]
-                    },
-                    "bPin": {
-                      "DESCRIPTION": "B Pin",
-                      "ACCESS": 3,
-                      "TYPE": "i",
-                      "FULL_PATH": "/pwmLed/pwmLed1/bPin",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        20
-                      ]
-                    },
-                    "wPin": {
-                      "DESCRIPTION": "W Pin",
-                      "ACCESS": 3,
-                      "TYPE": "i",
-                      "FULL_PATH": "/pwmLed/pwmLed1/wPin",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        18
-                      ]
-                    },
-                    "whiteTemperature": {
-                      "DESCRIPTION": "White Temperature",
-                      "ACCESS": 3,
-                      "TYPE": "i",
-                      "FULL_PATH": "/pwmLed/pwmLed1/whiteTemperature",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        4500
-                      ]
-                    },
-                    "useAlpha": {
-                      "DESCRIPTION": "Use Alpha",
-                      "ACCESS": 3,
-                      "TYPE": "T",
-                      "FULL_PATH": "/pwmLed/pwmLed1/useAlpha",
-                      "TAGS": [
-                        "config"
-                      ],
-                      "VALUE": [
-                        true
-                      ]
-                    },
-                    "rgbwMode": {
-                      "DESCRIPTION": "Rgbw Mode",
-                      "ACCESS": 3,
-                      "TYPE": "F",
-                      "FULL_PATH": "/pwmLed/pwmLed1/rgbwMode",
-                      "VALUE": [
-                        false
-                      ]
-                    },
-                    "color": {
-                      "DESCRIPTION": "Color",
-                      "ACCESS": 3,
-                      "TYPE": "r",
-                      "FULL_PATH": "/pwmLed/pwmLed1/color",
-                      "VALUE": [
-                        0,
-                        0,
-                        0,
-                        1
+                    "None"
+                  ],
+                  "RANGE": [
+                    {
+                      "VALS": [
+                        "None",
+                        "Orientation",
+                        "All"
                       ]
                     }
-                  }
+                  ]
+                },
+                "orientationSendRate": {
+                  "DESCRIPTION": "Orientation Send Rate",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/motion/orientationSendRate",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    50
+                  ]
+                },
+                "sdaPin": {
+                  "DESCRIPTION": "Sda Pin",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/motion/sdaPin",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    23
+                  ]
+                },
+                "sclPin": {
+                  "DESCRIPTION": "Scl Pin",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/motion/sclPin",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    22
+                  ]
+                },
+                "intPin": {
+                  "DESCRIPTION": "Int Pin",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/motion/intPin",
+                  "VALUE": [
+                    -1
+                  ]
+                },
+                "orientation": {
+                  "DESCRIPTION": "Orientation",
+                  "ACCESS": 1,
+                  "TYPE": "fff",
+                  "FULL_PATH": "/motion/orientation",
+                  "VALUE": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "RANGE": [
+                    {
+                      "MIN": -180,
+                      "MAX": 180
+                    },
+                    {
+                      "MIN": -90,
+                      "MAX": 90
+                    },
+                    {
+                      "MIN": -180,
+                      "MAX": 180
+                    }
+                  ]
+                },
+                "accel": {
+                  "DESCRIPTION": "Accel",
+                  "ACCESS": 1,
+                  "TYPE": "fff",
+                  "FULL_PATH": "/motion/accel",
+                  "VALUE": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                "gyro": {
+                  "DESCRIPTION": "Gyro",
+                  "ACCESS": 1,
+                  "TYPE": "fff",
+                  "FULL_PATH": "/motion/gyro",
+                  "VALUE": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                "linearAccel": {
+                  "DESCRIPTION": "Linear Accel",
+                  "ACCESS": 1,
+                  "TYPE": "fff",
+                  "FULL_PATH": "/motion/linearAccel",
+                  "VALUE": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                "orientationXOffset": {
+                  "DESCRIPTION": "Orientation XOffset",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/orientationXOffset",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "throwState": {
+                  "DESCRIPTION": "Throw State",
+                  "ACCESS": 1,
+                  "TYPE": "s",
+                  "FULL_PATH": "/motion/throwState",
+                  "VALUE": [
+                    "None"
+                  ],
+                  "RANGE": [
+                    {
+                      "VALS": [
+                        "None",
+                        "Flat",
+                        "Single",
+                        "Double",
+                        "Flat Front",
+                        "Loftie"
+                      ]
+                    }
+                  ]
+                },
+                "activity": {
+                  "DESCRIPTION": "Activity",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/activity",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "flatThresholds": {
+                  "DESCRIPTION": "Flat Thresholds",
+                  "ACCESS": 3,
+                  "TYPE": "ff",
+                  "FULL_PATH": "/motion/flatThresholds",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0.8,
+                    2
+                  ]
+                },
+                "accelThresholds": {
+                  "DESCRIPTION": "Accel Thresholds",
+                  "ACCESS": 3,
+                  "TYPE": "ff",
+                  "FULL_PATH": "/motion/accelThresholds",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0.8,
+                    2
+                  ]
+                },
+                "diffThreshold": {
+                  "DESCRIPTION": "Diff Threshold",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/diffThreshold",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    8
+                  ]
+                },
+                "semiFlatThreshold": {
+                  "DESCRIPTION": "Semi Flat Threshold",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/semiFlatThreshold",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    2
+                  ]
+                },
+                "loftieThreshold": {
+                  "DESCRIPTION": "Loftie Threshold",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/loftieThreshold",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    12
+                  ]
+                },
+                "singleThreshold": {
+                  "DESCRIPTION": "Single Threshold",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/singleThreshold",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    25
+                  ]
+                },
+                "angleOffset": {
+                  "DESCRIPTION": "Angle Offset",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/angleOffset",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "projectedAngle": {
+                  "DESCRIPTION": "Projected Angle",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/projectedAngle",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "xOnCalibration": {
+                  "DESCRIPTION": "X On Calibration",
+                  "ACCESS": 3,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/xOnCalibration",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    0
+                  ]
                 }
               }
             }
           }
         },
-        "hasListenExtension": true
+        "hasListenExtension": false
       },
       {
         "niceName": "Sound Card",
@@ -2321,6 +3164,100 @@
             }
           ],
           "editorIsCollapsed": true,
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        }
+      },
+      {
+        "niceName": "OSC",
+        "type": "OSC",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "containers": {
+            "oscInput": {
+            },
+            "oscOutputs": {
+              "items": [
+                {
+                  "parameters": [
+                    {
+                      "value": "127.0.0.1",
+                      "controlAddress": "/remoteHost"
+                    }
+                  ],
+                  "niceName": "OSC Output",
+                  "type": "BaseItem"
+                }
+              ],
+              "viewOffset": [
+                0,
+                0
+              ],
+              "viewZoom": 1.0
+            },
+            "pass_through": {
+            }
+          }
+        },
+        "templates": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "values": {
+          "parameters": [
+            {
+              "value": 0.0,
+              "controlAddress": "/_myValue1",
+              "type": "Float",
+              "niceName": "/myValue1",
+              "customizable": true,
+              "removable": true,
+              "description": "",
+              "hideInEditor": false,
+              "feedbackOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "niceName": "Signal",
+        "type": "Signal",
+        "scripts": {
+          "viewOffset": [
+            0,
+            0
+          ],
+          "viewZoom": 1.0
+        },
+        "params": {
+          "parameters": [
+            {
+              "value": 100.0,
+              "controlAddress": "/refreshRate"
+            },
+            {
+              "value": [
+                0.0,
+                1.0
+              ],
+              "controlAddress": "/range"
+            }
+          ]
+        },
+        "templates": {
+          "hideInEditor": true,
           "viewOffset": [
             0,
             0
@@ -4020,6 +4957,167 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "niceName": "Mapping 2",
+              "editorIsCollapsed": true,
+              "type": "Mapping",
+              "im": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "/modules/signal/values/value",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "Input Value",
+                    "type": "Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "params": {
+                "parameters": [
+                  {
+                    "value": 50,
+                    "hexMode": false,
+                    "controlAddress": "/updateRate"
+                  }
+                ],
+                "editorIsCollapsed": true
+              },
+              "filters": {
+                "items": [
+                  {
+                    "niceName": "Curve Map",
+                    "type": "Curve Map",
+                    "filterParams": {
+                      "parameters": [
+                        {
+                          "value": [
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/inputMin_Max"
+                        },
+                        {
+                          "value": [
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/targetMin_Max"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    },
+                    "curve": {
+                      "parameters": [
+                        {
+                          "value": 1.0,
+                          "controlAddress": "/length"
+                        },
+                        {
+                          "value": 0.954836368560791,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": [
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/viewValueRange"
+                        },
+                        {
+                          "value": [
+                            0.0,
+                            1.0
+                          ],
+                          "controlAddress": "/range",
+                          "enabled": true
+                        }
+                      ],
+                      "hideInRemoteControl": false,
+                      "items": [
+                        {
+                          "parameters": [
+                            {
+                              "value": "Bezier",
+                              "controlAddress": "/easingType"
+                            }
+                          ],
+                          "niceName": "Key",
+                          "containers": {
+                            "easing": {
+                              "parameters": [
+                                {
+                                  "value": [
+                                    0.300000011920929,
+                                    0.0
+                                  ],
+                                  "controlAddress": "/anchor1"
+                                },
+                                {
+                                  "value": [
+                                    -0.300000011920929,
+                                    0.0
+                                  ],
+                                  "controlAddress": "/anchor2"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "Key"
+                        },
+                        {
+                          "parameters": [
+                            {
+                              "value": 1.0,
+                              "controlAddress": "/position"
+                            },
+                            {
+                              "value": 1.0,
+                              "controlAddress": "/value"
+                            },
+                            {
+                              "value": "Bezier",
+                              "controlAddress": "/easingType"
+                            }
+                          ],
+                          "niceName": "Key 1",
+                          "containers": {
+                            "easing": {
+                            }
+                          },
+                          "type": "Key"
+                        }
+                      ],
+                      "viewOffset": [
+                        0,
+                        0
+                      ],
+                      "viewZoom": 1.0
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "outputs": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -4242,6 +5340,69 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "niceName": "Set Wifi",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "node",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "wifi.ssid BenTo\nwifi.pass konamicode\nsettings.save\nroot.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -4253,8 +5414,8 @@
       }
     ],
     "viewOffset": [
-      99,
-      -23
+      -143,
+      22
     ],
     "viewZoom": 1.0,
     "transitions": {
@@ -4268,8 +5429,8 @@
     "comments": {
       "hideInEditor": true,
       "viewOffset": [
-        99,
-        -23
+        -143,
+        22
       ],
       "viewZoom": 1.0
     }
@@ -4283,7 +5444,7 @@
             "controlAddress": "/enabled"
           },
           {
-            "value": 1.399999658203208,
+            "value": 29.5,
             "controlAddress": "/totalTime"
           },
           {
@@ -4304,7 +5465,7 @@
             "controlAddress": "/viewStartTime"
           },
           {
-            "value": 1.399999618530273,
+            "value": 2.709908008575439,
             "controlAddress": "/viewEndTime"
           },
           {
@@ -4429,14 +5590,14 @@
                               {
                                 "parameters": [
                                   {
-                                    "value": 0.854697048664093,
+                                    "value": 0.8466823697090149,
                                     "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#1",
                                 "type": "Float",
                                 "param": {
-                                  "value": 0.854697048664093,
+                                  "value": 0.8466823697090149,
                                   "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#1/#1"
                                 },
                                 "paramLink": {
@@ -4447,14 +5608,14 @@
                               {
                                 "parameters": [
                                   {
-                                    "value": 0.9477249383926392,
+                                    "value": 1.0,
                                     "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#2",
                                 "type": "Float",
                                 "param": {
-                                  "value": 0.9477249383926392,
+                                  "value": 1.0,
                                   "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#2/#1"
                                 },
                                 "paramLink": {
@@ -4465,14 +5626,14 @@
                               {
                                 "parameters": [
                                   {
-                                    "value": 0.16038478910923,
+                                    "value": 0.1692313700914383,
                                     "controlAddress": "/#1"
                                   }
                                 ],
                                 "niceName": "#3",
                                 "type": "Float",
                                 "param": {
-                                  "value": 0.16038478910923,
+                                  "value": 0.1692313700914383,
                                   "controlAddress": "/sequences/sequence/layers/color/mapping/outputs/mappingOutput1/command/arguments/#3/#1"
                                 },
                                 "paramLink": {
@@ -4521,7 +5682,7 @@
                     {
                       "parameters": [
                         {
-                          "value": 0.06862745434045792,
+                          "value": 0.2802940905094147,
                           "controlAddress": "/time"
                         },
                         {
@@ -4540,7 +5701,7 @@
                     {
                       "parameters": [
                         {
-                          "value": 0.4392157196998596,
+                          "value": 0.490882396697998,
                           "controlAddress": "/time"
                         },
                         {
@@ -4559,7 +5720,7 @@
                     {
                       "parameters": [
                         {
-                          "value": 0.7116550803184509,
+                          "value": 0.8599883317947388,
                           "controlAddress": "/time"
                         },
                         {
@@ -4578,7 +5739,7 @@
                     {
                       "parameters": [
                         {
-                          "value": 0.9046568274497986,
+                          "value": 1.099656701087952,
                           "controlAddress": "/time"
                         },
                         {
@@ -4597,7 +5758,7 @@
                     {
                       "parameters": [
                         {
-                          "value": 1.299999952316284,
+                          "value": 1.193333268165588,
                           "controlAddress": "/time"
                         },
                         {
@@ -4622,6 +5783,714 @@
                 }
               },
               "type": "Color"
+            },
+            {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/miniMode"
+                },
+                {
+                  "value": 120.0,
+                  "controlAddress": "/listSize"
+                },
+                {
+                  "value": 120,
+                  "hexMode": false,
+                  "controlAddress": "/uiHeight"
+                }
+              ],
+              "niceName": "Mapping",
+              "containers": {
+                "automation": {
+                  "parameters": [
+                    {
+                      "value": 29.5,
+                      "controlAddress": "/length"
+                    },
+                    {
+                      "value": 1.653332948684692,
+                      "controlAddress": "/position"
+                    },
+                    {
+                      "value": [
+                        0.0,
+                        1.0
+                      ],
+                      "controlAddress": "/viewValueRange"
+                    },
+                    {
+                      "value": [
+                        0.0,
+                        1.0
+                      ],
+                      "controlAddress": "/range",
+                      "enabled": true
+                    }
+                  ],
+                  "hideInEditor": true,
+                  "hideInRemoteControl": false,
+                  "items": [
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.06309524178504944,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.449999988079071,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 14",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.01657141745090485,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.01657141745090485,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.1183332949876785,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.2166666388511658,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 0",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.02214290201663971,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.01833333075046539,
+                                -0.1833332777023315
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.1404761970043182,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.300000011920929,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 13",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.002142857061699033,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.002142857061699033,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.1476190537214279,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.7333333492279053,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 12",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.01371426973491907,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.01371426973491907,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.1619047671556473,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.25,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 1",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.006300196051597595,
+                                -0.04410155117511749
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.01868537068367004,
+                                -0.007491350173950195
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.2095237970352173,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.199999988079071,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 2",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.06586849689483643,
+                                0.02640804648399353
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.04260826110839844,
+                                -0.1268797516822815
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.4190475940704346,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.7666666507720947,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 3",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.02393925189971924,
+                                0.07128679752349854
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.02966690063476562,
+                                -0.05663663148880005
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.476974219083786,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.675000011920929,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 4",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.002757906913757324,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.002757906913757324,
+                                0.01541107892990112
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.5528745055198669,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.4749999642372131,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 5",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.02167868614196777,
+                                -0.05058342218399048
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.02403742074966431,
+                                0.0435948371887207
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.6821428537368774,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.5,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 6",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.0249786376953125,
+                                -0.04530197381973267
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.03071779012680054,
+                                -0.01005932688713074
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.8142856359481812,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.4333333373069763,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 11",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.01095527410507202,
+                                0.003587573766708374
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.01105111837387085,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.8880953192710876,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.4833333492279053,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 15",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.01105111837387085,
+                                0.0
+                              ],
+                              "controlAddress": "/anchor1"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.9183330535888672,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.5333333015441895,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 7",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.009553670883178711,
+                                0.01469793915748596
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.01319551467895508,
+                                -0.01099637150764465
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 0.9799996018409729,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.3083334565162659,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 8",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.05601972341537476,
+                                0.1225431263446808
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                -0.1133334636688232,
+                                0.04428404569625854
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 1.161666393280029,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.4083333611488342,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 9",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.01265466213226318,
+                                -0.004652023315429688
+                              ],
+                              "controlAddress": "/anchor1"
+                            },
+                            {
+                              "value": [
+                                0.0,
+                                -0.01111111044883728
+                              ],
+                              "controlAddress": "/anchor2"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    },
+                    {
+                      "parameters": [
+                        {
+                          "value": 1.281666278839111,
+                          "controlAddress": "/position"
+                        },
+                        {
+                          "value": 0.1666666865348816,
+                          "controlAddress": "/value"
+                        },
+                        {
+                          "value": "Bezier",
+                          "controlAddress": "/easingType"
+                        }
+                      ],
+                      "niceName": "Key 10",
+                      "containers": {
+                        "easing": {
+                          "parameters": [
+                            {
+                              "value": [
+                                0.0,
+                                0.01111111044883728
+                              ],
+                              "controlAddress": "/anchor1"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "Key"
+                    }
+                  ],
+                  "viewOffset": [
+                    0,
+                    0
+                  ],
+                  "viewZoom": 1.0
+                },
+                "recorder": {
+                  "parameters": [
+                    {
+                      "value": "",
+                      "controlAddress": "/inputValue"
+                    }
+                  ],
+                  "editorIsCollapsed": true
+                },
+                "mapping": {
+                  "niceName": "Mapping",
+                  "type": "Mapping",
+                  "im": {
+                    "hideInEditor": true,
+                    "items": [
+                      {
+                        "parameters": [
+                          {
+                            "value": "",
+                            "controlAddress": "/inputValue"
+                          }
+                        ],
+                        "niceName": "Input Value",
+                        "type": "Input Value"
+                      }
+                    ],
+                    "viewOffset": [
+                      0,
+                      0
+                    ],
+                    "viewZoom": 1.0
+                  },
+                  "params": {
+                    "parameters": [
+                      {
+                        "value": 50,
+                        "hexMode": false,
+                        "controlAddress": "/updateRate"
+                      }
+                    ],
+                    "editorIsCollapsed": true
+                  },
+                  "filters": {
+                    "viewOffset": [
+                      0,
+                      0
+                    ],
+                    "viewZoom": 1.0
+                  },
+                  "outputs": {
+                    "viewOffset": [
+                      0,
+                      0
+                    ],
+                    "viewZoom": 1.0
+                  }
+                }
+              },
+              "type": "Mapping"
             }
           ],
           "viewOffset": [

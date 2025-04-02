@@ -1,9 +1,6 @@
 // Stream receiver
 #pragma once
 
-
-
-
 DeclareComponentSingleton(LedStreamReceiver, "streamReceiver", ESPNowDerive)
 
 #ifdef USE_ARTNET

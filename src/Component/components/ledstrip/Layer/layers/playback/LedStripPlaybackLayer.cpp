@@ -4,9 +4,9 @@ void LedStripPlaybackLayer::setupInternal(JsonObject o)
     LedStripLayer::setupInternal(o);
 
 #if PLAYBACK_USE_ALPHA
-    frameSize = strip->count * 4;
+    frameSize = strip->numColors * 4;
 #else
-    frameSize = strip->count * 3;
+    frameSize = strip->numColors * 3;
 #endif
 
     fps = 0;
@@ -130,9 +130,9 @@ void LedStripPlaybackLayer::showIdFrame()
     if (groupID == -1 || localID == -1)
         return;
 
-    fillRange(groupColor, 1 - 3.f / strip->count, 1);
+    fillRange(groupColor, 1 - 3.f / strip->numColors, 1);
     Color c = Color::HSV(localID * 1.0f / 4, 1, 1);
-    fillRange(c, 0, localID * 1.f / strip->count, false);
+    fillRange(c, 0, localID * 1.f / strip->numColors, false);
 }
 
 void LedStripPlaybackLayer::playScripts()

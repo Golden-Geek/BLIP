@@ -41,7 +41,7 @@ EndDeclareComponent
 
 //Manager
 
-DeclareComponentManager(Dummy, DUMMY, dummies, dummy)
+DeclareComponentManagerDefaultMax(Dummy, DUMMY, dummies, dummy)
 EndDeclareComponent
 
 

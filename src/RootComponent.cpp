@@ -32,6 +32,7 @@ void RootComponent::setupInternal(JsonObject)
 #else
         esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
 #endif
+#endif
 
     // parameters.clear(); // remove enabled in root component
     Settings::loadSettings();
@@ -39,6 +40,7 @@ void RootComponent::setupInternal(JsonObject)
 
     AddOwnedComponent(&comm);
 
+#ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
     if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER)
     {
@@ -68,16 +70,9 @@ void RootComponent::setupInternal(JsonObject)
         }
 
         DBG("Wake up received");
-        // pinMode(19, OUTPUT);
-        // digitalWrite(19, HIGH);
-        // delay(100);
-        // digitalWrite(19, LOW);
-        // delay(100);
-        // digitalWrite(19, HIGH);
-        // delay(100);
-        // digitalWrite(19, LOW);
         ESP.restart();
     }
+#endif
 #endif
 
     AddOwnedComponent(&settings);
@@ -195,7 +190,6 @@ void RootComponent::powerdown()
     //     touchAttachInterrupt((gpio_num_t)TOUCH_WAKEUP_PIN, touchCallback, 110);
     //     esp_sleep_enable_touchpad_wakeup();
     // #endif
-#endif
 
 #ifdef ESP8266
     ESP.deepSleep(5e6);

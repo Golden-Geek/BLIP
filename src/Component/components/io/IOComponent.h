@@ -8,14 +8,12 @@
 #define IO_DEFAULT_PIN 0
 #endif
 
-#ifndef IO_DEFAULT_MODE
-#define IO_DEFAULT_MODE IOComponent::D_OUTPUT
-#endif
 
 DeclareComponent(IO, "io", )
 
     enum PinMode { D_INPUT,
                    D_INPUT_PULLUP,
+                   D_INPUT_PULLDOWN,
                    A_INPUT,
                    D_OUTPUT,
                    A_OUTPUT,
@@ -24,16 +22,17 @@ DeclareComponent(IO, "io", )
                    PINMODE_MAX };
 
 DeclareIntParam(pin, -1);
-DeclareIntParam(mode, D_INPUT);
+DeclareIntParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
 
+bool ledCAttached;
 int pwmChannel;
 int curPin;
 
 DeclareFloatParam(value, 0);
 float prevValue;
 
-const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
+const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
 
 virtual void setupInternal(JsonObject o) override;
 virtual bool initInternal() override;
@@ -45,6 +44,7 @@ void updatePin();
 
 // void onParameterEventInternal(const ParameterEvent &e) override;
 
+void paramValueChangedInternal(void *param) override;
 
 
 // #ifdef USE_SCRIPT
@@ -73,7 +73,10 @@ FillSettingsInternalStart
 FillSettingsParam(mode);
 FillSettingsParam(inverted);
 
-if(mode == D_OUTPUT || mode == A_OUTPUT)
+if(mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
+{
+    FillSettingsParam(value);
+}
 {
     FillSettingsParam(value);
 }
@@ -90,7 +93,7 @@ FillOSCQueryInternalEnd
 
 // Manager
 
-DeclareComponentManager(IO, IO, gpio, gpio)
+DeclareComponentManager(IO, IO, gpio, gpio, IO_MAX_COUNT)
 
     void addItemInternal(int index)
 {

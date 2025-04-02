@@ -290,7 +290,7 @@ void WebServerComponent::onWSEvent(uint8_t id, WStype_t type, uint8_t *data, siz
     case WStype_BIN:
     {
 
-        DBG("Got binary");
+        // DBG("Got binary");
 #ifdef USE_OSC
         OSCMessage msg;
         msg.fill(data, len);

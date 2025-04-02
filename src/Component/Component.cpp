@@ -242,7 +242,11 @@ void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, const St
                 vArr.add((*(int *)param));
                 break;
 
-            case ParamType::Float:
+            case ParamType::TypeEnum:
+                vArr.add(getEnumString(param));
+                break;
+
+                case ParamType::Float:
                 vArr.add((*(float *)param));
                 break;
 
@@ -486,6 +490,12 @@ void Component::setParam(void *param, var *value, int numData)
             *((int *)param) = value[0].intValue();
         break;
 
+    case ParamType::TypeEnum:
+        hasChanged = *((int *)param) != value[0].intValue();
+        if (hasChanged)
+            *((int *)param) = value[0].intValue();
+        break;
+
     case ParamType::Float:
         hasChanged = *((float *)param) != value[0].floatValue();
         if (hasChanged)
@@ -532,7 +542,8 @@ void Component::setParam(void *param, var *value, int numData)
                 ((float *)param)[2] = value[2].floatValue();
                 ((float *)param)[3] = value[3].floatValue();
             }
-        }else if(numData == 3)
+        }
+        else if (numData == 3)
         {
             hasChanged = ((float *)param)[0] != value[0].floatValue() || ((float *)param)[1] != value[1].floatValue() || ((float *)param)[2] != value[2].floatValue();
             if (hasChanged)
@@ -540,13 +551,14 @@ void Component::setParam(void *param, var *value, int numData)
                 ((float *)param)[0] = value[0].floatValue();
                 ((float *)param)[1] = value[1].floatValue();
                 ((float *)param)[2] = value[2].floatValue();
-                ((float*)param)[3] = 1.0;
+                ((float *)param)[3] = 1.0;
             }
-        }else if(numData == 1)
+        }
+        else if (numData == 1)
         {
-            //convert rgba uint32_t to 4 floats
+            // convert rgba uint32_t to 4 floats
             uint32_t rgba = value[0].intValue();
-            float r = ((rgba >> 24) & 0xFF)/ 255.0f;
+            float r = ((rgba >> 24) & 0xFF) / 255.0f;
             float g = ((rgba >> 16) & 0xFF) / 255.0f;
             float b = ((rgba >> 8) & 0xFF) / 255.0f;
             float a = (rgba & 0xFF) / 255.0f;
@@ -637,6 +649,9 @@ String Component::getParamString(void *param) const
 
     case ParamType::Int:
         return String(*((int *)param));
+
+    case ParamType::TypeEnum:
+        return getEnumString(param);
 
     case ParamType::Float:
         return String(*((float *)param));

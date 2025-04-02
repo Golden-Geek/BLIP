@@ -102,7 +102,7 @@ FillOSCQueryInternalEnd;
 
 };
 
-DeclareComponentManager(Behaviour, BEHAVIOUR, behaviours, behaviour)
+DeclareComponentManager(Behaviour, BEHAVIOUR, behaviours, behaviour, BEHAVIOUR_MAX_COUNT)
 
       void addItemInternal(int index) {  };
     void onChildComponentEvent(const ComponentEvent &e) override;

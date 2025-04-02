@@ -1,4 +1,5 @@
-#include "Script.h"
+#include "UnityIncludes.h"
+
 #define FATAL(func, msg)                  \
     {                                     \
         Serial.print("Fatal: " func " "); \
@@ -171,22 +172,68 @@ void Script::launchWasmTask()
 M3Result Script::LinkArduino(IM3Runtime runtime)
 {
     IM3Module module = runtime->modules;
-    const char *util = "util";
+    const char *arduino = "arduino";
 
-    // m3_LinkRawFunction(module, util, "logUTF16", "v(*i)", &m3_logUTF16);
-    m3_LinkRawFunction(module, util, "millis", "i()", &m3_arduino_millis);
-    m3_LinkRawFunction(module, util, "getTime", "f()", &m3_arduino_getTime);
-    m3_LinkRawFunction(module, util, "delay", "v(i)", &m3_arduino_delay);
-    m3_LinkRawFunction(module, util, "printFloat", "v(f)", &m3_printFloat);
-    m3_LinkRawFunction(module, util, "printInt", "v(i)", &m3_printInt);
-    m3_LinkRawFunction(module, util, "print", "v(s)", &m3_printInt);
-    m3_LinkRawFunction(module, util, "randomInt", "i(ii)", &m3_randomInt);
-    m3_LinkRawFunction(module, util, "noise", "f(ff)", &m3_noise);
+    m3_LinkRawFunction(module, arduino, "millis", "i()", &m3_arduino_millis);
+    m3_LinkRawFunction(module, arduino, "getTime", "f()", &m3_arduino_getTime);
+    m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
+    m3_LinkRawFunction(module, arduino, "printFloat", "v(f)", &m3_printFloat);
+    m3_LinkRawFunction(module, arduino, "printInt", "v(i)", &m3_printInt);
 
-    // m3_LinkRawFunction(module, util, "getInt", "i(*i)", &m3_getIntUTF16);
-    // m3_LinkRawFunction(module, util, "getFloat", "f(*i)", &m3_getFloatUTF16);
-    // m3_LinkRawFunction(module, util, "setInt", "v(*ii)", &m3_setIntUTF16);
-    // m3_LinkRawFunction(module, util, "setFloat", "v(*if)", &m3_setFloatUTF16);
+#ifdef USE_LEDSTRIP
+    m3_LinkRawFunction(module, arduino, "clearLeds", "v()", &m3_clearLeds);
+    m3_LinkRawFunction(module, arduino, "dimLeds", "v(f)", &m3_dimLeds);
+    m3_LinkRawFunction(module, arduino, "fillLeds", "v(i)", &m3_fillLeds);
+    m3_LinkRawFunction(module, arduino, "fillLedsRGB", "v(iii)", &m3_fillLedsRGB);
+    m3_LinkRawFunction(module, arduino, "fillLedsHSV", "v(iii)", &m3_fillLedsHSV);
+    m3_LinkRawFunction(module, arduino, "setLed", "v(ii)", &m3_setLed);
+    m3_LinkRawFunction(module, arduino, "getLed", "i(i)", &m3_getLed);
+
+    m3_LinkRawFunction(module, arduino, "setLedRGB", "v(iiii)", &m3_setLedRGB);
+    m3_LinkRawFunction(module, arduino, "setLedHSV", "v(iiii)", &m3_setLedHSV);
+    m3_LinkRawFunction(module, arduino, "pointRGB", "v(ffiii)", &m3_pointRGB);
+    m3_LinkRawFunction(module, arduino, "pointHSV", "v(ffiii)", &m3_pointHSV);
+    m3_LinkRawFunction(module, arduino, "setIR", "v(f)", &m3_setIR);
+    m3_LinkRawFunction(module, arduino, "playVariant", "v(i)", &m3_playVariant);
+    m3_LinkRawFunction(module, arduino, "updateLeds", "v()", &m3_updateLeds);
+
+    m3_LinkRawFunction(module, arduino, "getFXSpeed", "f()", &m3_getFXSpeed);
+    m3_LinkRawFunction(module, arduino, "getFXIsoSpeed", "f()", &m3_getFXIsoSpeed);
+    m3_LinkRawFunction(module, arduino, "getFXStaticOffset", "f()", &m3_getFXStaticOffset);
+    m3_LinkRawFunction(module, arduino, "getFXFlipped", "i()", &m3_getFXFlipped);
+    m3_LinkRawFunction(module, arduino, "setFXSpeed", "v(f)", &m3_setFXSpeed);
+    m3_LinkRawFunction(module, arduino, "setFXIsoSpeed", "v(f)", &m3_setFXIsoSpeed);
+    m3_LinkRawFunction(module, arduino, "setFXIsoAxis", "v(i)", &m3_setFXIsoAxis);
+    m3_LinkRawFunction(module, arduino, "setFXStaticOffset", "v(f)", &m3_setFXStaticOffset);
+    m3_LinkRawFunction(module, arduino, "resetFX", "v()", &m3_resetFX);
+#endif
+
+#ifdef USE_MOTION
+    m3_LinkRawFunction(module, arduino, "getOrientation", "f(i)", &m3_getOrientation);
+    m3_LinkRawFunction(module, arduino, "getYaw", "f()", &m3_getYaw);
+    m3_LinkRawFunction(module, arduino, "getPitch", "f()", &m3_getPitch);
+    m3_LinkRawFunction(module, arduino, "getRoll", "f()", &m3_getRoll);
+    m3_LinkRawFunction(module, arduino, "getProjectedAngle", "f()", &m3_getProjectedAngle);
+    m3_LinkRawFunction(module, arduino, "setProjectedAngleOffset", "v(ff)", &m3_setProjectedAngleOffset);
+    m3_LinkRawFunction(module, arduino, "setIMUEnabled", "v(i)", &m3_setIMUEnabled);
+    m3_LinkRawFunction(module, arduino, "calibrateIMU", "v()", &m3_calibrateIMU);
+    m3_LinkRawFunction(module, arduino, "getThrowState", "i()", &m3_getThrowState);
+    m3_LinkRawFunction(module, arduino, "getButtonState", "i(i)", &m3_getButtonState);
+    m3_LinkRawFunction(module, arduino, "getActivity", "f()", &m3_getActivity);
+    m3_LinkRawFunction(module, arduino, "getSpin", "f()", &m3_getSpin);
+#endif
+
+#ifdef USE_MIC
+    m3_LinkRawFunction(module, arduino, "setMicEnabled", "v(i)", &m3_setMicEnabled);
+    m3_LinkRawFunction(module, arduino, "getMicLevel", "f()", &m3_getMicLevel);
+#endif
+
+#ifdef USE_BATTERY
+    m3_LinkRawFunction(module, arduino, "setBatterySendEnabled", "v(i)", &m3_setBatterySendEnabled);
+#endif
+
+    m3_LinkRawFunction(module, arduino, "randomInt", "i(ii)", &m3_randomInt);
+    m3_LinkRawFunction(module, arduino, "noise", "f(ff)", &m3_noise);
 
     if (localComponent != NULL)
         localComponent->linkScriptFunctions(module, true);

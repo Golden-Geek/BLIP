@@ -1,8 +1,12 @@
+#include "UnityIncludes.h"
+
 ImplementManagerSingleton(IO);
 
 void IOComponent::setupInternal(JsonObject o)
 {
+    curPin = -1;
     pwmChannel = -1;
+    ledCAttached = false;
 
     AddIntParamConfig(pin);
     AddIntParamConfig(mode);
@@ -36,17 +40,35 @@ void IOComponent::clearInternal()
 {
 }
 
+void IOComponent::paramValueChangedInternal(void *param)
+{
+    if (param == &pin || param == &mode)
+        setupPin();
+    if (param == &value)
+    {
+        if (mode == D_OUTPUT || mode == A_OUTPUT)
+        {
+            updatePin();
+        }
+    }
+}
+
 void IOComponent::setupPin()
 {
-    if (curPin != -1 && pwmChannel != -1) // prevPin was a PWM pin
+    if (curPin != -1) // prevPin was a PWM pin
     {
 #ifdef ARDUINO_NEW_VERSION
-        ledcDetach(curPin);
+        // NDBG("Detach Pin " + String(curPin));
+        if (ledCAttached)
+            ledcDetach(curPin);
 #else
-        ledcDetachPin(pwmChannel);
+        if (pwmChannel != -1)
+        {
+            ledcDetachPin(pwmChannel);
+            RootComponent::availablePWMChannels[pwmChannel] = true;
+            pwmChannel = -1;
+        }
 #endif
-        RootComponent::availablePWMChannels[pwmChannel] = true;
-        pwmChannel = -1;
     }
 
     curPin = pin;
@@ -65,7 +87,13 @@ void IOComponent::setupPin()
             break;
 
         case D_INPUT_PULLUP:
+            DBG("INPUT_PULLUP");
             pinm = INPUT_PULLUP;
+            break;
+
+        case D_INPUT_PULLDOWN:
+            DBG("INPUT_PULLDOWN");
+            pinm = INPUT_PULLDOWN;
             break;
 
         case D_OUTPUT:
@@ -87,7 +115,9 @@ void IOComponent::setupPin()
             if (m == A_OUTPUT || m == A_OSC)
             {
 #ifdef ARDUINO_NEW_VERSION
+                // NDBG("Attach pin " + String(curPin) + " to PWM");
                 ledcAttach(curPin, 5000, 10);
+                ledCAttached = true;
 #else
 
                 int channel = RootComponent::instance->getFirstAvailablePWMChannel();
@@ -119,8 +149,10 @@ void IOComponent::updatePin()
     {
     case D_INPUT:
     case D_INPUT_PULLUP:
+    case D_INPUT_PULLDOWN:
     {
         bool val = digitalRead(pin);
+
         if (inverted)
             val = !val;
 

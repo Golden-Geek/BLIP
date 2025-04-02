@@ -22,6 +22,10 @@
 #define BUTTON_DEFAULT_PIN -1
 #endif
 
+#ifndef BUTTON_DEFAULT_MODE
+#define BUTTON_DEFAULT_MODE D_INPUT
+#endif
+
 class ButtonComponent : public IOComponent
 {
 public:
@@ -80,6 +84,6 @@ public:
     FillOSCQueryInternalEnd;
 };
 
-DeclareComponentManager(Button, BUTTON, buttons, button)
+DeclareComponentManager(Button, BUTTON, buttons, button, BUTTON_MAX_COUNT)
     void addItemInternal(int index) { if(index == 0) items[index]->pin = BUTTON_DEFAULT_PIN; };
     EndDeclareComponent

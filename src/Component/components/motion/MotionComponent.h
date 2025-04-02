@@ -9,7 +9,7 @@ DeclareComponent(Motion, "motion", )
     Adafruit_BNO055 bno;
 #elif defined IMU_TYPE_M5MPU
     MPU6886 mpu;
-    double lastUpdateTime;
+double lastUpdateTime;
 #endif
 
 DeclareBoolParam(connected, false);
@@ -49,6 +49,17 @@ DeclareFloatParam(angleOffset, 0);
 DeclareFloatParam(projectedAngle, 0);
 DeclareFloatParam(xOnCalibration, 0);
 
+
+// Spin Compute
+DeclareIntParam(spinCount, 0);
+DeclareFloatParam(spin, 0);
+
+int countNonDouble;
+int lastThrowState;
+float launchOrientationX;
+float launchProjectedAngle;
+float currentSpinLastUpdate;
+
 // Threading
 bool hasNewData;
 bool imuLock;
@@ -73,6 +84,7 @@ void sendCalibrationStatus();
 void computeThrow();
 void computeActivity();
 void computeProjectedAngle();
+void computeSpin();
 
 void setOrientationXOffset(float offset);
 void setProjectAngleOffset(float yaw, float angle);
@@ -118,6 +130,11 @@ DeclareScriptFunctionReturn0(MotionComponent, getThrowState, uint32_t) { return 
 // CheckAndSendParamFeedback(gravity);
 // CheckAndSendParamFeedback(projectedAngle);
 // CheckFeedbackParamInternalEnd;
+
+GetEnumStringStart
+    GetEnumStringParam(sendLevel, sendLevelOptions, SendLevel);
+GetEnumStringParam(throwState, throwStateOptions, 6);
+GetEnumStringEnd;
 
 HandleSetParamInternalStart
     CheckAndSetEnumParam(sendLevel, sendLevelOptions, 3);
@@ -182,4 +199,9 @@ FillOSCQueryFloatParam(singleThreshold);
 FillOSCQueryFloatParam(angleOffset);
 FillOSCQueryFloatParamReadOnly(projectedAngle);
 FillOSCQueryFloatParam(xOnCalibration);
-FillOSCQueryInternalEnd EndDeclareComponent
+FillOSCQueryIntParamReadOnly(spinCount);
+FillOSCQueryFloatParamReadOnly(spin);
+
+FillOSCQueryInternalEnd
+
+    EndDeclareComponent

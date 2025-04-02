@@ -14,7 +14,7 @@ void FXComponent::setupInternal(JsonObject o)
     AddBoolParam(swapOnFlip);
     AddBoolParam(showCalibration);
 
-    memset(colors, 0, strip->count * sizeof(Color));
+    memset(colors, 0, strip->numColors * sizeof(Color));
 }
 
 void FXComponent::updateInternal()
@@ -29,7 +29,7 @@ void FXComponent::process(Color *sourceColors)
 {
     if(!enabled) return;
     
-    int numLeds = strip->count;
+    int numLeds = strip->numColors;
     if (numLeds == 0)
         return;
 

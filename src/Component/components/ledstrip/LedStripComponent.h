@@ -26,6 +26,22 @@
 #define LED_DEFAULT_CHANNELS 3
 #endif
 
+#ifndef LED_COLOR_ORDER
+#define LED_COLOR_ORDER NEO_GRB
+#endif
+
+#ifndef LED_DUPLICATE
+#define LED_DUPLICATE 1
+#endif
+
+#ifndef LED_DEFAULT_MULTILED_MODE
+#define LED_DEFAULT_MULTILED_MODE FullColor
+#endif
+
+#ifndef LED_DEFAULT_CORRECTION
+#define LED_DEFAULT_CORRECTION true
+#endif
+
 class LedStripComponent : public Component
 {
 public:
@@ -63,12 +79,29 @@ public:
 
     DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
+    DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
 
     // mapping
     DeclareBoolParam(invertStrip, LED_DEFAULT_INVERT_DIRECTION);
 
-    Color colors[LED_MAX_COUNT];
+    enum MultiLedMode
+    {
+        FullColor,
+        SingleColor,
+        TwoColors,
+        MultiLedModeMax
+    };
 
+    const String multiLedModeOptions[MultiLedModeMax] = {
+        "Full Color",
+        "Single Color",
+        "Two Colors"};
+
+    DeclareIntParam(multiLedMode, LED_DEFAULT_MULTILED_MODE);
+
+    int numColors = 0;
+
+    Color colors[LED_MAX_COUNT];
     uint8_t ditherFrameCounter = 0;
 
     // user layers, may be more than one later
@@ -91,8 +124,12 @@ public:
 
     LedStripLayer *userLayers[LEDSTRIP_NUM_USER_LAYERS];
 
+#ifdef LED_USE_FASTLED
+    CRGB leds[LED_MAX_COUNT];
+#else
     Adafruit_NeoPixel *neoPixelStrip;
     Adafruit_DotStar *dotStarStrip;
+#endif
 
     void setupInternal(JsonObject o) override;
     bool initInternal() override;
@@ -102,6 +139,10 @@ public:
     void setupLeds();
 
     void setBrightness(float val);
+    void updateCorrection();
+
+    int getNumColors() const;
+    int getColorIndex(int i) const;
 
     void paramValueChangedInternal(void *param) override;
     void onEnabledChanged() override;
@@ -125,7 +166,9 @@ public:
     CheckAndSetParam(enPin);
     CheckAndSetParam(brightness);
     CheckAndSetParam(invertStrip);
+    CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
     CheckAndSetParam(maxPower);
+    CheckAndSetParam(colorCorrection);
     HandleSetParamInternalEnd;
 
     FillSettingsInternalStart
@@ -136,7 +179,8 @@ public:
     FillSettingsParam(brightness);
     FillSettingsParam(invertStrip);
     FillSettingsParam(maxPower);
-
+    FillSettingsParam(multiLedMode);
+    FillSettingsParam(colorCorrection);
     FillSettingsInternalEnd
 
         FillOSCQueryInternalStart
@@ -145,12 +189,14 @@ public:
     FillOSCQueryIntParam(clkPin);
     FillOSCQueryIntParam(enPin);
     FillOSCQueryRangeParam(brightness, 0, 1);
-    FillOSCQueryIntParam(maxPower);
     FillOSCQueryBoolParam(invertStrip);
+    FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
+    FillOSCQueryIntParam(maxPower);
+    FillOSCQueryBoolParam(colorCorrection);
     FillOSCQueryInternalEnd
 };
 
-DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip)
+DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 
 #ifdef USE_SCRIPT
 

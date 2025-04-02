@@ -68,30 +68,32 @@
 #define AddStaticOrDynamicComponent(name, Type, enabled) AddComponent(items[i], name, Type, enabled);
 #endif
 
-#define DeclareComponentManager(Type, MType, mName, itemName) \
-    DeclareComponentSingleton(Type##Manager, #mName, )        \
-        DeclareIntParam(count, 1);                            \
-                                                              \
-    DefineStaticItems(Type, MType);                           \
-    void setupInternal(JsonObject o) override                 \
-    {                                                         \
-        AddIntParam(count);                                   \
-        for (int i = 0; i < count; i++)                       \
-        {                                                     \
-            String n = #itemName + String(i + 1);             \
-            AddStaticOrDynamicComponent(n, Type, i == 0);     \
-            addItemInternal(i);                               \
-        }                                                     \
-    }                                                         \
-                                                              \
-    HandleSetParamInternalStart                               \
-        CheckAndSetParam(count);                              \
-    HandleSetParamInternalEnd;                                \
-    FillSettingsInternalStart                                 \
-        FillSettingsParam(count);                             \
-    FillSettingsInternalEnd;                                  \
-    FillOSCQueryInternalStart                                 \
-        FillOSCQueryIntParam(count);                          \
+#define DeclareComponentManagerDefaultMax(Type, MType, mName, itemName) DeclareComponentManagerWithMax(Type, MType, mName, itemName, 8)
+
+#define DeclareComponentManager(Type, MType, mName, itemName, MaxCount) \
+    DeclareComponentSingleton(Type##Manager, #mName, )                  \
+        DeclareIntParam(count, 1);                                      \
+                                                                        \
+    DefineStaticItems(Type, MType);                                     \
+    void setupInternal(JsonObject o) override                           \
+    {                                                                   \
+        AddIntParam(count);                                             \
+        for (int i = 0; i < count && i < MaxCount; i++)                 \
+        {                                                               \
+            String n = #itemName + String(i + 1);                       \
+            AddStaticOrDynamicComponent(n, Type, i == 0);               \
+            addItemInternal(i);                                         \
+        }                                                               \
+    }                                                                   \
+                                                                        \
+    HandleSetParamInternalStart                                         \
+        CheckAndSetParam(count);                                        \
+    HandleSetParamInternalEnd;                                          \
+    FillSettingsInternalStart                                           \
+        FillSettingsParam(count);                                       \
+    FillSettingsInternalEnd;                                            \
+    FillOSCQueryInternalStart                                           \
+        FillOSCQueryIntParam(count);                                    \
     FillOSCQueryInternalEnd
 
 // > Events
@@ -126,6 +128,9 @@
 // Class-less parameter system
 #define DeclareBoolParam(name, val) bool name = val;
 #define DeclareIntParam(name, val) int name = val;
+#define DeclareEnumParam(name, val) \
+    int name = val;                 \
+    bool##name##isEnum = true;
 #define DeclareFloatParam(name, val) float name = val;
 #define DeclareStringParam(name, val) String name = val;
 #define DeclareP2DParam(name, val1, val2) float name[2]{val1, val2};
@@ -224,29 +229,29 @@
         }                                            \
     }
 
-#define CheckAndSetEnumParam(param, options, numOption) \
-    {                                                   \
-        if (paramName == #param)                        \
-        {                                               \
-            var newData[1];                             \
-            if (data[0].type == 's')                    \
-            {                                           \
-                String s = data[0].stringValue();       \
-                for (int i = 0; i < numOption; i++)     \
-                {                                       \
-                    if (s == options[i])                \
-                    {                                   \
-                        newData[0] = i;                 \
-                        break;                          \
-                    }                                   \
-                };                                      \
-            }                                           \
-            else                                        \
-                newData[0] = data[0].intValue();        \
-                                                        \
-            setParam((void *)&param, newData, 1);       \
-            return true;                                \
-        }                                               \
+#define CheckAndSetEnumParam(param, options, numOption)                   \
+    {                                                                     \
+        if (paramName == #param)                                          \
+        {                                                                 \
+            var newData[1];                                               \
+            if (data[0].type == 's')                                      \
+            {                                                             \
+                String s = data[0].stringValue();                         \
+                for (int i = 0; i < numOption; i++)                       \
+                {                                                         \
+                    if (s == options[i])                                  \
+                    {                                                     \
+                        newData[0] = i;                                   \
+                        break;                                            \
+                    }                                                     \
+                };                                                        \
+            }                                                             \
+            else                                                          \
+                newData[0] = data[0].intValue();                          \
+            DBG(String("Set enum param to ") + newData[0].stringValue()); \
+            setParam((void *)&param, newData, 1);                         \
+            return true;                                                  \
+        }                                                                 \
     }
 
 #define HandleSetParamInternalEnd \
@@ -278,6 +283,19 @@
 
 #define SendParamFeedback(param) CommunicationComponent::instance->sendParamFeedback(this, &param, #param, getParamType(&param));
 #define SendMultiParamFeedback(param) CommunicationComponent::instance->sendParamFeedback(this, param, #param, getParamType(&param));
+
+
+#define GetEnumStringStart \
+    virtual String getEnumString(void *param) const override \
+    {
+
+#define GetEnumStringEnd \
+    return "";            \
+    }
+
+#define GetEnumStringParam(p, options, numOptions) \
+    if (param == &p) return options[p];
+
 
 // Fill Settings
 
