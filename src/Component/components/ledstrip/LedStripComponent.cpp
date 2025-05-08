@@ -142,6 +142,12 @@ void LedStripComponent::clearInternal()
 #endif
 }
 
+void LedStripComponent::shutdown()
+{
+    DBG("Set strip on shutdown ");
+    setStripPower(true); //force turn on leds for shutdown section
+}
+
 void LedStripComponent::setBrightness(float val)
 {
     SetParam(brightness, val);
@@ -214,7 +220,10 @@ void LedStripComponent::setStripPower(bool value)
     if (enPin > 0)
         digitalWrite(enPin, value); // enable LEDs
 
+#if defined(LED_USE_FASTLED)
+#else
     pinMode(dataPin, value ? OUTPUT : OPEN_DRAIN);
+#endif
 }
 
 // Layer functions

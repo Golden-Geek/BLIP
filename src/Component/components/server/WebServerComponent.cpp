@@ -120,7 +120,11 @@ void WebServerComponent::clearInternal()
 #if USE_ASYNC_WEBSOCKET
     ws.closeAll();
 #else
+    ws.broadcastTXT("close");
+    // DBG("Before disconnect, remaining: " + String(ws.connectedClients()));
     ws.disconnect();
+    // DBG("Disconnecting WebSocket clients, remaining: " + String(ws.connectedClients()));
+    delay(500);
 #endif
 }
 
@@ -270,10 +274,10 @@ void WebServerComponent::onWSEvent(uint8_t id, WStype_t type, uint8_t *data, siz
     switch (type)
     {
     case WStype_DISCONNECTED:
-        DBG("WebSocket client " + String(id) + "connected from " + StringHelpers::ipToString(ws.remoteIP(id)));
+        DBG("WebSocket client " + String(id) + " disconnected from " + StringHelpers::ipToString(ws.remoteIP(id)));
         break;
     case WStype_CONNECTED:
-        DBG("WebSocket client " + String(id) + "connected from " + StringHelpers::ipToString(ws.remoteIP(id)));
+        DBG("WebSocket client " + String(id) + " connected from " + StringHelpers::ipToString(ws.remoteIP(id)) + ", num connected "+ String(ws.connectedClients()));
         // webSocket.sendTXT(id, "Connected");
         break;
 

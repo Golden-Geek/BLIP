@@ -41,6 +41,8 @@ void Component::update()
 
 void Component::clear()
 {
+    NDBG("Clear " + name);
+    
     clearInternal();
 
     for (int i = 0; i < numComponents; i++)

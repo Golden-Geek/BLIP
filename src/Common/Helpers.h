@@ -7,7 +7,7 @@
 #define DBG(text) HWSerialComponent::instance->send(text)
 #define NDBG(text) HWSerialComponent::instance->send("[" + name + "] " + text)
 
-#define DeviceID SettingsComponent::instance->deviceID
+#define DeviceID SettingsComponent::instance->getDeviceID()
 #define DeviceType SettingsComponent::instance->deviceType
 #define DeviceName SettingsComponent::instance->deviceName
 

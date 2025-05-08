@@ -8,6 +8,9 @@
 #define IO_DEFAULT_PIN 0
 #endif
 
+#ifndef IO_DEFAULT_MODE
+#define IO_DEFAULT_MODE IOComponent::D_OUTPUT
+#endif
 
 DeclareComponent(IO, "io", )
 

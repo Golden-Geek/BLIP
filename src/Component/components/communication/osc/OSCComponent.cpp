@@ -17,6 +17,22 @@ void OSCComponent::updateInternal()
 
 void OSCComponent::clearInternal()
 {
+    DBG("MDNS Remove service");
+    // mdns_service_remove("osc", "udp");
+    // mdns_service_remove("oscjson", "tcp");
+
+    esp_err_t err = mdns_service_remove_all();
+
+    if (err == ESP_OK)
+    {
+        DBG("Successfully removed all services.");
+    }
+    else
+    {
+        DBG(String("Failed to remove all services: ") + String(esp_err_to_name(err)));
+        // Handle error
+    }
+    MDNS.end();
 }
 
 void OSCComponent::onEnabledChanged()

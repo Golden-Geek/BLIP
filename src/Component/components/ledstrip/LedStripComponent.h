@@ -135,6 +135,7 @@ public:
     bool initInternal() override;
     void updateInternal() override;
     void clearInternal() override;
+    void shutdown();
 
     void setupLeds();
 
@@ -244,5 +245,11 @@ DeclareScriptFunctionVoid3(LedStripManagerComponent, setBlendMode, uint32_t, uin
 #endif
 
 void addItemInternal(int index) {};
+void shutdown() { 
+    for(int i=0;i<count;i++)
+    {
+        items[i]->shutdown();
+    }
+}
 
 EndDeclareComponent

@@ -4,12 +4,13 @@
 #define DEVICE_TYPE "BLIP"
 #endif
 
+#ifndef DEVICE_NAME
+#define DEVICE_NAME DEVICE_TYPE
+#endif
+
 DeclareComponentSingleton(Settings, "settings", )
 
-    const String deviceID = getDeviceID();
-
 DeclareIntParam(propID, 0);
-DeclareStringParam(macAddress, deviceID);
 DeclareStringParam(deviceName, DEVICE_TYPE);
 DeclareStringParam(deviceType, DEVICE_TYPE);
 
@@ -55,7 +56,6 @@ FillSettingsInternalEnd
     FillOSCQueryTrigger(saveSettings);
     FillOSCQueryTrigger(clearSettings);
     FillOSCQueryIntParam(propID);
-    FillOSCQueryStringParamReadOnly(macAddress);
     FillOSCQueryStringParam(deviceName);
     FillOSCQueryStringParam(deviceType);
     #ifdef USE_POWER

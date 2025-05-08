@@ -77,6 +77,10 @@ void RootComponent::setupInternal(JsonObject)
 
     AddOwnedComponent(&settings);
 
+#ifdef USE_SERVER
+    AddOwnedComponent(&server);
+#endif
+
 #ifdef USE_WIFI
     AddOwnedComponent(&wifi);
 #endif
@@ -99,10 +103,6 @@ void RootComponent::setupInternal(JsonObject)
 
 #if USE_SCRIPT
     AddOwnedComponent(&script);
-#endif
-
-#ifdef USE_SERVER
-    AddOwnedComponent(&server);
 #endif
 
 #ifdef USE_STREAMING
@@ -158,7 +158,13 @@ void RootComponent::updateInternal()
 void RootComponent::shutdown()
 {
     NDBG("Sleep now, baby.");
+
+#ifdef USE_LEDSTRIP
+    strips.shutdown();
+#endif
+
     timeAtShutdown = millis();
+
     timer.in(1000, [](void *) -> bool
              {  RootComponent::instance->powerdown(); return false; });
 }
