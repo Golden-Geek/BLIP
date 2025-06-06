@@ -5,3 +5,5 @@
 .vscode/ipch
 
 ressources/BLIP Control_autosave/
+
+tools/firmware.bin
