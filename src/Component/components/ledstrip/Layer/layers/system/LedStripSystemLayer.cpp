@@ -21,7 +21,7 @@ void LedStripSystemLayer::clearInternal()
 
 void LedStripSystemLayer::updateConnectionStatus()
 {
-    
+
     if (WifiComponent::instance == NULL)
         return;
 
@@ -58,37 +58,41 @@ void LedStripSystemLayer::updateConnectionStatus()
 #ifdef USE_ESPNOW
 
     // DBG("Update !" + String(ESPNowComponent::instance->pairingMode) + " / " + String(ESPNowComponent::instance->bridgeInit));
-    if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
+    if (ESPNowComponent::instance->enabled)
     {
-        if (ESPNowComponent::instance->pairingMode)
+        if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
         {
-            if (ESPNowComponent::instance->bridgeInit)
-                fillAll(Color(50, 255, 0));
+            if (ESPNowComponent::instance->pairingMode)
+            {
+                if (ESPNowComponent::instance->bridgeInit)
+                    fillAll(Color(50, 255, 0));
+                else
+                    fillAll(Color(0, 120, 250));
+            }
             else
-                fillAll(Color(0, 120, 250));
+                fillAll(Color(250, 50, 0));
         }
-        else
-            fillAll(Color(250, 50, 0));
+
+        // Color c = ESPNowComponent::instance->bridgeInit ? Color(50, 255, 0) : Color(255, 0, 120));
+        // if (ESPNowComponent::instance->pairingMode && !ESPNowComponent::instance->bridgeInit) c = Color(0,120,250);
+
+        // if (!ESPNowComponent::instance->lastReceiveTime == 0)
+        // {
+        //     // float pulseSpeed = 0.5; // Adjust this value to change the pace
+        //     // float pulse = (sin(millis() * pulseSpeed / 1000.0f * PI * 2) * 0.5f + 0.5f) * 0.15f + 0.05f;
+        //     // fillAll(Color(0, 0, 0, 255)); // clear strip
+        //     // point(c, .5f, pulse, false);
+        // }
+        // else
+        // {
+        //     float rad = max(1 - (millis() - ESPNowComponent::instance->lastReceiveTime) * 2 / 1000.0f, 0.f) * .3f;
+        //     fillAll(Color(0, 0, 0, 255)); // clear strip
+        //     point(c, .5f, rad, false);
+        // }
+
+        return;
     }
 
-    // Color c = ESPNowComponent::instance->bridgeInit ? Color(50, 255, 0) : Color(255, 0, 120));
-    // if (ESPNowComponent::instance->pairingMode && !ESPNowComponent::instance->bridgeInit) c = Color(0,120,250);
-
-    // if (!ESPNowComponent::instance->lastReceiveTime == 0)
-    // {
-    //     // float pulseSpeed = 0.5; // Adjust this value to change the pace
-    //     // float pulse = (sin(millis() * pulseSpeed / 1000.0f * PI * 2) * 0.5f + 0.5f) * 0.15f + 0.05f;
-    //     // fillAll(Color(0, 0, 0, 255)); // clear strip
-    //     // point(c, .5f, pulse, false);
-    // }
-    // else
-    // {
-    //     float rad = max(1 - (millis() - ESPNowComponent::instance->lastReceiveTime) * 2 / 1000.0f, 0.f) * .3f;
-    //     fillAll(Color(0, 0, 0, 255)); // clear strip
-    //     point(c, .5f, rad, false);
-    // }
-
-    return;
 #endif
 
     float relT = (millis() - WifiComponent::instance->timeAtStateChange) / 1000.0f;

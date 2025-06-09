@@ -38,11 +38,18 @@
     {                                                        \
     public:
 
-#define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                     \
-    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                        \
-        DeclareSingleton(ClassPrefix##Component)                                                                                  \
+#define DeclareComponentSingletonEnabled(ClassPrefix, Type, Derives, Enabled)                                                        \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                           \
+        DeclareSingleton(ClassPrefix##Component)                                                                                     \
+            ClassPrefix##Component(const String &name = Type, bool enabled = Enabled) : Component(name, enabled) { InitSingleton() } \
+    ~ClassPrefix##Component() { DeleteSingleton() }                                                                                  \
+    virtual String getTypeString() const override { return Type; }
+
+#define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                        \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                           \
+        DeclareSingleton(ClassPrefix##Component)                                                                                     \
             ClassPrefix##Component(const String &name = Type, bool enabled = true) : Component(name, enabled) { InitSingleton() } \
-    ~ClassPrefix##Component() { DeleteSingleton() }                                                                               \
+    ~ClassPrefix##Component() { DeleteSingleton() }                                                                                  \
     virtual String getTypeString() const override { return Type; }
 
 #define DeclareComponent(ClassPrefix, Type, Derives)                                                         \
@@ -284,18 +291,17 @@
 #define SendParamFeedback(param) CommunicationComponent::instance->sendParamFeedback(this, &param, #param, getParamType(&param));
 #define SendMultiParamFeedback(param) CommunicationComponent::instance->sendParamFeedback(this, param, #param, getParamType(&param));
 
-
-#define GetEnumStringStart \
+#define GetEnumStringStart                                   \
     virtual String getEnumString(void *param) const override \
     {
 
 #define GetEnumStringEnd \
-    return "";            \
+    return "";           \
     }
 
 #define GetEnumStringParam(p, options, numOptions) \
-    if (param == &p) return options[p];
-
+    if (param == &p)                               \
+        return options[p];
 
 // Fill Settings
 

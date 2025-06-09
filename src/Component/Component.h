@@ -14,8 +14,8 @@ public:
                                                           parentComponent(NULL),
                                                           numComponents(0),
                                                           numParams(0)
-    //   numParameters(0)
     {
+        enabled = _enabled;
     }
 
     virtual ~Component() {}

@@ -77,7 +77,13 @@ void LedStripComponent::setupLeds()
     // colors = (Color *)malloc(count * sizeof(Color));
     memset(colors, 0, LED_MAX_COUNT * sizeof(Color));
 #ifdef LED_USE_FASTLED
+#ifdef LED_DEFAULT_CLK_PIN
+    NDBG("Using FastLED with DotStar strip");
+    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
+#else
+    NDBG("Using FastLED with NeoPixel strip");
     FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count);
+#endif
     updateCorrection();
 #else
     for (int i = 0; i < count; i++)
@@ -145,7 +151,7 @@ void LedStripComponent::clearInternal()
 void LedStripComponent::shutdown()
 {
     DBG("Set strip on shutdown ");
-    setStripPower(true); //force turn on leds for shutdown section
+    setStripPower(true); // force turn on leds for shutdown section
 }
 
 void LedStripComponent::setBrightness(float val)
@@ -326,6 +332,7 @@ void LedStripComponent::showLeds()
         float a = colors[i].a / 255.0f;
         leds[ledMap(i)] = CRGB(colors[i].r * a, colors[i].g * a, colors[i].b * a);
     }
+    DBG("First Led " + String(ledMap(0)) + " color: " + String(colors[0].r) + ", " + String(colors[0].g) + ", " + String(colors[0].b) + ", " + String(colors[0].a));
     FastLED.show();
 #else
     if (neoPixelStrip != NULL)

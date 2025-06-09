@@ -12,7 +12,11 @@
 #define ESPNOW_ENABLE_PRESSCOUNT -1
 #endif
 
-DeclareComponentSingleton(ESPNow, "espnow", LedStreamListenerDerive)
+#ifndef ESPNOW_DEFAULT_ENABLED
+#define ESPNOW_DEFAULT_ENABLED true
+#endif
+
+DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerDerive, ESPNOW_DEFAULT_ENABLED)
     DeclareBoolParam(pairingMode, false);
 
 #ifdef USE_ETHERNET
