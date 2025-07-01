@@ -39,7 +39,8 @@ void BatteryComponent::updateInternal()
         if (batteryPin > 0)
         {
 
-            values[valuesIndex] = analogReadMilliVolts(batteryPin);
+            values[valuesIndex] = analogRead(batteryPin);
+            // DBG("Battery raw value: " + String(values[valuesIndex]));
             valuesIndex++;
         }
 
@@ -63,6 +64,7 @@ void BatteryComponent::updateInternal()
                 sum += values[i];
 
             float val = sum / BATTERY_AVERAGE_WINDOW;
+
 
 #ifdef BATTERY_VOLTAGE_CUSTOM_FUNC
             float voltage = BATTERY_VOLTAGE_CUSTOM_FUNC(val);
