@@ -18,6 +18,8 @@ ImplementSingleton(WifiComponent)
 
     AddStringParamConfig(ssid);
     AddStringParamConfig(pass);
+    AddStringParamConfig(manualIP);
+    AddStringParamConfig(manualGateway);
     AddFloatParam(signal);
 
 #ifdef WIFI_C6_USE_EXTERNAL_ANTENNA
@@ -189,7 +191,31 @@ void WifiComponent::connect()
 #ifdef USE_ETHERNET
     if (mode == MODE_ETH || mode == MODE_ETH_STA)
     {
-        NDBG("Connecting to ethernet...");
+
+        if (manualIP != "" && manualGateway != "")
+        {
+            IPAddress ip, gateway, subnet(255, 255, 255, 0);
+
+            String manualIPDots = manualIP;
+            std::replace(manualIPDots.begin(), manualIPDots.end(), '_', '.');
+            ip.fromString(manualIPDots);
+
+            String manualGatewayDots = manualGateway;
+            std::replace(manualGatewayDots.begin(), manualGatewayDots.end(), '_', '.');
+            gateway.fromString(manualGatewayDots);
+
+            ip.fromString(manualIPDots);
+            gateway.fromString(manualGatewayDots);
+            NDBG("Using manual IP configuration : " + ip.toString() + " with gateway " + gateway.toString());
+            ETH.config(ip, gateway, subnet);
+        }
+        else
+        {
+            // Use DHCP
+            NDBG("Using DHCP for IP configuration");
+            ETH.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        }
+
         ETH.begin();
     }
 #endif
@@ -201,6 +227,30 @@ void WifiComponent::connect()
         WiFi.setAutoReconnect(true);
         WiFi.setSleep(false);
         WiFi.setTxPower(WIFI_POWER_19dBm);
+        if (manualIP != "" && manualGateway != "")
+        {
+            IPAddress ip, gateway, subnet(255, 255, 255, 0);
+
+            String manualIPDots = manualIP;
+            std::replace(manualIPDots.begin(), manualIPDots.end(), '_', '.');
+            ip.fromString(manualIPDots);
+
+            String manualGatewayDots = manualGateway;
+            std::replace(manualGatewayDots.begin(), manualGatewayDots.end(), '_', '.');
+            gateway.fromString(manualGatewayDots);
+
+            ip.fromString(manualIPDots);
+            gateway.fromString(manualGatewayDots);
+            WiFi.config(ip, gateway, subnet);
+            NDBG("Using manual IP configuration : " + ip.toString() + " with gateway " + gateway.toString());
+        }
+        else
+        {
+            // Use DHCP
+            NDBG("Using DHCP for IP configuration");
+            WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        }
+
         WiFi.begin(ssid.c_str(), pass.c_str());
     }
 }
@@ -233,6 +283,7 @@ void WifiComponent::WiFiEvent(WiFiEvent_t event)
         break;
 
     case ARDUINO_EVENT_ETH_GOT_IP:
+        NDBG("Got IP !");
         setState(Connected);
         break;
 
