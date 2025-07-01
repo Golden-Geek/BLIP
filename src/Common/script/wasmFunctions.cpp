@@ -142,7 +142,7 @@ m3ApiRawFunction(m3_pointRGB)
     m3ApiGetArg(uint32_t, g);
     m3ApiGetArg(uint32_t, b);
 
-    RootComponent::instance->strips.items[0]->scriptLayer.point(Color((uint8_t)r, (uint8_t)g, (uint8_t)b), pos, radius);
+    RootComponent::instance->strips.items[0]->scriptLayer.point(Color((uint8_t)r, (uint8_t)g, (uint8_t)b), pos, radius, false);
 
     m3ApiSuccess();
 }
@@ -154,7 +154,7 @@ m3ApiRawFunction(m3_pointHSV)
     m3ApiGetArg(float, h);
     m3ApiGetArg(float, s);
     m3ApiGetArg(float, v);
-    RootComponent::instance->strips.items[0]->scriptLayer.point(Color::HSV(h, s, v), pos, radius);
+    RootComponent::instance->strips.items[0]->scriptLayer.point(Color::HSV(h, s, v), pos, radius, false);
 
     m3ApiSuccess();
 }
