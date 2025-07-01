@@ -12,7 +12,7 @@ bool WebServerComponent::initInternal()
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");
 
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     server.addHandler(&ws);
     ws.onEvent(std::bind(&WebServerComponent::onAsyncWSEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 #else
@@ -43,9 +43,10 @@ bool WebServerComponent::initInternal()
             eo["PATH_CHANGED"] = false;
 
             o["NAME"] = DeviceName;
+            o["VERSION"] = BLIP_VERSION;
             o["OSC_PORT"] = OSC_LOCAL_PORT;
             o["OSC_TRANSPORT"] = "UDP";
-#if !USE_ASYNC_WEBSOCKET
+#ifndef USE_ASYNC_WEBSOCKET
             o["WS_PORT"] = 81;
 #endif
 
@@ -90,9 +91,9 @@ bool WebServerComponent::initInternal()
 
     if (FilesComponent::instance->useInternalMemory)
     {
-        server.serveStatic("/edit", SPIFFS, "/server/edit.html");
-        server.serveStatic("/upload", SPIFFS, "/server/upload.html");
-        server.serveStatic("/server/", SPIFFS, "/server");
+        server.serveStatic("/edit", LittleFS, "/server/edit.html");
+        server.serveStatic("/upload", LittleFS, "/server/upload.html");
+        server.serveStatic("/server/", LittleFS, "/server");
     }
     else
     {
@@ -107,7 +108,7 @@ bool WebServerComponent::initInternal()
 
 void WebServerComponent::updateInternal()
 {
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     // server.handleClient();
     ws.cleanupClients();
 #else
@@ -117,7 +118,7 @@ void WebServerComponent::updateInternal()
 
 void WebServerComponent::clearInternal()
 {
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     ws.closeAll();
 #else
     ws.broadcastTXT("close");
@@ -144,7 +145,7 @@ void WebServerComponent::setupConnection()
         server.begin();
         NDBG("HTTP server started");
 
-#if !USE_ASYNC_WEBSOCKET
+#ifndef USE_ASYNC_WEBSOCKET
         ws.begin();
 #endif
     }
@@ -209,9 +210,9 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 #endif
 }
 
-#if USE_ASYNC_WEBSOCKET
-void WebServerComponent::onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-                                   void *arg, uint8_t *data, size_t len)
+#ifdef USE_ASYNC_WEBSOCKET
+void WebServerComponent::onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+                    void *arg, uint8_t *data, size_t len)
 {
     // DBG("WS Event");
     switch (type)
@@ -362,7 +363,7 @@ void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data
     wsPrint.flush();
     msg.send(wsPrint);
 
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     if (!ws.availableForWriteAll())
         return;
     ws.binaryAll(wsPrint.data, wsPrint.index);

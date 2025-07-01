@@ -19,7 +19,7 @@ DeclareBoolParam(sendFeedback, true);
 
 AsyncWebServer server = AsyncWebServer(80);
 
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
 AsyncWebSocket ws = AsyncWebSocket("/");
 #else
 WebSocketsServer ws = WebSocketsServer(81);
@@ -44,9 +44,8 @@ void setupConnection();
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 
-#if USE_ASYNC_WEBSOSCKET
-void onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-                    void *arg, uint8_t *data, size_t len);
+#ifdef USE_ASYNC_WEBSOCKET
+void onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 #else
 void onWSEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);

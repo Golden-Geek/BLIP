@@ -20,7 +20,7 @@ bool FilesComponent::initInternal()
 {
     bool mounted = false;
 
-#ifdef FILES_TYPE_SPIFFS
+#ifdef FILES_TYPE_LittleFS
     initInternalMemory();
 #else
     useInternalMemory = false;
@@ -97,12 +97,12 @@ bool FilesComponent::initInternal()
 
 bool FilesComponent::initInternalMemory()
 {
-    if (!SPIFFS.begin(true)) // Start the SPI Flash Files System
+    if (!LittleFS.begin(true)) // Start the SPI Flash Files System
     {
-        NDBG("Error initializing SPIFFS");
+        NDBG("Error initializing LittleFS");
         return false;
     }
-    NDBG("Internal Memory SPIFFS initialized.");
+    NDBG("Internal Memory LittleFS initialized.");
     return true;
 }
 
@@ -117,7 +117,7 @@ File FilesComponent::openFile(String fileName, bool forWriting, bool deleteIfExi
 
     File f;
     if (useInternalMemory)
-        f = SPIFFS.open(fileName, forWriting ? "w" : "r"); // Open it
+        f = LittleFS.open(fileName, forWriting ? "w" : "r"); // Open it
     else
         f = fs.open(fileName.c_str(), forWriting ? FILE_WRITE : FILE_READ);
 
@@ -150,7 +150,7 @@ bool FilesComponent::deleteFolder(String path)
             }
 
             if (useInternalMemory)
-                result = SPIFFS.rmdir(fPath);
+                result = LittleFS.rmdir(fPath);
             else
                 result = fs.rmdir(fPath);
         }
@@ -159,7 +159,7 @@ bool FilesComponent::deleteFolder(String path)
             NDBG("Deleting file " + fPath);
 
             if (useInternalMemory)
-                result = SPIFFS.remove(fPath);
+                result = LittleFS.remove(fPath);
             else
                 result = fs.remove(fPath);
         }
@@ -179,8 +179,8 @@ void FilesComponent::deleteFileIfExists(String path)
     if (useInternalMemory)
     {
 
-        if (SPIFFS.exists(path))
-            SPIFFS.remove(path);
+        if (LittleFS.exists(path))
+            LittleFS.remove(path);
     }
     else
     {
@@ -197,7 +197,7 @@ String FilesComponent::listDir(const char *dirname, uint8_t levels)
     File root;
 
     if (useInternalMemory)
-        root = SPIFFS.open("/", "r");
+        root = LittleFS.open("/", "r");
     else
         root = fs.open(dirname);
 
