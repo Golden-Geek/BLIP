@@ -1,4 +1,7 @@
 #pragma once
+
+#define MAX_CONCURRENT_UPLOADS 5
+
 DeclareComponentSingleton(WebServer, "server", )
 
     class WSPrint : public Print
@@ -19,7 +22,7 @@ DeclareBoolParam(sendFeedback, true);
 
 AsyncWebServer server = AsyncWebServer(80);
 
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
 AsyncWebSocket ws = AsyncWebSocket("/");
 #else
 WebSocketsServer ws = WebSocketsServer(81);
@@ -33,6 +36,13 @@ File uploadingFile;
 
 String tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
 
+struct UploadFileState
+{
+    AsyncWebServerRequest *request = nullptr; // Use nullptr to check if the slot is free
+    File file;
+};
+UploadFileState uploadingFiles[MAX_CONCURRENT_UPLOADS];
+
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
 void updateInternal() override;
@@ -44,9 +54,8 @@ void setupConnection();
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 
-#if USE_ASYNC_WEBSOSCKET
-void onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-                    void *arg, uint8_t *data, size_t len);
+#ifdef USE_ASYNC_WEBSOCKET
+void onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 #else
 void onWSEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);

@@ -68,6 +68,9 @@ const String wifiModeNames[MODE_MAX]{
 
 DeclareStringParam(ssid, "");
 DeclareStringParam(pass, "");
+DeclareStringParam(manualIP, "");
+DeclareStringParam(manualGateway, "");
+
 DeclareFloatParam(signal, 0)
     DeclareIntParam(mode, WIFI_DEFAULT_MODE);
 
@@ -94,6 +97,8 @@ String getIP() const;
 HandleSetParamInternalStart
     CheckAndSetParam(ssid);
 CheckAndSetParam(pass);
+CheckAndSetParam(manualIP);
+CheckAndSetParam(manualGateway);
 #ifdef USE_ETHERNET
 CheckAndSetParam(mode);
 #endif
@@ -102,6 +107,8 @@ HandleSetParamInternalEnd;
 FillSettingsInternalStart
     FillSettingsParam(ssid);
 FillSettingsParam(pass);
+FillSettingsParam(manualIP);
+FillSettingsParam(manualGateway);
 #ifdef USE_ETHERNET
 FillSettingsParam(mode);
 #endif
@@ -111,6 +118,8 @@ FillOSCQueryInternalStart
     FillOSCQueryStringParam(ssid);
 FillOSCQueryStringParam(pass);
 FillOSCQueryFloatParamReadOnly(signal);
+FillOSCQueryStringParam(manualIP);
+FillOSCQueryStringParam(manualGateway);
 #ifdef USE_ETHERNET
 FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
 #endif

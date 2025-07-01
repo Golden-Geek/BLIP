@@ -40,7 +40,7 @@ void HWSerialComponent::processMessage(String buffer)
 {
     if (buffer.substring(0, 2) == "yo")
     {
-        Serial.println("wassup " + DeviceID + " \"" + String(DeviceType) + "\"");
+        Serial.println("wassup " + DeviceID + " \"" + String(DeviceType) + "\" \"" + String(DeviceName) + "\" \"" + String(BLIP_VERSION) + "\"");
         return;
     }
 

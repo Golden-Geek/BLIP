@@ -13,7 +13,7 @@
 #define ARDUINOJSON_USE_DOUBLE 0
 
 #include <ArduinoJson.h>
-#include <SPIFFS.h>
+#include <FS.h>
 #include <SPI.h>
 #include <arduino-timer.h>
 
@@ -45,7 +45,7 @@
 #ifdef USE_FILES
 
 #ifdef FILES_TYPE_MM
-#elif defined FILES_TYPE_SPIFFS
+#elif defined FILES_TYPE_LittleFS
 #else
 #ifndef FILES_TYPE_SD
 #define FILES_TYPE_SD
@@ -54,7 +54,7 @@
 
 #ifdef FILES_TYPE_MMC
 #include "SD_MMC.h"
-#elif defined FILES_TYPE_SPIFFS
+#elif defined FILES_TYPE_LittleFS
 #else
 #include "SD.h"
 #include "ff.h"
@@ -62,6 +62,7 @@
 #endif
 
 #include "FS.h"
+#include "LittleFS.h"
 
 #include "Component/components/files/FilesComponent.h"
 #endif
@@ -92,7 +93,7 @@
 // #define CONFIG_ASYNC_TCP_USE_WDT 0
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#if !USE_ASYNC_WEBSOCKET
+#ifndef USE_ASYNC_WEBSOCKET
 #include <WebSocketsServer.h>
 #endif
 #include "Component/components/server/WebServerComponent.h"

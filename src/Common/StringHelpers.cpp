@@ -21,7 +21,10 @@ void StringHelpers::processStringMessage(const String &buffer, std::function<voi
     int index = 2;
     // COUNT
 
-    char *pch = strtok((char *)args.c_str(), ",");
+    // Make a mutable copy of args since strtok modifies the string
+    String argsCopy = args;
+    char *argsBuffer = strdup(argsCopy.c_str());
+    char *pch = strtok(argsBuffer, ",");
     while (pch != NULL && index < numData)
     {
         String s = String(pch);
@@ -49,12 +52,13 @@ void StringHelpers::processStringMessage(const String &buffer, std::function<voi
         }
         else
         {
-            data[index] = pch;
+            data[index] = s;
         }
 
         pch = strtok(NULL, ",");
         index++;
     }
+    free(argsBuffer);
 
     callback(data, index);
 }

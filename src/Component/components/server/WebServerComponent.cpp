@@ -2,6 +2,10 @@ ImplementSingleton(WebServerComponent);
 
 void WebServerComponent::setupInternal(JsonObject o)
 {
+    for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
+    {
+        uploadingFiles[i].request = nullptr;
+    }
 
     AddBoolParamConfig(sendFeedback);
 }
@@ -12,7 +16,7 @@ bool WebServerComponent::initInternal()
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");
 
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     server.addHandler(&ws);
     ws.onEvent(std::bind(&WebServerComponent::onAsyncWSEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 #else
@@ -43,9 +47,10 @@ bool WebServerComponent::initInternal()
             eo["PATH_CHANGED"] = false;
 
             o["NAME"] = DeviceName;
+            o["VERSION"] = BLIP_VERSION;
             o["OSC_PORT"] = OSC_LOCAL_PORT;
             o["OSC_TRANSPORT"] = "UDP";
-#if !USE_ASYNC_WEBSOCKET
+#ifndef USE_ASYNC_WEBSOCKET
             o["WS_PORT"] = 81;
 #endif
 
@@ -90,9 +95,9 @@ bool WebServerComponent::initInternal()
 
     if (FilesComponent::instance->useInternalMemory)
     {
-        server.serveStatic("/edit", SPIFFS, "/server/edit.html");
-        server.serveStatic("/upload", SPIFFS, "/server/upload.html");
-        server.serveStatic("/server/", SPIFFS, "/server");
+        server.serveStatic("/edit", LittleFS, "/server/edit.html");
+        server.serveStatic("/upload", LittleFS, "/server/upload.html");
+        server.serveStatic("/server/", LittleFS, "/server");
     }
     else
     {
@@ -107,7 +112,7 @@ bool WebServerComponent::initInternal()
 
 void WebServerComponent::updateInternal()
 {
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     // server.handleClient();
     ws.cleanupClients();
 #else
@@ -117,7 +122,7 @@ void WebServerComponent::updateInternal()
 
 void WebServerComponent::clearInternal()
 {
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     ws.closeAll();
 #else
     ws.broadcastTXT("close");
@@ -144,7 +149,7 @@ void WebServerComponent::setupConnection()
         server.begin();
         NDBG("HTTP server started");
 
-#if !USE_ASYNC_WEBSOCKET
+#ifndef USE_ASYNC_WEBSOCKET
         ws.begin();
 #endif
     }
@@ -157,61 +162,82 @@ void WebServerComponent::setupConnection()
 
 void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-    DBG("Server File upload Client:" + request->client()->remoteIP().toString() + " " + request->url());
+    NDBG("Server File upload Client:" + request->client()->remoteIP().toString() + " " + String(request->url()) + "Filename: " + filename + ", Index: " + String(index) + ", Length: " + String(len) + ", Final: " + String(final));
 
 #if USE_FILES
-    String dest = "";
-    if (filename.endsWith(".wasm"))
-        dest = "/scripts";
-    else if (filename.endsWith(".colors") || filename.endsWith(".meta"))
-        dest = "/playback";
-    else if (filename.endsWith(".seq"))
-        dest = "/playback";
-
-    if (dest == "")
+    if (index == 0)
     {
-        dest = request->hasArg("folder") ? request->arg("folder") : "";
-    }
+        // First chunk of a new upload, find a free slot
+        int i;
+        for (i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
+        {
+            if (uploadingFiles[i].request == nullptr)
+            {
+                uploadingFiles[i].request = request;
+                break;
+            }
+        }
 
-    dest += "/" + filename;
+        // If no free slot was found, abort
+        if (i == MAX_CONCURRENT_UPLOADS)
+        {
+            DBG("Upload Error: No free slot for new upload!");
+            return;
+        }
 
-    if (!index)
-    {
-        // open the file on first call and store the file handle in the request object
+        String dest = "";
+        if (filename.endsWith(".wasm"))
+            dest = "/scripts";
+        else if (filename.endsWith(".colors") || filename.endsWith(".meta"))
+            dest = "/playback";
+        else if (filename.endsWith(".seq"))
+            dest = "/playback";
+        if (dest == "")
+            dest = request->hasArg("folder") ? request->arg("folder") : "";
+        dest += "/" + filename;
+
         DBG("Upload Start: " + String(dest));
-        request->_tempFile = FilesComponent::instance->openFile(dest, true, true);
+        uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
+
+        // Add a disconnect handler to clean up if the client aborts
+        request->onDisconnect([this, request]()
+                              {
+            for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++) {
+                if (uploadingFiles[i].request == request) {
+                    DBG("Upload client disconnected. Cleaning up file.");
+                    uploadingFiles[i].file.close();
+                    uploadingFiles[i].request = nullptr; // Free the slot
+                    break;
+                }
+            } });
     }
 
-    if (len)
+    // Find the correct slot for this request and write data
+    for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
     {
-        // stream the incoming chunk to the opened file
-        DBG("Writing file: " + String(dest) + " index=" + String(index) + " len=" + String(len));
-        request->_tempFile.write(data, len);
+        if (uploadingFiles[i].request == request)
+        {
+            if (len > 0 && uploadingFiles[i].file)
+            {
+                uploadingFiles[i].file.write(data, len);
+                yield();
+            }
 
-        // uploadedBytes += request->currentSize.currentSize;
-        // float p = uploadedBytes * 1.0f / 1000000;
-        // DBG("Upload progression... " + String((int)(p * 100)) + "%");
-        // if (uploadedBytes % 8000 < 4000)
-        // {
-        //     var data[1];
-        //     data[0] = p;
-        //     sendEvent(Uploading, data, 1);
-        // }
-    }
-
-    if (final)
-    {
-        // close the file handle as the upload is now done
-        DBG("Upload Complete: " + String(dest) + ",size: " + String(index + len));
-        request->_tempFile.close();
-        // request->redirect("/");
+            if (final)
+            {
+                DBG("Upload Complete: " + String(uploadingFiles[i].file.name()) + ", size: " + String(index + len));
+                uploadingFiles[i].file.close();
+                uploadingFiles[i].request = nullptr; // Free the slot
+            }
+            break;
+        }
     }
 #endif
 }
 
-#if USE_ASYNC_WEBSOCKET
-void WebServerComponent::onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-                                   void *arg, uint8_t *data, size_t len)
+#ifdef USE_ASYNC_WEBSOCKET
+void WebServerComponent::onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+                                        void *arg, uint8_t *data, size_t len)
 {
     // DBG("WS Event");
     switch (type)
@@ -277,7 +303,7 @@ void WebServerComponent::onWSEvent(uint8_t id, WStype_t type, uint8_t *data, siz
         DBG("WebSocket client " + String(id) + " disconnected from " + StringHelpers::ipToString(ws.remoteIP(id)));
         break;
     case WStype_CONNECTED:
-        DBG("WebSocket client " + String(id) + " connected from " + StringHelpers::ipToString(ws.remoteIP(id)) + ", num connected "+ String(ws.connectedClients()));
+        DBG("WebSocket client " + String(id) + " connected from " + StringHelpers::ipToString(ws.remoteIP(id)) + ", num connected " + String(ws.connectedClients()));
         // webSocket.sendTXT(id, "Connected");
         break;
 
@@ -362,7 +388,7 @@ void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data
     wsPrint.flush();
     msg.send(wsPrint);
 
-#if USE_ASYNC_WEBSOCKET
+#ifdef USE_ASYNC_WEBSOCKET
     if (!ws.availableForWriteAll())
         return;
     ws.binaryAll(wsPrint.data, wsPrint.index);

@@ -6,8 +6,8 @@ DeclareComponentSingleton(Files, "files", )
     bool initInternal() override;
 bool initInternalMemory();
 
-#ifdef FILES_TYPE_SPIFFS
-#define FS_TYPE SPIFFS
+#ifdef FILES_TYPE_LittleFS
+#define FS_TYPE LittleFS
 #elif defined FILES_TYPE_MMC
 #define FS_TYPE SD_MMC
 #else
