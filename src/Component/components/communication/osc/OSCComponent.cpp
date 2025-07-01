@@ -122,6 +122,7 @@ void OSCComponent::processMessage(OSCMessage &msg)
         msg.add(DeviceID.c_str());
         msg.add(DeviceType.c_str());
         msg.add(DeviceName.c_str());
+        msg.add(BLIP_VERSION);
 
         sendMessage(msg);
     }
