@@ -76,11 +76,11 @@ m3ApiRawFunction(m3_fillLedsRGB)
 
 m3ApiRawFunction(m3_fillLedsHSV)
 {
-    m3ApiGetArg(uint32_t, h);
-    m3ApiGetArg(uint32_t, s);
-    m3ApiGetArg(uint32_t, v);
+    m3ApiGetArg(float, h);
+    m3ApiGetArg(float, s);
+    m3ApiGetArg(float, v);
     // RootComponent::instance->strips.items[0]->bakeLayer(LedManager::Mode::Stream);
-    RootComponent::instance->strips.items[0]->scriptLayer.fillAll(Color::HSV((uint8_t)h, (uint8_t)s, (uint8_t)v));
+    RootComponent::instance->strips.items[0]->scriptLayer.fillAll(Color::HSV(h, s, v));
 
     m3ApiSuccess();
 }
@@ -125,11 +125,11 @@ m3ApiRawFunction(m3_setLedRGB)
 m3ApiRawFunction(m3_setLedHSV)
 {
     m3ApiGetArg(uint32_t, index);
-    m3ApiGetArg(uint32_t, h);
-    m3ApiGetArg(uint32_t, s);
-    m3ApiGetArg(uint32_t, v);
+    m3ApiGetArg(float, h);
+    m3ApiGetArg(float, s);
+    m3ApiGetArg(float, v);
     // RootComponent::instance->strips.items[0]->bakeLayer(LedManager::Mode::Stream);
-    RootComponent::instance->strips.items[0]->scriptLayer.setLed(index, Color::HSV((uint8_t)h, (uint8_t)s, (uint8_t)v));
+    RootComponent::instance->strips.items[0]->scriptLayer.setLed(index, Color::HSV(h, s, v));
 
     m3ApiSuccess();
 }
@@ -138,11 +138,11 @@ m3ApiRawFunction(m3_pointRGB)
 {
     m3ApiGetArg(float, pos);
     m3ApiGetArg(float, radius);
-    m3ApiGetArg(uint32_t, h);
-    m3ApiGetArg(uint32_t, s);
-    m3ApiGetArg(uint32_t, v);
+    m3ApiGetArg(uint32_t, r);
+    m3ApiGetArg(uint32_t, g);
+    m3ApiGetArg(uint32_t, b);
 
-    RootComponent::instance->strips.items[0]->scriptLayer.point(Color((uint8_t)h, (uint8_t)s, (uint8_t)v), pos, radius);
+    RootComponent::instance->strips.items[0]->scriptLayer.point(Color((uint8_t)r, (uint8_t)g, (uint8_t)b), pos, radius);
 
     m3ApiSuccess();
 }
@@ -151,10 +151,10 @@ m3ApiRawFunction(m3_pointHSV)
 {
     m3ApiGetArg(float, pos);
     m3ApiGetArg(float, radius);
-    m3ApiGetArg(uint32_t, h);
-    m3ApiGetArg(uint32_t, s);
-    m3ApiGetArg(uint32_t, v);
-    RootComponent::instance->strips.items[0]->scriptLayer.point(Color::HSV((uint8_t)h, (uint8_t)s, (uint8_t)v), pos, radius);
+    m3ApiGetArg(float, h);
+    m3ApiGetArg(float, s);
+    m3ApiGetArg(float, v);
+    RootComponent::instance->strips.items[0]->scriptLayer.point(Color::HSV(h, s, v), pos, radius);
 
     m3ApiSuccess();
 }

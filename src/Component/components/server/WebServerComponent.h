@@ -1,4 +1,7 @@
 #pragma once
+
+#define MAX_CONCURRENT_UPLOADS 5
+
 DeclareComponentSingleton(WebServer, "server", )
 
     class WSPrint : public Print
@@ -32,6 +35,13 @@ int uploadedBytes;
 File uploadingFile;
 
 String tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
+
+struct UploadFileState
+{
+    AsyncWebServerRequest *request = nullptr; // Use nullptr to check if the slot is free
+    File file;
+};
+UploadFileState uploadingFiles[MAX_CONCURRENT_UPLOADS];
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;

@@ -185,14 +185,14 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "dimLeds", "v(f)", &m3_dimLeds);
     m3_LinkRawFunction(module, arduino, "fillLeds", "v(i)", &m3_fillLeds);
     m3_LinkRawFunction(module, arduino, "fillLedsRGB", "v(iii)", &m3_fillLedsRGB);
-    m3_LinkRawFunction(module, arduino, "fillLedsHSV", "v(iii)", &m3_fillLedsHSV);
+    m3_LinkRawFunction(module, arduino, "fillLedsHSV", "v(fff)", &m3_fillLedsHSV);
     m3_LinkRawFunction(module, arduino, "setLed", "v(ii)", &m3_setLed);
     m3_LinkRawFunction(module, arduino, "getLed", "i(i)", &m3_getLed);
 
     m3_LinkRawFunction(module, arduino, "setLedRGB", "v(iiii)", &m3_setLedRGB);
-    m3_LinkRawFunction(module, arduino, "setLedHSV", "v(iiii)", &m3_setLedHSV);
+    m3_LinkRawFunction(module, arduino, "setLedHSV", "v(ifff)", &m3_setLedHSV);
     m3_LinkRawFunction(module, arduino, "pointRGB", "v(ffiii)", &m3_pointRGB);
-    m3_LinkRawFunction(module, arduino, "pointHSV", "v(ffiii)", &m3_pointHSV);
+    m3_LinkRawFunction(module, arduino, "pointHSV", "v(fffff)", &m3_pointHSV);
     m3_LinkRawFunction(module, arduino, "setIR", "v(f)", &m3_setIR);
     m3_LinkRawFunction(module, arduino, "playVariant", "v(i)", &m3_playVariant);
     m3_LinkRawFunction(module, arduino, "updateLeds", "v()", &m3_updateLeds);
