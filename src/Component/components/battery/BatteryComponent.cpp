@@ -54,7 +54,7 @@ void BatteryComponent::updateInternal()
 #ifdef BATTERY_READ_MILLIVOLTS
             // Read the battery in milliamps
             float curV = analogReadMilliVolts(batteryPin) * BATTERY_READ_MILLIVOLTS_MULTIPLIER / 1000.0f; // Convert to volts
-            DBG("Battery millivolts  " + String(values[valuesIndex]));
+            // DBG("Battery millivolts  " + String(values[valuesIndex]));
 
 #else
             float curV = analogRead(batteryPin);

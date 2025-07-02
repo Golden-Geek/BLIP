@@ -93,7 +93,6 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&display);
 #endif
 
-
 #ifdef USE_BATTERY
     AddOwnedComponent(&battery);
 #endif
@@ -156,7 +155,7 @@ void RootComponent::updateInternal()
     timer.tick();
 }
 
-void RootComponent::shutdown()
+void RootComponent::shutdown(bool restarting)
 {
     NDBG("Sleep now, baby.");
 
@@ -166,16 +165,26 @@ void RootComponent::shutdown()
 
     timeAtShutdown = millis();
 
-    timer.in(1000, [](void *) -> bool
-             {  RootComponent::instance->powerdown(); return false; });
+    if (restarting)
+    {
+        timer.in(1000, [](void *) -> bool
+                 { RootComponent::instance->reboot(); return false; });
+    }
+    else
+    {
+        timer.in(1000, [](void *) -> bool
+                 {  
+                RootComponent::instance->powerdown(); return false; });
+    }
 }
 
 void RootComponent::restart()
 {
-    clear();
-    delay(200);
-    ESP.restart();
+    DBG("Restarting...");
+    shutdown(true);
 }
+
+
 
 void RootComponent::standby()
 {
@@ -183,6 +192,16 @@ void RootComponent::standby()
     clear();
     esp_sleep_enable_timer_wakeup(3 * 1000000); // Set wakeup timer for 3 seconds
     esp_deep_sleep_start();
+}
+
+
+
+void RootComponent::reboot()
+{
+    clear();
+    delay(200);
+
+    ESP.restart();
 }
 
 void RootComponent::powerdown()

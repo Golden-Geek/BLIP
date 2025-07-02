@@ -95,10 +95,11 @@ DeclareBoolParam(testMode, false);
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
 
-void shutdown();
+void shutdown(bool restarting = false);
 void restart();
 void standby();
 
+void reboot();
 void powerdown();
 
 void onChildComponentEvent(const ComponentEvent &e) override;
