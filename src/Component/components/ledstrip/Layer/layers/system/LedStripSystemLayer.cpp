@@ -19,6 +19,27 @@ void LedStripSystemLayer::clearInternal()
     clearColors();
 }
 
+void LedStripSystemLayer::showStartupAnimation()
+{
+    // init animation, fade blue to black in .5s
+    // Fade from blue to black over 0.5s (500ms)
+    // for (int step = 0; step <= 100; ++step)
+    // {
+    //     float t = (step / 100.0f) * 255;
+
+    //     fillAll(Color(0, 120, 255, 255 - t));
+    //     strip->processLayer(this);
+    //     strip->showLeds();
+    //     delay(2);
+    // }
+    
+    // delay(100);
+    // clearColors();
+    // strip->processLayer(this);
+    // strip->showLeds();
+    // delay(50);
+}
+
 void LedStripSystemLayer::updateConnectionStatus()
 {
 
@@ -95,7 +116,14 @@ void LedStripSystemLayer::updateConnectionStatus()
 
 #endif
 
-    float relT = (millis() - WifiComponent::instance->timeAtStateChange) / 1000.0f;
+    if(timeAtStartup == 0)
+    {
+        timeAtStartup = millis();
+    }
+
+    long time = millis() - timeAtStartup;
+
+    float relT = (time - WifiComponent::instance->timeAtStateChange) / 1000.0f;
     const float animTime = 1.0f;
 
     WifiComponent::ConnectionState connectionState = WifiComponent::instance->state;
@@ -114,7 +142,7 @@ void LedStripSystemLayer::updateConnectionStatus()
     // NDBG("Wifi status : " + String(connectionState) + " " + String(relT));
 
     // default behavior (connecting) on which we will add animation for connected behavior
-    float t = (millis() - RootComponent::instance->timeAtStart) / 1000.0f;
+    float t = (time - RootComponent::instance->timeAtStart) / 1000.0f;
     float pos = cos((t + PI / 2 + .2f) * 5) * .5f + .5f;
 
     if (strip->invertStrip)

@@ -86,7 +86,7 @@ bool WebServerComponent::initInternal()
     // server.on("/settings", HTTP_ANY, std::bind(&WebServerComponent::handleSettings, this));
     // server.on("/uploadFile", HTTP_POST, std::bind(&WebServerComponent::returnOK, this), std::bind(&WebServerComponent::handleFileUpload, this));
 
-#if USE_FILES
+#ifdef USE_FILES
     server.on(
         "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
         { request->send(200); },
@@ -164,7 +164,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 {
     NDBG("Server File upload Client:" + request->client()->remoteIP().toString() + " " + String(request->url()) + "Filename: " + filename + ", Index: " + String(index) + ", Length: " + String(len) + ", Final: " + String(final));
 
-#if USE_FILES
+#ifdef USE_FILES
     if (index == 0)
     {
         // First chunk of a new upload, find a free slot

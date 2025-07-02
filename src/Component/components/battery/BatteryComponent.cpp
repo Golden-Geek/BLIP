@@ -5,8 +5,10 @@ void BatteryComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(batteryPin);
     AddIntParamConfig(chargePin);
+#ifndef BATTERY_READ_MILLIVOLTS
     AddIntParamConfig(rawMin);
     AddIntParamConfig(rawMax);
+#endif
     AddBoolParam(sendFeedback);
     AddFloatParamConfig(lowBatteryThreshold);
 
@@ -16,14 +18,15 @@ void BatteryComponent::setupInternal(JsonObject o)
 
 bool BatteryComponent::initInternal()
 {
-    if (batteryPin > 0)
+    if (batteryPin >= 0)
     {
         pinMode(batteryPin, INPUT);
+        analogRead(batteryPin); // read once to setup the ADC
         analogSetPinAttenuation(batteryPin, ADC_0db);
     }
 
-    if (chargePin > 0)
-        pinMode(chargePin, INPUT);
+    if (chargePin >= 0)
+        pinMode(chargePin, BATTERY_CHARGE_PIN_MODE);
 
     for (int i = 0; i < BATTERY_AVERAGE_WINDOW; i++)
         values[i] = analogRead(batteryPin);
@@ -35,20 +38,21 @@ void BatteryComponent::updateInternal()
 {
     if (millis() > lastBatteryCheck + BATTERY_CHECK_INTERVAL)
     {
-        if (chargePin > 0)
+        lastBatteryCheck = millis();
+        if (chargePin >= 0)
         {
             // Read the charging state
             bool chVal = digitalRead(chargePin);
-            DBG("Charging state: " + String(chVal));
+            // DBG("Charging state: " + String(chVal));
             SetParam(charging, chVal);
         }
 
-        if (batteryPin > 0)
+        if (batteryPin >= 0)
         {
 #ifdef BATTERY_READ_MILLIVOLTS
             // Read the battery in milliamps
             float curV = analogReadMilliVolts(batteryPin) * BATTERY_READ_MILLIVOLTS_MULTIPLIER / 1000.0f; // Convert to volts
-            DBG("Battery millivolts  " + String(values[valuesIndex]));
+                                                                                                          // DBG("Battery millivolts  " + String(values[valuesIndex]));
 #else
             float curV = analogRead(batteryPin);
             // DBG("Battery raw value: " + String(values[valuesIndex]));
@@ -63,8 +67,6 @@ void BatteryComponent::updateInternal()
             values[valuesIndex] = curV;
             valuesIndex++;
         }
-
-        lastBatteryCheck = millis();
     }
 
     if (valuesIndex >= BATTERY_AVERAGE_WINDOW)

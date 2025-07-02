@@ -11,6 +11,10 @@
 #define BATTERY_DEFAULT_CHARGE_PIN -1
 #endif
 
+#ifndef BATTERY_CHARGE_PIN_MODE
+#define BATTERY_CHARGE_PIN_MODE INPUT_PULLUP
+#endif
+
 #ifndef BATTERY_DEFAUT_RAW_MIN
 #define BATTERY_DEFAUT_RAW_MIN 0
 #endif
@@ -27,13 +31,14 @@
 #define BATTERY_READ_MILLIVOLTS_MULTIPLIER 1
 #endif
 
-
 DeclareComponentSingleton(Battery, "battery", )
 
     DeclareIntParam(batteryPin, BATTERY_DEFAULT_PIN);
 DeclareIntParam(chargePin, BATTERY_DEFAULT_CHARGE_PIN);
+#ifndef BATTERY_READ_MILLIVOLTS
 DeclareIntParam(rawMin, BATTERY_DEFAUT_RAW_MIN);
 DeclareIntParam(rawMax, BATTERY_DEFAULT_RAW_MAX);
+#endif
 DeclareFloatParam(lowBatteryThreshold, BATTERY_DEFAULT_LOW_VOLTAGE);
 
 DeclareBoolParam(sendFeedback, true);
@@ -66,8 +71,10 @@ CheckFeedbackParamInternalEnd;
 HandleSetParamInternalStart
     CheckAndSetParam(batteryPin);
 CheckAndSetParam(chargePin);
+#ifndef BATTERY_READ_MILLIVOLTS
 CheckAndSetParam(rawMin);
 CheckAndSetParam(rawMax);
+#endif
 CheckAndSetParam(lowBatteryThreshold);
 CheckAndSetParam(sendFeedback);
 CheckAndSetParam(batteryLevel);
@@ -77,8 +84,10 @@ HandleSetParamInternalEnd;
 FillSettingsInternalStart
     FillSettingsParam(batteryPin);
 FillSettingsParam(chargePin);
+#ifndef BATTERY_READ_MILLIVOLTS
 FillSettingsParam(rawMin);
 FillSettingsParam(rawMax);
+#endif
 FillSettingsParam(lowBatteryThreshold);
 FillSettingsParam(sendFeedback);
 FillSettingsParam(batteryLevel);
@@ -88,8 +97,10 @@ FillSettingsInternalEnd;
 FillOSCQueryInternalStart
     FillOSCQueryIntParam(batteryPin);
 FillOSCQueryIntParam(chargePin);
+#ifndef BATTERY_READ_MILLIVOLTS
 FillOSCQueryIntParam(rawMin);
 FillOSCQueryIntParam(rawMax);
+#endif
 FillOSCQueryRangeParam(lowBatteryThreshold, 3.3, 4.2)
     FillOSCQueryBoolParam(sendFeedback);
 FillOSCQueryRangeParamReadOnly(batteryLevel, lowBatteryThreshold, 4.2f);

@@ -57,6 +57,7 @@ void Script::load(const String &path)
 
     DBG("Load script " + path + "...");
 
+#ifdef USE_FILES
     File f = FilesComponent::instance->openFile("/scripts/" + path + ".wasm", false); // false is for reading
     if (!f)
     {
@@ -76,6 +77,9 @@ void Script::load(const String &path)
 
     DBG("Script read " + String(scriptSize) + " bytes");
     launchWasm();
+#else
+    DBG("Script loading not supported, USE_FILES not defined");
+#endif
 }
 
 void Script::launchWasm()

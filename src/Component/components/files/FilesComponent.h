@@ -1,9 +1,11 @@
 #pragma once
 
+
+
 DeclareComponentSingleton(Files, "files", )
 
     void setupInternal(JsonObject o) override;
-    bool initInternal() override;
+bool initInternal() override;
 bool initInternalMemory();
 
 #ifdef FILES_TYPE_LittleFS

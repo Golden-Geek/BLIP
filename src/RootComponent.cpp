@@ -111,7 +111,7 @@ void RootComponent::setupInternal(JsonObject)
 #endif
 
 #ifdef USE_IO
-    memset(availablePWMChannels, true, sizeof(availablePWMChannels));
+    // memset(availablePWMChannels, true, sizeof(availablePWMChannels));
     AddOwnedComponent(&ios);
 #ifdef USE_BUTTON
     AddOwnedComponent(&buttons);

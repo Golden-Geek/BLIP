@@ -102,14 +102,12 @@ void LedStripComponent::setupLeds()
         FastLED.addLeds<LED2_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
 #else
         NDBG("Using FastLED with NeoPixel strip for strip 2");
-        // FastLED.addLeds<LED2_DEFAULT_TYPE, LED2_DEFAULT_DATA_PIN, LED2_DEFAULT_COLOR_ORDER>(leds, count);
+        FastLED.addLeds<LED2_DEFAULT_TYPE, LED2_DEFAULT_DATA_PIN, LED2_DEFAULT_COLOR_ORDER>(leds, count);
 #endif
     }
 
     updateCorrection();
 #else
-    for (int i = 0; i < count; i++)
-        colors[i] = Color(0, 0, 0, 0);
 
     if (clkPin > 0)
     {
@@ -127,6 +125,7 @@ void LedStripComponent::setupLeds()
 #endif
 
     setStripPower(true);
+    showLeds(); // may fail when using files
 }
 
 void LedStripComponent::updateInternal()
@@ -387,8 +386,8 @@ void LedStripComponent::showLeds()
         }
         dotStarStrip->show();
     }
-#endif
     ditherFrameCounter = (ditherFrameCounter + 1) & 0x07;
+#endif
 }
 
 uint8_t LedStripComponent::getDitheredBrightness(uint8_t brightness, uint8_t frame) // frame goes 0-7

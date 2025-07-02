@@ -30,6 +30,14 @@
 #define LED_COLOR_ORDER NEO_GRB
 #endif
 
+#ifndef LED_DEFAULT_TYPE
+#define LED_DEFAULT_TYPE WS2812B
+#endif
+
+#ifndef LED2_DEFAULT_TYPE
+#define LED2_DEFAULT_TYPE WS2812B
+#endif
+
 #ifndef LED_DUPLICATE
 #define LED_DUPLICATE 1
 #endif
