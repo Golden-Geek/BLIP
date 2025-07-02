@@ -6,22 +6,24 @@
 class Component : public EventBroadcaster<ComponentEvent>
 {
 public:
-    Component(const String &name, bool _enabled = true) : name(name),
-                                                          isInit(false),
-                                                          autoInit(true),
-                                                          exposeEnabled(true),
-                                                          saveEnabled(true),
-                                                          parentComponent(NULL),
-                                                          numComponents(0),
-                                                          numParams(0)
+    Component(const String &name, bool _enabled = true, int index = 0) : name(name),
+                                                                         enabled(_enabled),
+                                                                         index(index),
+                                                                         isInit(false),
+                                                                         autoInit(true),
+                                                                         exposeEnabled(true),
+                                                                         saveEnabled(true),
+                                                                         parentComponent(NULL),
+                                                                         numComponents(0),
+                                                                         numParams(0)
     {
-        enabled = _enabled;
     }
 
     virtual ~Component() {}
     virtual String getTypeString() const { return "[notype]"; }
 
     String name;
+    int index; // used for multiple instances of the same component type
     bool autoInit;
     bool isInit;
     bool exposeEnabled;
@@ -90,7 +92,7 @@ public:
     }
 
     template <class T>
-    T *addComponent(const String &name, bool _enabled, JsonObject o = JsonObject()) { return (T *)addComponent(new T(name, _enabled), o); };
+    T *addComponent(const String &name, bool _enabled, JsonObject o = JsonObject(), int index = 0) { return (T *)addComponent(new T(name, _enabled, index), o); };
 
     Component *addComponent(Component *c, JsonObject o = JsonObject());
 
@@ -112,7 +114,7 @@ public:
     virtual bool checkParamsFeedbackInternal(void *param) { return false; }
     // virtual void sendParamFeedback(void* param);
 
-    virtual String getEnumString(void *param) const {  return "";}
+    virtual String getEnumString(void *param) const { return ""; }
 
     bool handleCommand(const String &command, var *data, int numData);
     virtual bool handleCommandInternal(const String &command, var *data, int numData) { return false; }

@@ -77,6 +77,10 @@ void RootComponent::setupInternal(JsonObject)
 
     AddOwnedComponent(&settings);
 
+#ifdef USE_LEDSTRIP
+    AddOwnedComponent(&strips);
+#endif
+
 #ifdef USE_SERVER
     AddOwnedComponent(&server);
 #endif
@@ -89,9 +93,6 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&display);
 #endif
 
-#ifdef USE_LEDSTRIP
-    AddOwnedComponent(&strips);
-#endif
 
 #ifdef USE_BATTERY
     AddOwnedComponent(&battery);
@@ -276,6 +277,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 #ifdef USE_LEDSTRIP
             strips.items[0]->setBrightness(.05f);
 #endif
+            NDBG("Critical battery, shutting down");
             shutdown();
         }
     }

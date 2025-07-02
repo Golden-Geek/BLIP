@@ -29,7 +29,7 @@
 class ButtonComponent : public IOComponent
 {
 public:
-    ButtonComponent(const String &name = "button", bool _enabled = false) : IOComponent(name, _enabled) {}
+    ButtonComponent(const String &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
 
     int debounceCount;
     long timeAtPress;
@@ -85,5 +85,4 @@ public:
 };
 
 DeclareComponentManager(Button, BUTTON, buttons, button, BUTTON_MAX_COUNT)
-    void addItemInternal(int index) { if(index == 0) items[index]->pin = BUTTON_DEFAULT_PIN; };
     EndDeclareComponent

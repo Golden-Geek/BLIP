@@ -137,7 +137,4 @@ FillOSCQueryInternalEnd
 
 DeclareComponentManager(PWMLed, PWMLED, pwmLed, pwmLed, PWMLED_MAX_COUNT)
 
-    void addItemInternal(int index)
-{
-}
 EndDeclareComponent

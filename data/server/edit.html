@@ -227,7 +227,7 @@
 
         function initWebSocket() {
             oscWS = new osc.WebSocketPort({
-                url: "ws://" + ip + ":81",
+                url: "ws://" + ip, //+ ":81",
                 metadata: true
             });
 

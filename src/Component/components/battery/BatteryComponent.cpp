@@ -35,12 +35,32 @@ void BatteryComponent::updateInternal()
 {
     if (millis() > lastBatteryCheck + BATTERY_CHECK_INTERVAL)
     {
+        if (chargePin > 0)
+        {
+            // Read the charging state
+            bool chVal = digitalRead(chargePin);
+            DBG("Charging state: " + String(chVal));
+            SetParam(charging, chVal);
+        }
 
         if (batteryPin > 0)
         {
-
-            values[valuesIndex] = analogRead(batteryPin);
+#ifdef BATTERY_READ_MILLIVOLTS
+            // Read the battery in milliamps
+            float curV = analogReadMilliVolts(batteryPin) * BATTERY_READ_MILLIVOLTS_MULTIPLIER / 1000.0f; // Convert to volts
+            DBG("Battery millivolts  " + String(values[valuesIndex]));
+#else
+            float curV = analogRead(batteryPin);
             // DBG("Battery raw value: " + String(values[valuesIndex]));
+#endif
+            if (curV < 0.1f)
+            {
+                DBG("Battery read failed, stopping there");
+                timeAtLowBattery = 0; // reset low battery time
+                return;
+            }
+
+            values[valuesIndex] = curV;
             valuesIndex++;
         }
 
@@ -51,11 +71,6 @@ void BatteryComponent::updateInternal()
     {
         valuesIndex = 0;
 
-        if (chargePin > 0)
-        {
-            SetParam(charging, (digitalRead(chargePin))); // measuredVal == 0;
-        }
-
         if (batteryPin > 0)
         {
 
@@ -65,15 +80,18 @@ void BatteryComponent::updateInternal()
 
             float val = sum / BATTERY_AVERAGE_WINDOW;
 
-
 #ifdef BATTERY_VOLTAGE_CUSTOM_FUNC
             float voltage = BATTERY_VOLTAGE_CUSTOM_FUNC(val);
 #else
             const float maxVoltage = 4.2f;
             const float minVoltage = 3.5f;
 
+#ifdef BATTERY_READ_MILLIVOLTS
+            float voltage = val; // Convert to volts
+#else
             float relVal = (val - rawMin) / (rawMax - rawMin);
             float voltage = minVoltage + relVal * (maxVoltage - minVoltage);
+#endif
 #endif
             SetParam(batteryLevel, voltage);
 

@@ -97,14 +97,4 @@ FillOSCQueryInternalEnd
 // Manager
 
 DeclareComponentManager(IO, IO, gpio, gpio, IO_MAX_COUNT)
-
-    void addItemInternal(int index)
-{
-    if (index == 0 && items[index]->pin == -1)
-    {
-        items[index]->pin = IO_DEFAULT_PIN;
-        items[index]->mode = IO_DEFAULT_MODE;
-    }
-};
-
 EndDeclareComponent

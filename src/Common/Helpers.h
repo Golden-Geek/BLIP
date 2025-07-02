@@ -26,7 +26,7 @@
 };
 
 // Component Helpers
-#define AddComponent(comp, name, Type, enabled) comp = addComponent<Type##Component>(name, enabled, o["components"][name]);
+#define AddComponent(comp, name, Type, enabled, index) comp = addComponent<Type##Component>(name, enabled, o["components"][name], index);
 #define AddOwnedComponent(comp) addComponent(comp, o["components"][(comp)->name]);
 #define AddDefaultComponentListener(comp) comp->addListener(std::bind(&Component::onChildComponentEvent, this, std::placeholders::_1));
 
@@ -45,17 +45,17 @@
     ~ClassPrefix##Component() { DeleteSingleton() }                                                                                  \
     virtual String getTypeString() const override { return Type; }
 
-#define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                        \
-    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                           \
-        DeclareSingleton(ClassPrefix##Component)                                                                                     \
+#define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                     \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                        \
+        DeclareSingleton(ClassPrefix##Component)                                                                                  \
             ClassPrefix##Component(const String &name = Type, bool enabled = true) : Component(name, enabled) { InitSingleton() } \
-    ~ClassPrefix##Component() { DeleteSingleton() }                                                                                  \
+    ~ClassPrefix##Component() { DeleteSingleton() }                                                                               \
     virtual String getTypeString() const override { return Type; }
 
-#define DeclareComponent(ClassPrefix, Type, Derives)                                                         \
-    DeclareComponentClass(Component, ClassPrefix, Derives)                                                   \
-        ClassPrefix##Component(const String &name = Type, bool enabled = true) : Component(name, enabled) {} \
-    ~ClassPrefix##Component() {}                                                                             \
+#define DeclareComponent(ClassPrefix, Type, Derives)                                                                               \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                         \
+        ClassPrefix##Component(const String &name = Type, bool enabled = true, int index = 0) : Component(name, enabled, index) {} \
+    ~ClassPrefix##Component() {}                                                                                                   \
     virtual String getTypeString() const override { return Type; }
 
 #define EndDeclareComponent \
@@ -66,42 +66,48 @@
 
 #ifdef MANAGER_USE_STATIC_ITEMS
 #define DefineStaticItems(Type, MType) Type##Component items[MType##_MAX_COUNT];
-#define AddStaticOrDynamicComponent(name, Type, enabled) \
-    items[i].name = name;                                \
-    items[i].enabled = enabled;                          \
+#define AddStaticOrDynamicComponent(name, Type, enabled, index) \
+    items[i].name = name;                                       \
+    items[i].enabled = enabled;                                 \
+    items[i].index = index;                                     \
     AddOwnedComponent(&items[i]);
 #else
 #define DefineStaticItems(Type, MType) Type##Component *items[MType##_MAX_COUNT];
-#define AddStaticOrDynamicComponent(name, Type, enabled) AddComponent(items[i], name, Type, enabled);
+#define AddStaticOrDynamicComponent(name, Type, enabled, index) AddComponent(items[i], name, Type, enabled, index);
 #endif
 
 #define DeclareComponentManagerDefaultMax(Type, MType, mName, itemName) DeclareComponentManagerWithMax(Type, MType, mName, itemName, 8)
 
-#define DeclareComponentManager(Type, MType, mName, itemName, MaxCount) \
-    DeclareComponentSingleton(Type##Manager, #mName, )                  \
-        DeclareIntParam(count, 1);                                      \
-                                                                        \
-    DefineStaticItems(Type, MType);                                     \
-    void setupInternal(JsonObject o) override                           \
-    {                                                                   \
-        AddIntParam(count);                                             \
-        for (int i = 0; i < count && i < MaxCount; i++)                 \
-        {                                                               \
-            String n = #itemName + String(i + 1);                       \
-            AddStaticOrDynamicComponent(n, Type, i == 0);               \
-            addItemInternal(i);                                         \
-        }                                                               \
-    }                                                                   \
-                                                                        \
-    HandleSetParamInternalStart                                         \
-        CheckAndSetParam(count);                                        \
-    HandleSetParamInternalEnd;                                          \
-    FillSettingsInternalStart                                           \
-        FillSettingsParam(count);                                       \
-    FillSettingsInternalEnd;                                            \
-    FillOSCQueryInternalStart                                           \
-        FillOSCQueryIntParam(count);                                    \
+
+#define DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, DefaultCount) \
+    DeclareComponentSingleton(Type##Manager, #mName, )                                     \
+        DeclareIntParam(count, DefaultCount);                                              \
+                                                                                           \
+    DefineStaticItems(Type, MType);                                                        \
+    void setupInternal(JsonObject o) override                                              \
+    {                                                                                      \
+        AddIntParam(count);                                                                \
+        for (int i = 0; i < count && i < MaxCount; i++)                                    \
+        {                                                                                  \
+            String n = #itemName + String(i + 1);                                          \
+            AddStaticOrDynamicComponent(n, Type, i == 0, i);                               \
+            addItemInternal(i);                                                            \
+        }                                                                                  \
+    }                                                                                      \
+    virtual void addItemInternal(int index) {}                                             \
+    HandleSetParamInternalStart                                                            \
+        CheckAndSetParam(count);                                                           \
+    HandleSetParamInternalEnd;                                                             \
+    FillSettingsInternalStart                                                              \
+        FillSettingsParam(count);                                                          \
+    FillSettingsInternalEnd;                                                               \
+    FillOSCQueryInternalStart                                                              \
+        FillOSCQueryIntParam(count);                                                       \
     FillOSCQueryInternalEnd
+
+    
+#define DeclareComponentManager(Type, MType, mName, itemName, MaxCount) \
+    DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, 1)
 
 // > Events
 #define DeclareComponentEventTypes(...) enum ComponentEventTypes \

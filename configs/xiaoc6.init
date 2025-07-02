@@ -1,0 +1,109 @@
+
+
+[xiaoc6]
+extends = blip
+platform = https://github.com/mnowak32/platform-espressif32.git#boards/seeed_xiao_esp32c6
+platform_packages = 
+    framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#3.0.2
+    framework-arduinoespressif32-libs @ https://github.com/espressif/arduino-esp32/releases/download/3.0.2/esp32-arduino-libs-3.0.2.zip
+framework = arduino
+board = seeed_xiao_esp32c6
+board_build.partitions = huge_app.csv
+
+[env:xiaoc6generic]
+extends = xiaoc6
+build_flags = 
+	${xiaoc6.build_flags}
+	-D USE_SERIAL
+	-D USE_STREAMING
+	-D USE_ARTNET
+	-D USE_FILES
+	-D FILES_TYPE_LittleFS
+	-D USE_IO
+	-D IO_DEFAULT_MODE=IOComponent::PinMode::D_OUTPUT
+	-D WIFI_C6_USE_EXTERNAL_ANTENNA
+	-D USE_BUTTON
+	-D BUTTON_DEFAULT_PIN=2
+	-D USE_BATTERY
+	-D BATTERY_DEFAULT_PIN=0
+	-D BATTERY_VOLTAGE_CUSTOM_FUNC=getVoltage_c6
+	-D USE_POWER
+	-D POWER_EXT=1
+	-D POWER_WAKEUP_BUTTON=2
+	-D POWER_WAKEUP_BUTTON_STATE=true
+	-D USE_ESPNOW
+	-D ESPNOW_DEFAULT_ENABLED=false
+	-D ESPNOW_ENABLED_PRESSCOUNT=5
+	-D USE_LEDSTRIP
+	-D LED_USE_FASTLED
+	-D LEDSTRIP_MAX_COUNT=1
+	-D LED_DEFAULT_DATA_PIN=17
+	-D LED_DEFAULT_CLK_PIN=19
+	-D LED_DEFAULT_COUNT=200
+	-D LED_MAX_COUNT=1000
+	-D LED_DEFAULT_TYPE=SK9822
+	-D LED_DEFAULT_COLOR_ORDER=BGR
+	-D LED_DEFAULT_INVERT_DIRECTION=false
+	-D LED_DEFAULT_BRIGHTNESS=0.6f
+	-D LED_BRIGHTNESS_FACTOR=0.4f
+	-D LED_DEFAULT_MAX_POWER=2000
+	-D LED_LEDS_PER_PIXEL=1
+	
+lib_deps = 
+	${xiaoc6.lib_deps}
+	FastLED
+
+[env:xiaocube]
+extends =  xiaoc6
+build_flags = 
+	${xiaoc6.build_flags}
+	-D BLIP_XIAOCUBE
+	-D USE_SERIAL
+	-D USE_STREAMING
+	-D USE_ARTNET
+	-D USE_PWMLED
+	-D USE_16BIT_COLOR
+	-D PWMLED_MAX_COUNT=4
+	-D PWMLED_SHOW_INIT
+	-D PWMLED_SHOW_SHUTDOWN
+	-D PWMLED_SHOW_CONNECTION
+	-D PWMLED_DEFAULT_RPIN=17
+	-D PWMLED_DEFAULT_GPIN=19
+	-D PWMLED_DEFAULT_BPIN=20
+	-D PWMLED_DEFAULT_WPIN=18
+	-D PWMLED_USE_STREAMING
+	-D PWMLED_DEFAULT_16BIT_STREAM=true 
+	-D PWMLED_DEFAULT_RESOLUTION=14 
+	-D PWMLED_DEFAULT_FREQUENCY=1 
+	-D USE_FILES
+	-D FILES_TYPE_LittleFS
+	-D USE_IO
+	-D IO_DEFAULT_PIN=15
+	-D IO_DEFAULT_MODE=IOComponent::PinMode::D_OUTPUT
+	-D WIFI_C6_USE_EXTERNAL_ANTENNA
+	-D USE_BUTTON
+	-D BUTTON_DEFAULT_PIN=2
+	-D USE_BATTERY
+	-D BATTERY_DEFAULT_PIN=0
+	-D BATTERY_VOLTAGE_CUSTOM_FUNC=getVoltage_c6
+	-D USE_POWER
+	-D POWER_EXT=1
+	-D POWER_WAKEUP_BUTTON=2
+	-D POWER_WAKEUP_BUTTON_STATE=true
+	-D USE_ESPNOW
+	-D ESPNOW_ENABLED_PRESSCOUNT=5
+
+
+[env:xiaobridge]
+extends = xiaoc6 
+build_flags = 
+	${xiaoc6.build_flags}
+	-D BLIP_XIAOCUBE
+	-D USE_SERIAL
+	-D USE_FILES
+	-D FILES_TYPE_LittleFS
+	-D USE_IO
+	-D WIFI_C6_USE_EXTERNAL_ANTENNA
+	-D USE_ESPNOW
+	-D USE_ARTNET
+	-D ESPNOW_BRIDGE

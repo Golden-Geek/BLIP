@@ -8,17 +8,18 @@ void IOComponent::setupInternal(JsonObject o)
     pwmChannel = -1;
     ledCAttached = false;
 
+    if (index == 0 && pin == -1)
+    {
+        pin = IO_DEFAULT_PIN;
+        mode = IO_DEFAULT_MODE;
+    }
+
     AddIntParamConfig(pin);
     AddIntParamConfig(mode);
-
-    // mode.options = modeOptions;
-    // mode.numOptions = PINMODE_MAX;
 
     AddBoolParamConfig(inverted);
 
     AddFloatParam(value);
-    // int m = mode;
-    // value.readOnly = m == D_INPUT || m == D_INPUT_PULLUP || m == A_INPUT;
 
     prevValue = value;
 }

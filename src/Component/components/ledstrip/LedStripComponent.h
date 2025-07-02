@@ -45,26 +45,26 @@
 class LedStripComponent : public Component
 {
 public:
-    LedStripComponent(const String &name = "strip", bool enabled = true) : Component(name, enabled)
+    LedStripComponent(const String &name = "strip", bool enabled = true, int index = 0) : Component(name, enabled, index)
 #if USE_BAKELAYER
-                                                                           ,
-                                                                           bakeLayer(this)
+                                                                                          ,
+                                                                                          bakeLayer(this)
 #endif
 #if USE_STREAMINGLAYER
-                                                                           ,
-                                                                           streamLayer(this)
+                                                                                          ,
+                                                                                          streamLayer(this)
 #endif
 #if USE_SCRIPTLAYER
-                                                                           ,
-                                                                           scriptLayer("scriptLayer", LedStripLayer::Type::ScriptType, this)
+                                                                                          ,
+                                                                                          scriptLayer("scriptLayer", LedStripLayer::Type::ScriptType, this)
 #endif
 #if USE_SYSTEMLAYER
-                                                                           ,
-                                                                           systemLayer(this)
+                                                                                          ,
+                                                                                          systemLayer(this)
 #endif
 #ifdef USE_FX
-                                                                           ,
-                                                                           fx(this)
+                                                                                          ,
+                                                                                          fx(this)
 #endif
     {
     }
@@ -244,9 +244,9 @@ DeclareScriptFunctionReturn1(LedStripManagerComponent, get, uint32_t, uint32_t) 
 DeclareScriptFunctionVoid3(LedStripManagerComponent, setBlendMode, uint32_t, uint32_t, uint32_t) { return items[0]->userLayers[(int)arg2]->setBlendMode((LedStripLayer::BlendMode)arg3); }
 #endif
 
-void addItemInternal(int index) {};
-void shutdown() { 
-    for(int i=0;i<count;i++)
+void shutdown()
+{
+    for (int i = 0; i < count; i++)
     {
         items[i]->shutdown();
     }

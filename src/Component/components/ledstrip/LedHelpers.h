@@ -21,8 +21,28 @@
 #define LED_DEFAULT_CLK_PIN -1
 #endif
 
+#ifndef LED_DEFAULT_COLOR_ORDER
+#define LED_DEFAULT_COLOR_ORDER GRB
+#endif
+
 #ifndef LED_DEFAULT_EN_PIN
 #define LED_DEFAULT_EN_PIN -1
+#endif
+
+#ifndef LED2_DEFAULT_DATA_PIN
+#define LED2_DEFAULT_DATA_PIN 17
+#endif
+
+#ifndef LED2_DEFAULT_CLK_PIN
+#define LED2_DEFAULT_CLK_PIN -1
+#endif
+
+#ifndef LED2_DEFAULT_COLOR_ORDER
+#define LED2_DEFAULT_COLOR_ORDER GRB
+#endif
+
+#ifndef LED2_DEFAULT_EN_PIN
+#define LED2_DEFAULT_EN_PIN -1
 #endif
 
 #ifndef LED_DEFAULT_BRIGHTNESS

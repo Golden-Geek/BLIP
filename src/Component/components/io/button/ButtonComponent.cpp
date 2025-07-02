@@ -6,6 +6,7 @@ void ButtonComponent::setupInternal(JsonObject o)
     // SetParam(value,false);
 
     mode = BUTTON_DEFAULT_MODE;
+     if(index == 0) pin = BUTTON_DEFAULT_PIN;
 
     IOComponent::setupInternal(o);
 

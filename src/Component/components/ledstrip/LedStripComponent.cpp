@@ -17,6 +17,13 @@ void LedStripComponent::setupInternal(JsonObject o)
     for (int i = 0; i < LEDSTRIP_NUM_USER_LAYERS; i++)
         userLayers[i] = NULL;
 
+    if (index == 1)
+    {
+        dataPin = LED2_DEFAULT_DATA_PIN;
+        clkPin = LED2_DEFAULT_CLK_PIN;
+        enPin = LED2_DEFAULT_EN_PIN;
+    }
+
     AddIntParam(count);
     AddIntParamConfig(dataPin);
     AddIntParamConfig(enPin);
@@ -76,14 +83,29 @@ void LedStripComponent::setupLeds()
 
     // colors = (Color *)malloc(count * sizeof(Color));
     memset(colors, 0, LED_MAX_COUNT * sizeof(Color));
+
 #ifdef LED_USE_FASTLED
-#ifdef LED_DEFAULT_CLK_PIN
-    NDBG("Using FastLED with DotStar strip");
-    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
+    if (index == 0)
+    {
+#if LED_DEFAULT_CLK_PIN != -1
+        NDBG("Using FastLED with DotStar strip on pin " + String(LED_DEFAULT_DATA_PIN) + " and clk pin " + String(LED_DEFAULT_CLK_PIN));
+        FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, GRB>(leds, count);
 #else
-    NDBG("Using FastLED with NeoPixel strip");
-    FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, GRB>(leds, count);
+        NDBG("Using FastLED with NeoPixel strip");
+        FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
 #endif
+    }
+    else if (index == 1)
+    {
+#if LED2_DEFAULT_CLK_PIN != -1
+        NDBG("Using FastLED with DotStar strip for strip 2");
+        FastLED.addLeds<LED2_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
+#else
+        NDBG("Using FastLED with NeoPixel strip for strip 2");
+        // FastLED.addLeds<LED2_DEFAULT_TYPE, LED2_DEFAULT_DATA_PIN, LED2_DEFAULT_COLOR_ORDER>(leds, count);
+#endif
+    }
+
     updateCorrection();
 #else
     for (int i = 0; i < count; i++)
@@ -326,13 +348,13 @@ void LedStripComponent::showLeds()
     }
 
 #ifdef LED_USE_FASTLED
-    FastLED.setBrightness(targetBrightness * 255);
+    FastLED.setBrightness(min(int(targetBrightness * 255), 255));
     for (int i = 0; i < count; i++)
     {
         float a = colors[i].a / 255.0f;
         leds[ledMap(i)] = CRGB(colors[i].r * a, colors[i].g * a, colors[i].b * a);
     }
-    DBG("First Led " + String(ledMap(0)) + " color: " + String(colors[0].r) + ", " + String(colors[0].g) + ", " + String(colors[0].b) + ", " + String(colors[0].a));
+    // DBG("First Led " + String(ledMap(0)) + " color: " + String(colors[0].r) + ", " + String(colors[0].g) + ", " + String(colors[0].b) + ", " + String(colors[0].a));
     FastLED.show();
 #else
     if (neoPixelStrip != NULL)

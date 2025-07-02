@@ -65,16 +65,16 @@ void LedStripLayer::point(Color c, float pos, float radius, bool doClear)
 }
 void LedStripLayer::setLed(int index, Color c)
 {
-    if(index >= 0 && index < strip->numColors)
+    if (index >= 0 && index < strip->numColors)
         colors[index] = c;
 }
 
 Color LedStripLayer::getLed(int index)
 {
-    if(index >= 0 && index < strip->numColors)
+    if (index >= 0 && index < strip->numColors)
         return colors[index];
 
-    return Color(0,0,0,0);
+    return Color(0, 0, 0, 0);
 }
 
 void LedStripLayer::setBlendMode(BlendMode b)

@@ -29,7 +29,6 @@ void clearSettings();
 String getDeviceID() const;
 
 
-
 HandleSetParamInternalStart
     CheckTrigger(saveSettings);
     CheckTrigger(clearSettings);
