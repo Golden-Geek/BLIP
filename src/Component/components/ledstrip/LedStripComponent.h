@@ -189,7 +189,7 @@ public:
     FillOSCQueryIntParam(dataPin);
     FillOSCQueryIntParam(clkPin);
     FillOSCQueryIntParam(enPin);
-    FillOSCQueryRangeParam(brightness, 0, 1);
+    FillOSCQueryRangeParam(brightness, 0, 2);
     FillOSCQueryBoolParam(invertStrip);
     FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
     FillOSCQueryIntParam(maxPower);
