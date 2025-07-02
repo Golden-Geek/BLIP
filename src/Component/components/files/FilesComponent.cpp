@@ -35,8 +35,9 @@ bool FilesComponent::initInternal()
     }
 #endif
 
-#ifdef FILES_TYPE_SD
-    NDBG("Init SD SPI");
+#if defined FILES_TYPE_SD || defined FILES_TYPE_FLASH
+
+    NDBG("Init Files SPI");
     if (sdEnPin > 0)
     {
         // NDBG("Setting SD En Pin " + String(sdEnPin) + " to " + String(sdEnVal));
@@ -67,8 +68,8 @@ bool FilesComponent::initInternal()
     pinMode(sdCS, OUTPUT);
     digitalWrite(sdCS, LOW);
 
+#ifdef FILES_TYPE_SD
     spiSD.begin((int8_t)sdSCK, (int8_t)sdMiso, (int8_t)sdMosi, (int8_t)sdCS); // SCK,MISO,MOSI,ss
-
     if (SD.begin((uint8_t)sdCS, spiSD))
     {
 
@@ -77,6 +78,17 @@ bool FilesComponent::initInternal()
 
         mounted = true;
     }
+#elif defined FILES_TYPE_FLASH
+    if (LittleFS.begin(true))
+    {
+        mounted = true;
+    }
+    else
+    {
+        NDBG("Error initializing LittleFS for FLASH, using internal memory");
+        return initInternalMemory();
+    }
+#endif
 #endif
 
     if (mounted)

@@ -55,6 +55,8 @@
 #ifdef FILES_TYPE_MMC
 #include "SD_MMC.h"
 #elif defined FILES_TYPE_LittleFS
+#elif defined FILES_TYPE_FLASH
+#include "Adafruit_SPIFlash.h"
 #else
 #include "SD.h"
 #include "ff.h"

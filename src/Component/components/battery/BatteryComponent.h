@@ -64,8 +64,10 @@ float getVoltage_c6(float val);
 DeclareComponentEventTypes(CriticalBattery);
 DeclareComponentEventNames("CriticalBattery");
 
-CheckFeedbackParamInternalStart
-    CheckAndSendParamFeedback(batteryLevel);
+CheckFeedbackParamInternalStart 
+if (!sendFeedback) return false;
+CheckAndSendParamFeedback(batteryLevel);
+CheckAndSendParamFeedback(charging);
 CheckFeedbackParamInternalEnd;
 
 HandleSetParamInternalStart

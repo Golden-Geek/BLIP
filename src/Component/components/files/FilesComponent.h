@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 DeclareComponentSingleton(Files, "files", )
 
     void setupInternal(JsonObject o) override;
@@ -12,6 +10,8 @@ bool initInternalMemory();
 #define FS_TYPE LittleFS
 #elif defined FILES_TYPE_MMC
 #define FS_TYPE SD_MMC
+#elif defined FILES_TYPE_FLASH
+#define FS_TYPE LittleFS
 #else
 #define FS_TYPE SD
 SPIClass spiSD;

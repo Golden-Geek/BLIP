@@ -58,28 +58,6 @@ void Component::clear()
     numParams = 0;
 }
 
-// void Component::addParameter(Parameter *p)
-// {
-//     if (numParameters >= MAX_CHILD_PARAMETERS)
-//     {
-//         NDBG("Parameter limit reached ! Trying to add " + p->name);
-//         return;
-//     }
-
-//     parameters[numParameters] = p;
-//     numParameters++;
-//     AddDefaultParameterListener(Component, p);
-// }
-
-// void Component::onParameterEvent(const ParameterEvent &e)
-// {
-//     // if (e.parameter == &enabled)
-//     // onEnabledChanged();
-
-//     onParameterEventInternal(e);
-
-//     SendParameterFeedback(e.parameter);
-// }
 
 bool Component::handleCommand(const String &command, var *data, int numData)
 {
