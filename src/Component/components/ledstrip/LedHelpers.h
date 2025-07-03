@@ -59,7 +59,7 @@
 #endif
 
 #ifndef LED2_DEFAULT_DATA_PIN
-#define LED2_DEFAULT_DATA_PIN 17
+#define LED2_DEFAULT_DATA_PIN -1
 #endif
 
 #ifndef LED2_DEFAULT_CLK_PIN

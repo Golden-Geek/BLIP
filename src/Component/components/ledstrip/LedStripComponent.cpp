@@ -94,6 +94,8 @@ void LedStripComponent::setupLeds()
         FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
 #endif
     }
+
+#if LED2_DEFAULT_DATA_PIN != -1
     else if (index == 1)
     {
 #if LED2_DEFAULT_CLK_PIN != -1
@@ -104,6 +106,7 @@ void LedStripComponent::setupLeds()
         FastLED.addLeds<LED2_DEFAULT_TYPE, LED2_DEFAULT_DATA_PIN, LED2_DEFAULT_COLOR_ORDER>(leds, count);
 #endif
     }
+#endif
 
     updateCorrection();
 #else
