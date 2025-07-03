@@ -192,7 +192,9 @@ void WifiComponent::connect()
     if (mode == MODE_ETH || mode == MODE_ETH_STA)
     {
 
-        if (manualIP != "" && manualGateway != "")
+        ETH.begin();
+
+         if (manualIP != "" && manualGateway != "" && manualIP != "0_0_0_0" && manualGateway != "0_0_0_0")
         {
             IPAddress ip, gateway, subnet(255, 255, 255, 0);
 
@@ -213,10 +215,8 @@ void WifiComponent::connect()
         {
             // Use DHCP
             NDBG("Using DHCP for IP configuration");
-            ETH.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+            // ETH.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         }
-
-        ETH.begin();
     }
 #endif
 
@@ -283,7 +283,7 @@ void WifiComponent::WiFiEvent(WiFiEvent_t event)
         break;
 
     case ARDUINO_EVENT_ETH_GOT_IP:
-        NDBG("Got IP !");
+        NDBG("Got IP ! " + StringHelpers::ipToString(ETH.localIP()));
         setState(Connected);
         break;
 

@@ -22,10 +22,13 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 #ifdef USE_SERIAL
     if (e.component == &serial && e.type == HWSerialComponent::MessageReceived)
     {
-        
+
         sendEvent(MessageReceived, e.data, e.numData);
+
+#ifdef USE_ESPNOW
 #ifdef ESPNOW_BRIDGE
         espNow.routeMessage(e.data, e.numData);
+#endif
 #endif
     }
 #endif
@@ -34,8 +37,11 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
     if (e.component == &osc && e.type == OSCComponent::MessageReceived)
     {
         sendEvent(MessageReceived, e.data, e.numData);
+
+#ifdef USE_ESPNOW
 #ifdef ESPNOW_BRIDGE
         espNow.routeMessage(e.data, e.numData);
+#endif
 #endif
     }
 #endif

@@ -8,6 +8,7 @@ from pathlib import Path
 import json
 import requests
 import argparse
+import shutil
 
 # Parse environments from platformio.ini and extra_configs
 def get_all_envs():
@@ -60,8 +61,8 @@ def build_env(env_name, results):
 def upload_exports(auto_upload=False):
     export_dir = Path("export")
     if not export_dir.exists():
-        print("⚠️ No export folder found.")
-        return
+        print("ℹ️ Creating export folder.")
+        export_dir.mkdir(parents=True, exist_ok=True)
 
     folders = [f for f in export_dir.iterdir() if f.is_dir()]
     if not folders:
@@ -121,6 +122,11 @@ def main(selected_envs, auto_upload=False):
 
     max_jobs = os.cpu_count() or 4
     results = {"success": [], "failed": []}
+
+    # Remove export folder if it exists before building
+    export_dir = Path("export")
+    if export_dir.exists() and export_dir.is_dir():
+        shutil.rmtree(export_dir)
 
     print(f"🚀 Starting parallel build for environments: {', '.join(envs)}")
     with ThreadPoolExecutor(max_workers=max_jobs) as executor:

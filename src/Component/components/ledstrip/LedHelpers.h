@@ -1,6 +1,27 @@
 
 #pragma once
 
+#define RED_MILLIAMP 16
+#define GREEN_MILLIAMP 11
+#define BLUE_MILLIAMP 15
+#define DARK_MILLIAMP 1
+
+#ifndef LED_DEFAULT_CHANNELS
+#define LED_DEFAULT_CHANNELS 3
+#endif
+
+#ifndef LED_DUPLICATE
+#define LED_DUPLICATE 1
+#endif
+
+#ifndef LED_DEFAULT_MULTILED_MODE
+#define LED_DEFAULT_MULTILED_MODE FullColor
+#endif
+
+#ifndef LED_DEFAULT_CORRECTION
+#define LED_DEFAULT_CORRECTION true
+#endif
+
 #ifndef LED_MAX_COUNT
 #define LED_MAX_COUNT 100
 #endif
@@ -22,7 +43,11 @@
 #endif
 
 #ifndef LED_DEFAULT_COLOR_ORDER
+#ifdef LED_USE_FASTLED
 #define LED_DEFAULT_COLOR_ORDER GRB
+#else
+#define LED_DEFAULT_COLOR_ORDER NEO_GRB
+#endif
 #endif
 
 #ifndef LED_DEFAULT_EN_PIN

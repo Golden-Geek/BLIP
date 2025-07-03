@@ -17,38 +17,7 @@
 
 #define USE_SYSTEMLAYER 1
 
-#define RED_MILLIAMP 16
-#define GREEN_MILLIAMP 11
-#define BLUE_MILLIAMP 15
-#define DARK_MILLIAMP 1
 
-#ifndef LED_DEFAULT_CHANNELS
-#define LED_DEFAULT_CHANNELS 3
-#endif
-
-#ifndef LED_DEFAULT_TYPE
-#define LED_DEFAULT_TYPE WS2812B
-#endif
-
-#ifndef LED_DEFAULT_COLOR_ORDER
-#define LED_DEFAULT_COLOR_ORDER GRB
-#endif
-
-#ifndef LED2_DEFAULT_TYPE
-#define LED2_DEFAULT_TYPE WS2812B
-#endif
-
-#ifndef LED_DUPLICATE
-#define LED_DUPLICATE 1
-#endif
-
-#ifndef LED_DEFAULT_MULTILED_MODE
-#define LED_DEFAULT_MULTILED_MODE FullColor
-#endif
-
-#ifndef LED_DEFAULT_CORRECTION
-#define LED_DEFAULT_CORRECTION true
-#endif
 
 class LedStripComponent : public Component
 {

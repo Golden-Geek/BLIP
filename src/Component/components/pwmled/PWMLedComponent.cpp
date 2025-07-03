@@ -155,9 +155,11 @@ void PWMLedComponent::setupPins()
     for (int i = 0; i < 4; i++)
     {
         if (attachedPins[i] != -1)
+        {
 #ifdef ARDUINO_NEW_VERSION
             ledcDetach(attachedPins[i]);
 #endif
+        }
     }
 
     const int pins[4]{rPin, gPin, bPin, wPin};
@@ -266,6 +268,7 @@ void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *d
         return;
 
     // NDBG("Received stream data for universe " + String(dmxUniverse) + " with " + String(len) + " bytes");
+#ifdef PWMLED_USE_STREAMING
 
     int numChannels = useAlpha ? 4 : 3;
     if (use16bit)
@@ -299,4 +302,5 @@ void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *d
             setColor(r, g, b, a, true);
         }
     }
+#endif
 }

@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "LedStripComponent.h"
 
 #define SetupFastLED(Type, DataPin, count) FastLED.addLeds<Type, DataPin>(leds, count)
 
@@ -119,7 +118,7 @@ void LedStripComponent::setupLeds()
     {
         NDBG("Using NeoPixel strip");
 
-        neoPixelStrip = new Adafruit_NeoPixel(count * LED_DUPLICATE, dataPin, LED_COLOR_ORDER + NEO_KHZ800);
+        neoPixelStrip = new Adafruit_NeoPixel(count * LED_DUPLICATE, dataPin, LED_DEFAULT_COLOR_ORDER + NEO_KHZ800);
         neoPixelStrip->begin();
     }
 #endif

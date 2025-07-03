@@ -81,13 +81,14 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&strips);
 #endif
 
+#ifdef USE_WIFI
+    AddOwnedComponent(&wifi);
+#endif
+
 #ifdef USE_SERVER
     AddOwnedComponent(&server);
 #endif
 
-#ifdef USE_WIFI
-    AddOwnedComponent(&wifi);
-#endif
 
 #ifdef USE_DISPLAY
     AddOwnedComponent(&display);
