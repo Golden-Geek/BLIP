@@ -43,7 +43,7 @@ void BatteryComponent::updateInternal()
         {
             // Read the charging state
             bool chVal = digitalRead(chargePin);
-            if(BATTERY_CHARGE_PIN_INVERTED) chVal = !chVal; // if using pullup, invert the value
+            if(BATTERY_CHARGE_PIN_INVERTED) chVal = !chVal; 
             SetParam(charging, chVal);
         }
 
