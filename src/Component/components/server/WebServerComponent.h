@@ -2,6 +2,9 @@
 
 #define MAX_CONCURRENT_UPLOADS 5
 
+static AsyncWebServer server = AsyncWebServer(80);
+static AsyncWebSocket ws("/");
+
 DeclareComponentSingleton(WebServer, "server", )
 
     class WSPrint : public Print
@@ -20,13 +23,7 @@ public:
 
 DeclareBoolParam(sendFeedback, true);
 
-AsyncWebServer server = AsyncWebServer(80);
 
-#ifdef USE_ASYNC_WEBSOCKET
-AsyncWebSocket ws = AsyncWebSocket("/");
-#else
-WebSocketsServer ws = WebSocketsServer(81);
-#endif
 
 WSPrint wsPrint;
 

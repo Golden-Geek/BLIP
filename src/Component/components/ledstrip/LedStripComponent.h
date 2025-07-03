@@ -26,12 +26,12 @@
 #define LED_DEFAULT_CHANNELS 3
 #endif
 
-#ifndef LED_COLOR_ORDER
-#define LED_COLOR_ORDER NEO_GRB
-#endif
-
 #ifndef LED_DEFAULT_TYPE
 #define LED_DEFAULT_TYPE WS2812B
+#endif
+
+#ifndef LED_DEFAULT_COLOR_ORDER
+#define LED_DEFAULT_COLOR_ORDER GRB
 #endif
 
 #ifndef LED2_DEFAULT_TYPE

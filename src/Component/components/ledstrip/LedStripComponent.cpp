@@ -89,7 +89,7 @@ void LedStripComponent::setupLeds()
     {
 #if LED_DEFAULT_CLK_PIN != -1
         NDBG("Using FastLED with DotStar strip on pin " + String(LED_DEFAULT_DATA_PIN) + " and clk pin " + String(LED_DEFAULT_CLK_PIN));
-        FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, GRB>(leds, count);
+        FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
 #else
         NDBG("Using FastLED with NeoPixel strip");
         FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
@@ -99,7 +99,7 @@ void LedStripComponent::setupLeds()
     {
 #if LED2_DEFAULT_CLK_PIN != -1
         NDBG("Using FastLED with DotStar strip for strip 2");
-        FastLED.addLeds<LED2_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
+        FastLED.addLeds<LED2_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED2_DEFAULT_COLOR_ORDER>(leds, count);
 #else
         NDBG("Using FastLED with NeoPixel strip for strip 2");
         FastLED.addLeds<LED2_DEFAULT_TYPE, LED2_DEFAULT_DATA_PIN, LED2_DEFAULT_COLOR_ORDER>(leds, count);
