@@ -21,7 +21,7 @@ bool BatteryComponent::initInternal()
     if (batteryPin >= 0)
     {
         pinMode(batteryPin, INPUT);
-        // analogRead(batteryPin); // read once to setup the ADC
+        analogRead(batteryPin); // read once to setup the ADC
         analogSetPinAttenuation(batteryPin, ADC_0db);
     }
 
@@ -39,20 +39,23 @@ void BatteryComponent::updateInternal()
     if (millis() > lastBatteryCheck + BATTERY_CHECK_INTERVAL)
     {
         lastBatteryCheck = millis();
+
         if (chargePin >= 0)
         {
             // Read the charging state
             bool chVal = digitalRead(chargePin);
-            if(BATTERY_CHARGE_PIN_INVERTED) chVal = !chVal; 
+            if (BATTERY_CHARGE_PIN_INVERTED)
+                chVal = !chVal;
             SetParam(charging, chVal);
         }
 
         if (batteryPin >= 0)
         {
+
 #ifdef BATTERY_READ_MILLIVOLTS
             // Read the battery in milliamps
             float curV = analogReadMilliVolts(batteryPin) * BATTERY_READ_MILLIVOLTS_MULTIPLIER / 1000.0f; // Convert to volts
-            // DBG("Battery millivolts  " + String(values[valuesIndex]));
+                                                                                                          // DBG("Battery millivolts  " + String(values[valuesIndex]));
 
 #else
             float curV = analogRead(batteryPin);

@@ -17,8 +17,6 @@
 
 #define USE_SYSTEMLAYER 1
 
-
-
 class LedStripComponent : public Component
 {
 public:
@@ -43,6 +41,7 @@ public:
                                                                                           ,
                                                                                           fx(this)
 #endif
+                                                                                          
     {
     }
 
@@ -103,14 +102,21 @@ public:
 
 #ifdef LED_USE_FASTLED
     CRGB leds[LED_MAX_COUNT];
+#elif defined LED_USE_CUSTOM_FUNC
+    ws2812 wleds;
 #else
     Adafruit_NeoPixel *neoPixelStrip;
     Adafruit_DotStar *dotStarStrip;
 #endif
 
+    bool updatingLeds = false;
+    bool showingLeds = false;
+    bool shouldStopTask = false;
+
     void setupInternal(JsonObject o) override;
     bool initInternal() override;
     void updateInternal() override;
+    
     void clearInternal() override;
     void shutdown();
 
@@ -133,6 +139,8 @@ public:
     // Color functions
     void clearColors();
     void showLeds();
+    static void showLedsAsync(void *);
+
     uint8_t getDitheredBrightness(uint8_t brightness, uint8_t frame);
 
     int ledMap(int index) const;

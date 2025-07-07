@@ -187,7 +187,7 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
           },
           {
@@ -219,7 +219,7 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "Not connected or disconnected",
+              "value": "USB-SERIAL CH340 (COM17)",
               "controlAddress": "/port"
             }
           ],
@@ -237,7 +237,7 @@
         },
         "values": {
         },
-        "portID": ""
+        "portID": "USB-SERIAL CH340 (COM17)"
       },
       {
         "parameters": [
@@ -390,15 +390,15 @@
               "owned": true,
               "niceName": "Wifi"
             },
-            "files": {
-              "editorIsCollapsed": true,
-              "owned": true,
-              "niceName": "Files"
-            },
             "server": {
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Server"
+            },
+            "files": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Files"
             },
             "streamReceiver": {
               "editorIsCollapsed": true,
@@ -1196,11 +1196,11 @@
               "controlAddress": "/firstValueIsTheName"
             },
             {
-              "value": "",
+              "value": "Silicon Labs CP210x USB to UART Bridge (COM15)",
               "controlAddress": "/port"
             },
             {
-              "value": false,
+              "value": true,
               "controlAddress": "/dtr"
             },
             {
@@ -1222,7 +1222,7 @@
         },
         "values": {
         },
-        "portID": ""
+        "portID": "Silicon Labs CP210x USB to UART Bridge (COM15)"
       },
       {
         "parameters": [
@@ -1251,15 +1251,15 @@
         "params": {
           "parameters": [
             {
-              "value": "BLIP",
+              "value": "Creator Club",
               "controlAddress": "/serverName"
             },
             {
-              "value": true,
+              "value": false,
               "controlAddress": "/onlySyncFromSameName"
             },
             {
-              "value": false,
+              "value": true,
               "controlAddress": "/isConnected"
             }
           ],
@@ -1271,7 +1271,7 @@
                   "controlAddress": "/local"
                 },
                 {
-                  "value": "192.168.1.114",
+                  "value": "192.168.1.168",
                   "controlAddress": "/remoteHost"
                 },
                 {
@@ -1286,10 +1286,10 @@
                   "enabled": true
                 },
                 {
-                  "value": 81,
+                  "value": 80,
                   "hexMode": false,
                   "controlAddress": "/customWebsocketPort",
-                  "enabled": true
+                  "enabled": false
                 }
               ]
             }
@@ -1327,7 +1327,7 @@
                 "osc": {
                   "parameters": [
                     {
-                      "value": "",
+                      "value": "192.168.1.10",
                       "controlAddress": "/remoteHost"
                     },
                     {
@@ -1338,30 +1338,36 @@
                   "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Osc"
+                },
+                "espnow": {
+                  "parameters": [
+                    {
+                      "value": false,
+                      "controlAddress": "/enabled"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Espnow"
                 }
               },
               "owned": true,
               "niceName": "Comm"
             },
             "settings": {
-              "editorIsCollapsed": true,
-              "owned": true,
-              "niceName": "Settings"
-            },
-            "wifi": {
               "parameters": [
                 {
-                  "value": "BenTo",
-                  "controlAddress": "/ssid"
+                  "value": "Creator Club",
+                  "controlAddress": "/deviceName"
                 },
                 {
-                  "value": "konamicode",
-                  "controlAddress": "/pass"
+                  "value": "Creator Club",
+                  "controlAddress": "/deviceType"
                 }
               ],
               "editorIsCollapsed": true,
               "owned": true,
-              "niceName": "Wifi"
+              "niceName": "Settings"
             },
             "leds": {
               "parameters": [
@@ -1376,6 +1382,26 @@
                 "strip1": {
                   "parameters": [
                     {
+                      "value": 32,
+                      "hexMode": false,
+                      "controlAddress": "/count"
+                    },
+                    {
+                      "value": 25,
+                      "hexMode": false,
+                      "controlAddress": "/dataPin"
+                    },
+                    {
+                      "value": 26,
+                      "hexMode": false,
+                      "controlAddress": "/clkPin"
+                    },
+                    {
+                      "value": 27,
+                      "hexMode": false,
+                      "controlAddress": "/enPin"
+                    },
+                    {
                       "value": 0.5,
                       "controlAddress": "/brightness"
                     },
@@ -1384,7 +1410,7 @@
                       "controlAddress": "/invertStrip"
                     },
                     {
-                      "value": "Single Color",
+                      "value": "Full Color",
                       "controlAddress": "/multiLedMode"
                     }
                   ],
@@ -1445,6 +1471,10 @@
                     "fx": {
                       "parameters": [
                         {
+                          "value": false,
+                          "controlAddress": "/enabled"
+                        },
+                        {
                           "value": "Projected Angle",
                           "controlAddress": "/isolationAxis"
                         }
@@ -1461,15 +1491,35 @@
               "owned": true,
               "niceName": "Leds"
             },
+            "wifi": {
+              "parameters": [
+                {
+                  "value": "BenTo",
+                  "controlAddress": "/ssid"
+                },
+                {
+                  "value": "konamicode",
+                  "controlAddress": "/pass"
+                }
+              ],
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Wifi"
+            },
+            "server": {
+              "editorIsCollapsed": true,
+              "owned": true,
+              "niceName": "Server"
+            },
             "battery": {
               "parameters": [
                 {
-                  "value": 6,
+                  "value": 35,
                   "hexMode": false,
                   "controlAddress": "/batteryPin"
                 },
                 {
-                  "value": 14,
+                  "value": -1,
                   "hexMode": false,
                   "controlAddress": "/chargePin"
                 },
@@ -1489,6 +1539,23 @@
               "niceName": "Battery"
             },
             "files": {
+              "parameters": [
+                {
+                  "value": 14,
+                  "hexMode": false,
+                  "controlAddress": "/sdSCK"
+                },
+                {
+                  "value": 19,
+                  "hexMode": false,
+                  "controlAddress": "/sdMiso"
+                },
+                {
+                  "value": 13,
+                  "hexMode": false,
+                  "controlAddress": "/sdMosi"
+                }
+              ],
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Files"
@@ -1498,23 +1565,25 @@
               "owned": true,
               "niceName": "Script"
             },
-            "server": {
-              "editorIsCollapsed": true,
-              "owned": true,
-              "niceName": "Server"
-            },
             "streamReceiver": {
               "editorIsCollapsed": true,
               "owned": true,
               "niceName": "Stream Receiver"
             },
             "gpio": {
+              "parameters": [
+                {
+                  "value": 2,
+                  "hexMode": false,
+                  "controlAddress": "/count"
+                }
+              ],
               "editorIsCollapsed": true,
               "containers": {
                 "gpio1": {
                   "parameters": [
                     {
-                      "value": 18,
+                      "value": 17,
                       "hexMode": false,
                       "controlAddress": "/pin"
                     },
@@ -1526,6 +1595,26 @@
                   "editorIsCollapsed": true,
                   "owned": true,
                   "niceName": "Gpio 1"
+                },
+                "gpio2": {
+                  "parameters": [
+                    {
+                      "value": 1,
+                      "hexMode": false,
+                      "controlAddress": "/pin"
+                    },
+                    {
+                      "value": "Digital Input",
+                      "controlAddress": "/mode"
+                    },
+                    {
+                      "value": 1.0,
+                      "controlAddress": "/value"
+                    }
+                  ],
+                  "editorIsCollapsed": true,
+                  "owned": true,
+                  "niceName": "Gpio 2"
                 }
               },
               "owned": true,
@@ -1537,12 +1626,12 @@
                 "button1": {
                   "parameters": [
                     {
-                      "value": 7,
+                      "value": 32,
                       "hexMode": false,
                       "controlAddress": "/pin"
                     },
                     {
-                      "value": "Digital Input Pullup",
+                      "value": "Digital Input",
                       "controlAddress": "/mode"
                     },
                     {
@@ -1550,11 +1639,11 @@
                       "controlAddress": "/inverted"
                     },
                     {
-                      "value": 1.0,
+                      "value": 0.0,
                       "controlAddress": "/value"
                     },
                     {
-                      "value": false,
+                      "value": true,
                       "controlAddress": "/canShutDown"
                     }
                   ],
@@ -1575,6 +1664,11 @@
                 {
                   "value": "None",
                   "controlAddress": "/sendLevel"
+                },
+                {
+                  "value": 33,
+                  "hexMode": false,
+                  "controlAddress": "/intPin"
                 },
                 {
                   "value": [
@@ -1694,7 +1788,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        ""
+                        "192.168.1.10"
                       ]
                     },
                     "sendFeedback": {
@@ -1714,6 +1808,58 @@
                       "ACCESS": 1,
                       "TYPE": "T",
                       "FULL_PATH": "/comm/osc/isAlive",
+                      "VALUE": [
+                        true
+                      ]
+                    }
+                  }
+                },
+                "espnow": {
+                  "DESCRIPTION": "Espnow",
+                  "FULL_PATH": "/comm/espnow",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/enabled",
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "pairingMode": {
+                      "DESCRIPTION": "Pairing Mode",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/comm/espnow/pairingMode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "channel": {
+                      "DESCRIPTION": "Channel",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/comm/espnow/channel",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        1
+                      ]
+                    },
+                    "autoPairing": {
+                      "DESCRIPTION": "Auto Pairing",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/comm/espnow/autoPairing",
+                      "TAGS": [
+                        "config"
+                      ],
                       "VALUE": [
                         true
                       ]
@@ -1757,22 +1903,13 @@
                     0
                   ]
                 },
-                "macAddress": {
-                  "DESCRIPTION": "Mac Address",
-                  "ACCESS": 1,
-                  "TYPE": "s",
-                  "FULL_PATH": "/settings/macAddress",
-                  "VALUE": [
-                    "0:0:0:0:0:0"
-                  ]
-                },
                 "deviceName": {
                   "DESCRIPTION": "Device Name",
                   "ACCESS": 3,
                   "TYPE": "s",
                   "FULL_PATH": "/settings/deviceName",
                   "VALUE": [
-                    "BLIP"
+                    "Creator Club"
                   ]
                 },
                 "deviceType": {
@@ -1784,56 +1921,31 @@
                     "config"
                   ],
                   "VALUE": [
-                    "BLIP"
+                    "Creator Club"
                   ]
-                }
-              }
-            },
-            "wifi": {
-              "DESCRIPTION": "Wifi",
-              "FULL_PATH": "/wifi",
-              "ACCESS": 0,
-              "CONTENTS": {
-                "enabled": {
-                  "DESCRIPTION": "Enabled",
+                },
+                "wakeUpButton": {
+                  "DESCRIPTION": "Wake Up Button",
+                  "ACCESS": 3,
+                  "TYPE": "i",
+                  "FULL_PATH": "/settings/wakeUpButton",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    32
+                  ]
+                },
+                "wakeUpState": {
+                  "DESCRIPTION": "Wake Up State",
                   "ACCESS": 3,
                   "TYPE": "T",
-                  "FULL_PATH": "/wifi/enabled",
+                  "FULL_PATH": "/settings/wakeUpState",
+                  "TAGS": [
+                    "config"
+                  ],
                   "VALUE": [
                     true
-                  ]
-                },
-                "ssid": {
-                  "DESCRIPTION": "Ssid",
-                  "ACCESS": 3,
-                  "TYPE": "s",
-                  "FULL_PATH": "/wifi/ssid",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    "BenTo"
-                  ]
-                },
-                "pass": {
-                  "DESCRIPTION": "Pass",
-                  "ACCESS": 3,
-                  "TYPE": "s",
-                  "FULL_PATH": "/wifi/pass",
-                  "TAGS": [
-                    "config"
-                  ],
-                  "VALUE": [
-                    "konamicode"
-                  ]
-                },
-                "signal": {
-                  "DESCRIPTION": "Signal",
-                  "ACCESS": 1,
-                  "TYPE": "f",
-                  "FULL_PATH": "/wifi/signal",
-                  "VALUE": [
-                    0
                   ]
                 }
               }
@@ -1881,7 +1993,7 @@
                       "TYPE": "i",
                       "FULL_PATH": "/leds/strip1/count",
                       "VALUE": [
-                        12
+                        32
                       ]
                     },
                     "dataPin": {
@@ -1893,7 +2005,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        3
+                        25
                       ]
                     },
                     "clkPin": {
@@ -1905,7 +2017,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        -1
+                        26
                       ]
                     },
                     "enPin": {
@@ -1917,7 +2029,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        20
+                        27
                       ]
                     },
                     "brightness": {
@@ -1931,7 +2043,7 @@
                       "RANGE": [
                         {
                           "MIN": 0,
-                          "MAX": 1
+                          "MAX": 2
                         }
                       ]
                     },
@@ -1975,6 +2087,15 @@
                       ],
                       "VALUE": [
                         1200
+                      ]
+                    },
+                    "colorCorrection": {
+                      "DESCRIPTION": "Color Correction",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/leds/strip1/colorCorrection",
+                      "VALUE": [
+                        true
                       ]
                     },
                     "playbackLayer": {
@@ -2087,6 +2208,18 @@
                           ],
                           "VALUE": [
                             1
+                          ]
+                        },
+                        "use16Bits": {
+                          "DESCRIPTION": "Use 16Bits",
+                          "ACCESS": 3,
+                          "TYPE": "F",
+                          "FULL_PATH": "/leds/strip1/streamLayer/use16Bits",
+                          "TAGS": [
+                            "config"
+                          ],
+                          "VALUE": [
+                            false
                           ]
                         },
                         "includeAlpha": {
@@ -2207,10 +2340,10 @@
                         "enabled": {
                           "DESCRIPTION": "Enabled",
                           "ACCESS": 3,
-                          "TYPE": "T",
+                          "TYPE": "F",
                           "FULL_PATH": "/leds/strip1/fx/enabled",
                           "VALUE": [
-                            true
+                            false
                           ]
                         },
                         "staticOffset": {
@@ -2292,6 +2425,107 @@
                 }
               }
             },
+            "wifi": {
+              "DESCRIPTION": "Wifi",
+              "FULL_PATH": "/wifi",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/wifi/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "ssid": {
+                  "DESCRIPTION": "Ssid",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/ssid",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "BenTo"
+                  ]
+                },
+                "pass": {
+                  "DESCRIPTION": "Pass",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/pass",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    "konamicode"
+                  ]
+                },
+                "signal": {
+                  "DESCRIPTION": "Signal",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/wifi/signal",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "manualIP": {
+                  "DESCRIPTION": "Manual IP",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/manualIP",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    ""
+                  ]
+                },
+                "manualGateway": {
+                  "DESCRIPTION": "Manual Gateway",
+                  "ACCESS": 3,
+                  "TYPE": "s",
+                  "FULL_PATH": "/wifi/manualGateway",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    ""
+                  ]
+                }
+              }
+            },
+            "server": {
+              "DESCRIPTION": "Server",
+              "FULL_PATH": "/server",
+              "ACCESS": 0,
+              "CONTENTS": {
+                "enabled": {
+                  "DESCRIPTION": "Enabled",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/server/enabled",
+                  "VALUE": [
+                    true
+                  ]
+                },
+                "sendFeedback": {
+                  "DESCRIPTION": "Send Feedback",
+                  "ACCESS": 3,
+                  "TYPE": "T",
+                  "FULL_PATH": "/server/sendFeedback",
+                  "TAGS": [
+                    "config"
+                  ],
+                  "VALUE": [
+                    true
+                  ]
+                }
+              }
+            },
             "battery": {
               "DESCRIPTION": "Battery",
               "FULL_PATH": "/battery",
@@ -2315,7 +2549,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    6
+                    35
                   ]
                 },
                 "chargePin": {
@@ -2327,7 +2561,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    14
+                    -1
                   ]
                 },
                 "rawMin": {
@@ -2387,7 +2621,7 @@
                   "TYPE": "f",
                   "FULL_PATH": "/battery/batteryLevel",
                   "VALUE": [
-                    15.0627
+                    9.666812
                   ],
                   "RANGE": [
                     {
@@ -2454,7 +2688,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    4
+                    14
                   ]
                 },
                 "sdMiso": {
@@ -2466,7 +2700,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    8
+                    19
                   ]
                 },
                 "sdMosi": {
@@ -2478,7 +2712,7 @@
                     "config"
                   ],
                   "VALUE": [
-                    5
+                    13
                   ]
                 },
                 "sdCS": {
@@ -2517,34 +2751,6 @@
                   "ACCESS": 3,
                   "TYPE": "T",
                   "FULL_PATH": "/script/enabled",
-                  "VALUE": [
-                    true
-                  ]
-                }
-              }
-            },
-            "server": {
-              "DESCRIPTION": "Server",
-              "FULL_PATH": "/server",
-              "ACCESS": 0,
-              "CONTENTS": {
-                "enabled": {
-                  "DESCRIPTION": "Enabled",
-                  "ACCESS": 3,
-                  "TYPE": "T",
-                  "FULL_PATH": "/server/enabled",
-                  "VALUE": [
-                    true
-                  ]
-                },
-                "sendFeedback": {
-                  "DESCRIPTION": "Send Feedback",
-                  "ACCESS": 3,
-                  "TYPE": "T",
-                  "FULL_PATH": "/server/sendFeedback",
-                  "TAGS": [
-                    "config"
-                  ],
                   "VALUE": [
                     true
                   ]
@@ -2596,7 +2802,7 @@
                   "TYPE": "i",
                   "FULL_PATH": "/gpio/count",
                   "VALUE": [
-                    1
+                    2
                   ]
                 },
                 "gpio1": {
@@ -2622,7 +2828,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        18
+                        17
                       ]
                     },
                     "mode": {
@@ -2670,6 +2876,87 @@
                       "FULL_PATH": "/gpio/gpio1/value",
                       "VALUE": [
                         0
+                      ],
+                      "RANGE": [
+                        {
+                          "MIN": 0,
+                          "MAX": 1
+                        }
+                      ]
+                    }
+                  }
+                },
+                "gpio2": {
+                  "DESCRIPTION": "Gpio 2",
+                  "FULL_PATH": "/gpio/gpio2",
+                  "ACCESS": 0,
+                  "CONTENTS": {
+                    "enabled": {
+                      "DESCRIPTION": "Enabled",
+                      "ACCESS": 3,
+                      "TYPE": "T",
+                      "FULL_PATH": "/gpio/gpio2/enabled",
+                      "VALUE": [
+                        true
+                      ]
+                    },
+                    "pin": {
+                      "DESCRIPTION": "Pin",
+                      "ACCESS": 3,
+                      "TYPE": "i",
+                      "FULL_PATH": "/gpio/gpio2/pin",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        13
+                      ]
+                    },
+                    "mode": {
+                      "DESCRIPTION": "Mode",
+                      "ACCESS": 3,
+                      "TYPE": "s",
+                      "FULL_PATH": "/gpio/gpio2/mode",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        "Digital Input"
+                      ],
+                      "RANGE": [
+                        {
+                          "VALS": [
+                            "Digital Input",
+                            "Digital Input Pullup",
+                            "Digital Input Pulldown",
+                            "Analog Input",
+                            "Digital Output",
+                            "Analog Output",
+                            "Digital Oscillator",
+                            "Analog Oscillator"
+                          ]
+                        }
+                      ]
+                    },
+                    "inverted": {
+                      "DESCRIPTION": "Inverted",
+                      "ACCESS": 3,
+                      "TYPE": "F",
+                      "FULL_PATH": "/gpio/gpio2/inverted",
+                      "TAGS": [
+                        "config"
+                      ],
+                      "VALUE": [
+                        false
+                      ]
+                    },
+                    "value": {
+                      "DESCRIPTION": "Value",
+                      "ACCESS": 3,
+                      "TYPE": "f",
+                      "FULL_PATH": "/gpio/gpio2/value",
+                      "VALUE": [
+                        1
                       ],
                       "RANGE": [
                         {
@@ -2728,7 +3015,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        7
+                        32
                       ]
                     },
                     "mode": {
@@ -2740,7 +3027,7 @@
                         "config"
                       ],
                       "VALUE": [
-                        "Digital Input Pullup"
+                        "Digital Input"
                       ],
                       "RANGE": [
                         {
@@ -2775,7 +3062,7 @@
                       "TYPE": "f",
                       "FULL_PATH": "/buttons/button1/value",
                       "VALUE": [
-                        1
+                        0
                       ],
                       "RANGE": [
                         {
@@ -2796,31 +3083,31 @@
                     "longPress": {
                       "DESCRIPTION": "Long Press",
                       "ACCESS": 1,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/buttons/button1/longPress",
                       "VALUE": [
-                        true
+                        false
                       ]
                     },
                     "veryLongPress": {
                       "DESCRIPTION": "Very Long Press",
                       "ACCESS": 1,
-                      "TYPE": "T",
+                      "TYPE": "F",
                       "FULL_PATH": "/buttons/button1/veryLongPress",
                       "VALUE": [
-                        true
+                        false
                       ]
                     },
                     "canShutDown": {
                       "DESCRIPTION": "Can Shut Down",
                       "ACCESS": 3,
-                      "TYPE": "F",
+                      "TYPE": "T",
                       "FULL_PATH": "/buttons/button1/canShutDown",
                       "TAGS": [
                         "config"
                       ],
                       "VALUE": [
-                        false
+                        true
                       ]
                     }
                   }
@@ -2913,7 +3200,7 @@
                   "TYPE": "i",
                   "FULL_PATH": "/motion/intPin",
                   "VALUE": [
-                    -1
+                    33
                   ]
                 },
                 "orientation": {
@@ -3125,12 +3412,30 @@
                   "VALUE": [
                     0
                   ]
+                },
+                "spinCount": {
+                  "DESCRIPTION": "Spin Count",
+                  "ACCESS": 1,
+                  "TYPE": "i",
+                  "FULL_PATH": "/motion/spinCount",
+                  "VALUE": [
+                    0
+                  ]
+                },
+                "spin": {
+                  "DESCRIPTION": "Spin",
+                  "ACCESS": 1,
+                  "TYPE": "f",
+                  "FULL_PATH": "/motion/spin",
+                  "VALUE": [
+                    0
+                  ]
                 }
               }
             }
           }
         },
-        "hasListenExtension": false
+        "hasListenExtension": true
       },
       {
         "niceName": "Sound Card",
@@ -3740,6 +4045,69 @@
                 ],
                 "viewZoom": 1.0
               }
+            },
+            {
+              "niceName": "Manual IP",
+              "editorIsCollapsed": true,
+              "type": "Action",
+              "conditions": {
+                "items": [
+                  {
+                    "parameters": [
+                      {
+                        "value": "",
+                        "controlAddress": "/inputValue"
+                      }
+                    ],
+                    "niceName": "From Input Value",
+                    "type": "From Input Value"
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequences": {
+                "parameters": [
+                  {
+                    "value": false,
+                    "controlAddress": "/cancelDelaysOnTrigger"
+                  }
+                ],
+                "items": [
+                  {
+                    "niceName": "Consequence",
+                    "type": "Consequence",
+                    "commandModule": "bridge",
+                    "commandPath": "",
+                    "commandType": "Send string",
+                    "command": {
+                      "parameters": [
+                        {
+                          "value": "wifi.manualIP 192_168_4_10\nwifi.manualGateway 192_168_4_1\nsettings.save\nroot.restart",
+                          "controlAddress": "/value"
+                        }
+                      ],
+                      "paramLinks": {
+                      }
+                    }
+                  }
+                ],
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              },
+              "consequencesOff": {
+                "viewOffset": [
+                  0,
+                  0
+                ],
+                "viewZoom": 1.0
+              }
             }
           ],
           "viewOffset": [
@@ -3752,7 +4120,7 @@
       {
         "parameters": [
           {
-            "value": false,
+            "value": true,
             "controlAddress": "/enabled"
           },
           {
@@ -4021,7 +4389,7 @@
             {
               "parameters": [
                 {
-                  "value": false,
+                  "value": true,
                   "controlAddress": "/enabled"
                 },
                 {
@@ -5002,6 +5370,12 @@
               }
             },
             {
+              "parameters": [
+                {
+                  "value": false,
+                  "controlAddress": "/enabled"
+                }
+              ],
               "niceName": "Mapping 2",
               "editorIsCollapsed": true,
               "type": "Mapping",
@@ -5066,7 +5440,7 @@
                           "controlAddress": "/length"
                         },
                         {
-                          "value": 0.6424323320388794,
+                          "value": 0.1185302138328552,
                           "controlAddress": "/position"
                         },
                         {

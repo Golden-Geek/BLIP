@@ -42,8 +42,8 @@ void LedStripStreamLayer::onLedStreamReceived(uint16_t dmxUniverse, const uint8_
     if (use16Bits)
         numChannels *= 2;
 
-    const int maxCount = floor(512 / numChannels);
-    int count = floor(len / numChannels);
+    const int maxLedCount = floor(512 / numChannels);
+    int ledCount = floor(len / numChannels);
 
     float multiplier = 1.0f;
     if (RootComponent::instance->isShuttingDown())
@@ -55,35 +55,38 @@ void LedStripStreamLayer::onLedStreamReceived(uint16_t dmxUniverse, const uint8_
 
     int numColors = strip->numColors;
 
-    int numUniverses = std::ceil(numColors * 1.0f / maxCount); // maxCount leds per universe
-    if (universe < universe || universe > universe + numUniverses - 1)
+    int numUniverses = std::ceil(numColors * 1.0f / maxLedCount); // num universes needed to cover all colors
+    if (dmxUniverse < universe || dmxUniverse >= universe + numUniverses)
+    {
         return;
+    }
 
-    // DBG("Received Artnet " + String(universe) + " " + String(len) +String(stripIndex) + " " + String(strip->numColors));
+    // DBG("Received Artnet, incoming universe : " + String(dmxUniverse) +", strip universe : "+String(universe) + ", strip num universes : " + String(numUniverses));
 
-    int start = (dmxUniverse - universe) * maxCount - (startChannel - 1);
-
-    int iStart = start < 0 ? -start : 0;
-
-    // DBG("Received Artnet " + String(universe) + ", start = " + String(start));
+    
+    int startingChannel = startChannel - 1; // startChannel is 1-based, convert to 0-based
 
     if (use16Bits)
     {
-        for (int i = iStart; i < numColors && i < maxCount; i++)
+        for (int i = 0; i < numColors && i < maxLedCount && startingChannel + i * numChannels < len; i++)
         {
-            float iMultiplier = multiplier * (includeAlpha ? (data[i * numChannels + 6] << 8 | data[i * numChannels + 7]) : 1.0f);
-            const uint16_t r = (data[i * numChannels] << 8 | data[i * numChannels + 1]) * iMultiplier;
-            const uint16_t g = (data[i * numChannels + 2] << 8 | data[i * numChannels + 3]) * iMultiplier;
-            const uint16_t b = (data[i * numChannels + 4] << 8 | data[i * numChannels + 5]) * iMultiplier;
-            colors[i + start] = Color(r, g, b);
+            int channelIndex = startingChannel + i * numChannels;
+            float iMultiplier = multiplier * (includeAlpha ? (data[channelIndex + 6] << 8 | data[channelIndex + 7]) : 1.0f);
+            const uint16_t r = (data[channelIndex] << 8 | data[channelIndex + 1]) * iMultiplier;
+            const uint16_t g = (data[channelIndex + 2] << 8 | data[channelIndex + 3]) * iMultiplier;
+            const uint16_t b = (data[channelIndex + 4] << 8 | data[channelIndex + 5]) * iMultiplier;
+            colors[i] = Color(r, g, b);
         }
     }
     else
     {
-        for (int i = iStart; i < numColors && i < maxCount; i++)
+        for (int i = 0; i < numColors && i < maxLedCount && startingChannel + i * numChannels < len; i++)
         {
-            float iMultiplier = multiplier * (includeAlpha ? data[i * numChannels + 3] : 1.0f);
-            colors[i + start] = Color(data[i * numChannels] * multiplier, data[i * numChannels + 1] * multiplier, data[i * numChannels + 2] * iMultiplier);
+            int channelIndex = startingChannel + i * numChannels;
+            float iMultiplier = multiplier * (includeAlpha ? data[channelIndex + 3] : 1.0f);
+            colors[i] = Color(data[channelIndex] * multiplier, 
+                              data[channelIndex + 1] * multiplier, 
+                              data[channelIndex + 2] * iMultiplier);
         }
     }
 

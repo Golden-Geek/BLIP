@@ -245,7 +245,7 @@ void LedStripComponent::onEnabledChanged()
 
 void LedStripComponent::setStripPower(bool value)
 {
-    DBG("Set Strip Power " + String(value));
+    NDBG("Set Strip Power " + String(value));
     if (enPin > 0)
         digitalWrite(enPin, value); // enable LEDs
 

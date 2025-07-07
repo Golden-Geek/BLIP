@@ -13,7 +13,7 @@
 #endif
 
 #ifndef ESPNOW_DEFAULT_ENABLED
-#define ESPNOW_DEFAULT_ENABLED true
+#define ESPNOW_DEFAULT_ENABLED false
 #endif
 
 DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerDerive, ESPNOW_DEFAULT_ENABLED)

@@ -88,12 +88,12 @@ void IOComponent::setupPin()
             break;
 
         case D_INPUT_PULLUP:
-            DBG("INPUT_PULLUP");
+            // DBG("INPUT_PULLUP");
             pinm = INPUT_PULLUP;
             break;
 
         case D_INPUT_PULLDOWN:
-            DBG("INPUT_PULLDOWN");
+            // DBG("INPUT_PULLDOWN");
             pinm = INPUT_PULLDOWN;
             break;
 
