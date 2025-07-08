@@ -251,7 +251,9 @@ void LedStripComponent::setStripPower(bool value)
 
 #if defined(LED_USE_FASTLED)
 #else
+#ifndef LED_EN_NO_OPEN_DRAIN
     pinMode(dataPin, value ? OUTPUT : OPEN_DRAIN);
+#endif
 #endif
 }
 
@@ -372,6 +374,7 @@ void LedStripComponent::showLeds()
             uint8_t r = Adafruit_NeoPixel::gamma8(colors[i].r * a);
             uint8_t g = Adafruit_NeoPixel::gamma8(colors[i].g * a);
             uint8_t b = Adafruit_NeoPixel::gamma8(colors[i].b * a);
+            neoPixelStrip->setPixelColor(ledMap(i), r, g, b);
         }
         neoPixelStrip->show();
     }
@@ -381,10 +384,10 @@ void LedStripComponent::showLeds()
         {
             float a = colors[i].a / 255.0f;
             // float bFactor = getDitheredBrightness(targetBrightness * colors[i].a, ditherFrameCounter) / 255.0f;
-            dotStarStrip->setPixelColor(ledMap(i),
-                                        Adafruit_DotStar::gamma8(colors[i].r * a),
-                                        Adafruit_DotStar::gamma8(colors[i].g * a),
-                                        Adafruit_DotStar::gamma8(colors[i].b * a));
+            uint8_t r = Adafruit_NeoPixel::gamma8(colors[i].r * a);
+            uint8_t g = Adafruit_NeoPixel::gamma8(colors[i].g * a);
+            uint8_t b = Adafruit_NeoPixel::gamma8(colors[i].b * a);
+            dotStarStrip->setPixelColor(ledMap(i), r, g, b);
         }
         dotStarStrip->show();
     }

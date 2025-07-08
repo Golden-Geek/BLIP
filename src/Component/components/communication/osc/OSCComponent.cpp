@@ -49,7 +49,7 @@ void OSCComponent::setupConnection()
     {
         NDBG("Start OSC Receiver on " + String(OSC_LOCAL_PORT));
         udp.begin(OSC_LOCAL_PORT);
-        udp.flush();
+        udp.clear();
         SetParam(isAlive, true);
 
         if (MDNS.begin((DeviceName).c_str()))
@@ -76,7 +76,7 @@ void OSCComponent::setupConnection()
     else
     {
         // NDBG("Stopping Receiver");
-        udp.flush();
+        udp.clear();
         udp.stop();
         SetParam(isAlive, false);
 
