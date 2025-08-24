@@ -5,6 +5,7 @@ ImplementSingleton(OSCComponent);
 void OSCComponent::setupInternal(JsonObject o)
 {
     udpIsInit = false;
+    mdnsIsInit = false;
 
     AddStringParamConfig(remoteHost);
     AddBoolParamConfig(sendFeedback);
@@ -18,26 +19,23 @@ void OSCComponent::updateInternal()
 
 void OSCComponent::clearInternal()
 {
-    // DBG("MDNS Remove service");
 
-    // if(!isAlive)
-    // {
-    //     DBG("UDP not connected, skipping MDNS removal");
-    //     return;
-    // }
+    if (mdnsIsInit)
+    {
+        DBG("MDNS Remove service");
+        esp_err_t err = mdns_service_remove_all();
 
-    // esp_err_t err = mdns_service_remove_all();
-
-    // if (err == ESP_OK)
-    // {
-    //     DBG("Successfully removed all services.");
-    // }
-    // else
-    // {
-    //     DBG(String("Failed to remove all services: ") + String(esp_err_to_name(err)));
-    //     // Handle error
-    // }
-    // MDNS.end();
+        if (err == ESP_OK)
+        {
+            DBG("Successfully removed all services.");
+        }
+        else
+        {
+            DBG(String("Failed to remove all services: ") + String(esp_err_to_name(err)));
+            // Handle error
+        }
+        MDNS.end();
+    }
 }
 
 void OSCComponent::onEnabledChanged()
@@ -49,6 +47,7 @@ void OSCComponent::setupConnection()
 {
     bool shouldConnect = enabled && WifiComponent::instance->state == WifiComponent::Connected;
 
+    mdnsIsInit = false;
     udpIsInit = false;
     if (shouldConnect)
     {
@@ -70,6 +69,7 @@ void OSCComponent::setupConnection()
             MDNS.addServiceTxt("oscjson", "tcp", "deviceID", DeviceID.c_str());
             MDNS.addServiceTxt("oscjson", "tcp", "deviceName", DeviceName.c_str());
             MDNS.addServiceTxt("oscjson", "tcp", "deviceType", DeviceType.c_str());
+            mdnsIsInit = true;
         }
         else
         {

@@ -8,6 +8,7 @@ DeclareComponentSingleton(OSC, "osc", )
 
     WiFiUDP udp;
 bool udpIsInit;
+bool mdnsIsInit;
 DeclareStringParam(remoteHost, "");
 DeclareBoolParam(isAlive, "");
 DeclareBoolParam(sendFeedback, false);
