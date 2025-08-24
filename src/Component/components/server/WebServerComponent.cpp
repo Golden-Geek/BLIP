@@ -86,35 +86,20 @@ bool WebServerComponent::initInternal()
     // server.on("/settings", HTTP_ANY, std::bind(&WebServerComponent::handleSettings, this));
     // server.on("/uploadFile", HTTP_POST, std::bind(&WebServerComponent::returnOK, this), std::bind(&WebServerComponent::handleFileUpload, this));
 
-#ifdef USE_FILES
-    server.on(
-        "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
-        { request->send(200); },
-        std::bind(&WebServerComponent::handleFileUpload,
-                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
-
-    if (FilesComponent::instance->useInternalMemory)
-    {
-        server.serveStatic("/edit", LittleFS, "/server/edit.html");
-        server.serveStatic("/upload", LittleFS, "/server/upload.html");
-        server.serveStatic("/server/", LittleFS, "/server");
-    }
-    else
-    {
-        server.serveStatic("/edit", FilesComponent::fs, "/server/edit.html");
-        server.serveStatic("/upload", FilesComponent::fs, "/server/upload.html");
-        server.serveStatic("/server/", FilesComponent::fs, "/server");
-    }
-#endif
-
     return true;
 }
 
 void WebServerComponent::updateInternal()
 {
 #ifdef USE_ASYNC_WEBSOCKET
-    // server.handleClient();
-    ws.cleanupClients();
+    if (wsIsInit)
+    {
+        if (timeAtLastCleanup + 10000 < millis())
+        {
+            timeAtLastCleanup = millis();
+            ws.cleanupClients();
+        }
+    }
 #else
     ws.loop();
 #endif
@@ -122,15 +107,7 @@ void WebServerComponent::updateInternal()
 
 void WebServerComponent::clearInternal()
 {
-#ifdef USE_ASYNC_WEBSOCKET
-    ws.closeAll();
-#else
-    ws.broadcastTXT("close");
-    // DBG("Before disconnect, remaining: " + String(ws.connectedClients()));
-    ws.disconnect();
-    // DBG("Disconnecting WebSocket clients, remaining: " + String(ws.connectedClients()));
-    delay(500);
-#endif
+    closeServer();
 }
 
 // SERVER
@@ -141,7 +118,7 @@ void WebServerComponent::onEnabledChanged()
 
 void WebServerComponent::setupConnection()
 {
-    bool shouldConnect = enabled && WifiComponent::instance->state == WifiComponent::Connected;
+    bool shouldConnect = enabled && WifiComponent::instance->state == WifiComponent::Connected && !wsIsInit;
 
     if (shouldConnect)
     {
@@ -149,15 +126,49 @@ void WebServerComponent::setupConnection()
         server.begin();
         NDBG("HTTP server started");
 
+#ifdef USE_FILES
+        NDBG("Setting up local files to serve");
+        server.on(
+            "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
+            { request->send(200); },
+            std::bind(&WebServerComponent::handleFileUpload,
+                      this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
+
+        fs::FS &fs = FilesComponent::instance->getFS();
+        server.serveStatic("/edit", fs, "/server/edit.html");
+        server.serveStatic("/upload", fs, "/server/upload.html");
+        server.serveStatic("/server/", fs, "/server");
+
+#endif
+
 #ifndef USE_ASYNC_WEBSOCKET
         ws.begin();
 #endif
+        wsIsInit = true;
+
+        NDBG("WebSocket server established");
     }
     else
     {
-        // server.stop();
-        // NDBG("HTTP server closed");
+        closeServer();
     }
+}
+
+void WebServerComponent::closeServer()
+{
+
+    NDBG("Closing WebSocket connections");
+    if (!wsIsInit)
+    {
+        NDBG("WebSocket is not initialized");
+        return;
+    }
+
+#ifdef USE_ASYNC_WEBSOCKET
+    ws.closeAll();
+#endif
+
+    NDBG("WebSocket connections closed");
 }
 
 void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
@@ -384,6 +395,26 @@ void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data
     msg.getAddress(addr);
     if (String(addr) == tmpExcludeParam)
         return;
+
+    wsPrint.flush();
+    msg.send(wsPrint);
+
+#ifdef USE_ASYNC_WEBSOCKET
+    if (!ws.availableForWriteAll())
+        return;
+    ws.binaryAll(wsPrint.data, wsPrint.index);
+#else
+    ws.broadcastBIN(wsPrint.data, wsPrint.index);
+#endif
+#endif
+}
+
+void WebServerComponent::sendBye(String type)
+{
+#ifdef USE_OSC
+
+    OSCMessage msg("/bye");
+    msg.add(type.c_str());
 
     wsPrint.flush();
     msg.send(wsPrint);

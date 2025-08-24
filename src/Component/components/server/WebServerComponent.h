@@ -23,13 +23,14 @@ public:
 
 DeclareBoolParam(sendFeedback, true);
 
-
-
 WSPrint wsPrint;
+
+bool wsIsInit = false;
 
 bool isUploading;
 int uploadedBytes;
 File uploadingFile;
+long timeAtLastCleanup = 0;
 
 String tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
 
@@ -48,6 +49,7 @@ void clearInternal() override;
 void onEnabledChanged() override;
 
 void setupConnection();
+void closeServer();
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 
@@ -60,6 +62,7 @@ void onWSEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 
 // void sendParameterFeedback(Component *c, Parameter *p);
 void sendParamFeedback(Component *c, String pName, var *data, int numData);
+void sendBye(String type);
 
 // void returnOK();
 // void returnFail(String msg);

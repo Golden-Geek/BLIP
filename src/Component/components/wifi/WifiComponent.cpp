@@ -72,7 +72,7 @@ void WifiComponent::updateInternal()
 
             if (curTime > timeAtConnect + connectionTimeout)
             {
-                NDBG("Connection Error");
+                // NDBG("Connection Error");
                 setState(ConnectionError);
             }
             break;
@@ -129,7 +129,7 @@ void WifiComponent::setState(ConnectionState s)
         break;
 
     case ConnectionError:
-        NDBG("Connection error");
+        NDBG("Connection Error");
         break;
     }
 

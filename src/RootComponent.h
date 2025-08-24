@@ -91,6 +91,8 @@ long timeAtShutdown;
 
 
 DeclareBoolParam(testMode, false);
+bool demoMode = false;
+int demoIndex = 0;
 
 void setupInternal(JsonObject o) override;
 void updateInternal() override;

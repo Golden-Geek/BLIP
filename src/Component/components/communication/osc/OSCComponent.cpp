@@ -8,6 +8,7 @@ void OSCComponent::setupInternal(JsonObject o)
 
     AddStringParamConfig(remoteHost);
     AddBoolParamConfig(sendFeedback);
+    AddBoolParamConfig(isAlive);
 }
 
 void OSCComponent::updateInternal()
@@ -17,22 +18,26 @@ void OSCComponent::updateInternal()
 
 void OSCComponent::clearInternal()
 {
-    DBG("MDNS Remove service");
-    // mdns_service_remove("osc", "udp");
-    // mdns_service_remove("oscjson", "tcp");
+    // DBG("MDNS Remove service");
 
-    esp_err_t err = mdns_service_remove_all();
+    // if(!isAlive)
+    // {
+    //     DBG("UDP not connected, skipping MDNS removal");
+    //     return;
+    // }
 
-    if (err == ESP_OK)
-    {
-        DBG("Successfully removed all services.");
-    }
-    else
-    {
-        DBG(String("Failed to remove all services: ") + String(esp_err_to_name(err)));
-        // Handle error
-    }
-    MDNS.end();
+    // esp_err_t err = mdns_service_remove_all();
+
+    // if (err == ESP_OK)
+    // {
+    //     DBG("Successfully removed all services.");
+    // }
+    // else
+    // {
+    //     DBG(String("Failed to remove all services: ") + String(esp_err_to_name(err)));
+    //     // Handle error
+    // }
+    // MDNS.end();
 }
 
 void OSCComponent::onEnabledChanged()
@@ -79,8 +84,8 @@ void OSCComponent::setupConnection()
         udp.clear();
         udp.stop();
         SetParam(isAlive, false);
-
         MDNS.end();
+        udpIsInit = false;
     }
 }
 

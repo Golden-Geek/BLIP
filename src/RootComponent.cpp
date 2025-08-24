@@ -11,6 +11,10 @@
 #define TESTMODE_PRESSCOUNT -1
 #endif
 
+#ifndef DEMO_MODE_COUNT
+#define DEMO_MODE_COUNT 3
+#endif
+
 ImplementSingleton(RootComponent);
 
 bool RootComponent::availablePWMChannels[16] = {true};
@@ -81,14 +85,13 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&strips);
 #endif
 
-#ifdef USE_WIFI
-    AddOwnedComponent(&wifi);
-#endif
-
 #ifdef USE_SERVER
     AddOwnedComponent(&server);
 #endif
 
+#ifdef USE_WIFI
+    AddOwnedComponent(&wifi);
+#endif
 
 #ifdef USE_DISPLAY
     AddOwnedComponent(&display);
@@ -160,6 +163,9 @@ void RootComponent::shutdown(bool restarting)
 {
     NDBG("Sleep now, baby.");
 
+    comm.sendMessage(this, "bye", String(restarting ? "restart" : "shutdown"));
+    server.sendBye(String(restarting ? "restart" : "shutdown"));
+
 #ifdef USE_LEDSTRIP
     strips.shutdown();
 #endif
@@ -185,17 +191,17 @@ void RootComponent::restart()
     shutdown(true);
 }
 
-
-
 void RootComponent::standby()
 {
     DBG("Standby !");
+
+    comm.sendMessage(this, "bye", String("standby"));
+    server.sendBye(String("standby"));
+
     clear();
     esp_sleep_enable_timer_wakeup(3 * 1000000); // Set wakeup timer for 3 seconds
     esp_deep_sleep_start();
 }
-
-
 
 void RootComponent::reboot()
 {
@@ -208,15 +214,7 @@ void RootComponent::reboot()
 void RootComponent::powerdown()
 {
     clear();
-
-    // NDBG("Sleep now, baby.");
-
     delay(200);
-
-    // #elif defined TOUCH_WAKEUP_PIN
-    //     touchAttachInterrupt((gpio_num_t)TOUCH_WAKEUP_PIN, touchCallback, 110);
-    //     esp_sleep_enable_touchpad_wakeup();
-    // #endif
 
 #ifdef ESP8266
     ESP.deepSleep(5e6);
@@ -318,6 +316,22 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
             NDBG("Shutdown from button");
             shutdown();
         }
+        else if (param == &bc->value)
+        {
+#ifdef USE_SCRIPT
+            if (demoMode)
+            {
+                if (bc->value > 0)
+                {
+                    NDBG("Loading next demo script");
+
+                    const int maxDemoCount = 4;
+                    demoIndex = (demoIndex + 1) % maxDemoCount;
+                    script.script.load("demo" + String(demoIndex));
+                }
+            }
+#endif
+        }
         else if (param == &bc->multiPressCount)
         {
             if (bc->multiPressCount == TESTMODE_PRESSCOUNT)
@@ -325,6 +339,17 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
                 NDBG("Toggle testing mode");
                 testMode = !testMode;
             }
+
+#ifdef USE_SCRIPT
+
+            if (bc->multiPressCount == DEMO_MODE_COUNT)
+            {
+                NDBG("Toggle demo mode");
+                demoMode = !demoMode;
+                demoIndex = 0;
+                script.script.load("demo" + String(demoIndex));
+            }
+#endif
 
 #ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
@@ -343,6 +368,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
 #endif
         }
     }
+
 #endif
 }
 

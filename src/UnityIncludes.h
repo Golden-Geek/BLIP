@@ -44,23 +44,12 @@
 
 #ifdef USE_FILES
 
-#ifdef FILES_TYPE_MM
-#elif defined FILES_TYPE_LittleFS
-#else
-#ifndef FILES_TYPE_SD
-#define FILES_TYPE_SD
-#endif
-#endif
-
-#ifdef FILES_TYPE_MMC
-#include "SD_MMC.h"
-#elif defined FILES_TYPE_LittleFS
+#if defined FILES_TYPE_SD
 #elif defined FILES_TYPE_FLASH
-#include "Adafruit_SPIFlash.h"
 #else
-#include "SD.h"
-#include "ff.h"
-#include "vfs_fat_internal.h"
+#ifndef FILES_TYPE_LittleFS
+#define FILES_TYPE_LittleFS
+#endif
 #endif
 
 #include "FS.h"
