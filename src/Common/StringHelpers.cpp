@@ -30,13 +30,18 @@ void StringHelpers::processStringMessage(const String &buffer, std::function<voi
         String s = String(pch);
 
         bool isNumber = true;
+        int numDotSigns = false;
         for (byte i = 0; i < s.length(); i++)
         {
             char c = s.charAt(i);
-            if (c != '.' && c != '-' && c != '+' && !isDigit(c))
-            {
-                isNumber = false;
-                break;
+            if(isDigit(c)) continue;
+            if(c == '.') {
+                numDotSigns++;
+                if(numDotSigns > 1) {
+                    isNumber = false;
+                    break;
+                }
+                continue;
             }
         }
 

@@ -21,7 +21,7 @@
 #endif
 
 #ifndef WIFI_DEFAULT_MODE
-#define WIFI_DEFAULT_MODE WIFI_MODE_STA
+#define WIFI_DEFAULT_MODE MODE_STA
 #endif
 
 DeclareComponentSingleton(Wifi, "wifi", )
@@ -39,7 +39,7 @@ DeclareComponentSingleton(Wifi, "wifi", )
 const String connectionStateNames[CONNECTION_STATES_MAX]{"Off", "Connecting", "Connected", "ConnectionError", "Disabled", "Hotspot", "PingAlive", "PingDead"};
 
 const long timeBetweenTries = 500;    // ms
-const long connectionTimeout = 10000; // ms
+const long connectionTimeout = 20000; // ms
 long timeAtConnect;
 long lastConnectTime;
 long timeAtStateChange;
@@ -66,10 +66,25 @@ const String wifiModeNames[MODE_MAX]{
 #endif
 };
 
+const wifi_power_t txPowerLevels[8] = {
+    WIFI_POWER_15dBm,
+    WIFI_POWER_17dBm,
+    WIFI_POWER_19_5dBm,
+    WIFI_POWER_20_5dBm
+};
+const String txPowerLevelNames[8] = {
+    "15dBm",
+    "17dBm",
+    "19.5dBm",
+    "20.5dBm"
+};
+
 DeclareStringParam(ssid, "");
 DeclareStringParam(pass, "");
 DeclareStringParam(manualIP, "");
 DeclareStringParam(manualGateway, "");
+DeclareBoolParam(channelScanMode, true);
+DeclareIntParam(txPower, 2);
 
 DeclareFloatParam(signal, 0)
     DeclareIntParam(mode, WIFI_DEFAULT_MODE);
@@ -95,34 +110,34 @@ void WiFiEvent(WiFiEvent_t event);
 String getIP() const;
 
 HandleSetParamInternalStart
+CheckAndSetParam(mode);
     CheckAndSetParam(ssid);
 CheckAndSetParam(pass);
 CheckAndSetParam(manualIP);
 CheckAndSetParam(manualGateway);
-#ifdef USE_ETHERNET
-CheckAndSetParam(mode);
-#endif
+CheckAndSetParam(channelScanMode);
+CheckAndSetParam(txPower);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
+FillSettingsParam(mode);
     FillSettingsParam(ssid);
 FillSettingsParam(pass);
 FillSettingsParam(manualIP);
 FillSettingsParam(manualGateway);
-#ifdef USE_ETHERNET
-FillSettingsParam(mode);
-#endif
+FillSettingsParam(channelScanMode);
+FillSettingsParam(txPower);
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
+FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
     FillOSCQueryStringParam(ssid);
 FillOSCQueryStringParam(pass);
 FillOSCQueryFloatParamReadOnly(signal);
 FillOSCQueryStringParam(manualIP);
 FillOSCQueryStringParam(manualGateway);
-#ifdef USE_ETHERNET
-FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
-#endif
+FillOSCQueryBoolParam(channelScanMode);
+FillOSCQueryEnumParam(txPower, txPowerLevelNames, 4);
 FillOSCQueryInternalEnd;
 
 DeclareComponentEventTypes(ConnectionStateChanged);

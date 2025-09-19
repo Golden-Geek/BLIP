@@ -26,6 +26,8 @@ DeclareIntParam(channel, 1);
 #ifdef ESPNOW_BRIDGE
 DeclareBoolParam(broadcastMode, false);
 DeclareBoolParam(streamTestMode, false);
+DeclareIntParam(testLedCount, 50);
+DeclareIntParam(streamTestRate, 50);
 DeclareBoolParam(wakeUpMode, false);
 DeclareBoolParam(routeAll, false);
 DeclareStringParam(remoteMac1, "");
@@ -99,6 +101,7 @@ uint8_t numConnectedDevices = 0;
 
 DeclareIntParam(channel, 1);
 DeclareBoolParam(autoPairing, true);
+DeclareBoolParam(pairOnAnyData, true);
 
 bool wakeUpReceived = false;
 
@@ -111,7 +114,9 @@ DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT);
 
 #ifdef ESPNOW_BRIDGE
 const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+ Color testStreamColor[3000]; //MAX TEST_LED
 #endif
+
 
 long lastReceiveTime;
 long lastSendTime = 0;
@@ -160,7 +165,7 @@ void registerDevice(const uint8_t *deviceMac);
 void addDevicePeer(const uint8_t *deviceMac);
 void clearDevices();
 #else
-void registerBridgeMac(const uint8_t *_bridgeMac, int chan);
+void registerBridgeMac(const uint8_t *_bridgeMac, int chan, bool sendPairing = true);
 void sendPairingResponse(const uint8_t *bridgeMac);
 #endif
 
@@ -179,6 +184,8 @@ CheckAndSetParam(channel);
 #endif
 CheckAndSetParam(broadcastMode);
 CheckAndSetParam(streamTestMode);
+CheckAndSetParam(testLedCount);
+CheckAndSetParam(streamTestRate);
 CheckAndSetParam(wakeUpMode);
 CheckTrigger(clearDevices);
 CheckAndSetParam(routeAll);
@@ -205,6 +212,7 @@ CheckAndSetParam(remoteMac20);
 #else
 CheckAndSetParam(channel);
 CheckAndSetParam(autoPairing);
+CheckAndSetParam(pairOnAnyData);
 #endif
 HandleSetParamInternalEnd;
 
@@ -214,6 +222,8 @@ FillSettingsInternalStart
     FillSettingsParam(channel);
 #endif
 FillSettingsParam(broadcastMode);
+FillSettingsParam(testLedCount);
+FillSettingsParam(streamTestRate);
 FillSettingsParam(routeAll);
 FillSettingsParam(remoteMac1);
 FillSettingsParam(remoteMac2);
@@ -238,6 +248,7 @@ FillSettingsParam(remoteMac20);
 #else
     FillSettingsParam(channel);
 FillSettingsParam(autoPairing);
+FillSettingsParam(pairOnAnyData);
 #endif
 FillSettingsInternalEnd;
 
@@ -252,11 +263,15 @@ FillOSCQueryIntParamReadOnly(channel);
 #endif
 FillOSCQueryBoolParam(broadcastMode);
 FillOSCQueryBoolParam(streamTestMode);
+FillOSCQueryIntParam(testLedCount);
+FillOSCQueryIntParam(streamTestRate);
 FillOSCQueryTrigger(clearDevices);
 FillOSCQueryBoolParam(routeAll);
 #else
 FillOSCQueryIntParam(channel);
 FillOSCQueryBoolParam(autoPairing);
+    FillOSCQueryBoolParam(pairOnAnyData);
+
 #endif
 
 FillOSCQueryInternalEnd

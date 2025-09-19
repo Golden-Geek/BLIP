@@ -10,9 +10,9 @@ ImplementSingleton(WifiComponent)
     // AddAndSetParameter(ssid);
     // AddAndSetParameter(pass);
     // AddAndSetParameter(apOnNoWifi);
+    AddIntParamConfig(mode);
 
 #ifdef USE_ETHERNET
-    AddIntParamConfig(mode);
     WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
 #endif
 
@@ -20,6 +20,8 @@ ImplementSingleton(WifiComponent)
     AddStringParamConfig(pass);
     AddStringParamConfig(manualIP);
     AddStringParamConfig(manualGateway);
+    AddBoolParamConfig(channelScanMode);
+    AddIntParamConfig(txPower);
     AddFloatParam(signal);
 
 #ifdef WIFI_C6_USE_EXTERNAL_ANTENNA
@@ -120,13 +122,18 @@ void WifiComponent::setState(ConnectionState s)
     switch (state)
     {
     case Connected:
+    {
+        String modeStr = "Wifi";
 #ifdef USE_ETHERNET
-        NDBG("Connected to ethernet with IP " + getIP());
-
-#else
-        NDBG("Connected to wifi " + ssid + " : " + pass + " with IP " + getIP() + " on channel " + String(WiFi.channel()));
+        if (mode == MODE_ETH || mode == MODE_ETH_STA)
+        {
+            modeStr = "Ethernet";
+        }
 #endif
-        break;
+
+        NDBG("Connected to " + modeStr + " " + ssid + " : " + pass + " with IP " + getIP() + " on channel " + String(WiFi.channel()));
+    }
+    break;
 
     case ConnectionError:
         NDBG("Connection Error");
@@ -158,6 +165,7 @@ void WifiComponent::connect()
         WiFi.disconnect();
 
     wifi_mode_t wMode = WIFI_STA;
+
     switch (mode)
     {
     case MODE_STA:
@@ -180,6 +188,7 @@ void WifiComponent::connect()
 #endif
     }
 
+    NDBG("Setting WiFi mode to " + String(wMode));
     WiFi.mode(wMode);
 
 #ifdef ESP32
@@ -194,7 +203,7 @@ void WifiComponent::connect()
 
         ETH.begin();
 
-         if (manualIP != "" && manualGateway != "" && manualIP != "0_0_0_0" && manualGateway != "0_0_0_0")
+        if (manualIP != "" && manualGateway != "" && manualIP != "0_0_0_0" && manualGateway != "0_0_0_0")
         {
             IPAddress ip, gateway, subnet(255, 255, 255, 0);
 
@@ -226,7 +235,19 @@ void WifiComponent::connect()
         // WiFi.setAutoConnect(true);
         WiFi.setAutoReconnect(true);
         WiFi.setSleep(false);
-        WiFi.setTxPower(WIFI_POWER_19dBm);
+
+        if (channelScanMode)
+        {
+            WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+            WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
+        }
+        else
+        {
+            WiFi.setScanMethod(WIFI_FAST_SCAN);
+        }
+
+        WiFi.setTxPower((wifi_power_t)txPower);
+
         if (manualIP != "" && manualGateway != "")
         {
             IPAddress ip, gateway, subnet(255, 255, 255, 0);
@@ -304,12 +325,21 @@ void WifiComponent::WiFiEvent(WiFiEvent_t event)
 String WifiComponent::getIP() const
 {
     if (state == Connected)
+    {
+
+        bool showEth = false;
+        String ethIP = "";
 #ifdef USE_ETHERNET
-        return StringHelpers::ipToString(ETH.localIP());
-#else
-        return StringHelpers::ipToString(WiFi.localIP());
+        ethIP = StringHelpers::ipToString(ETH.localIP());
+        if (mode == MODE_ETH || mode == MODE_ETH_STA)
+            showEth = true;
 #endif
 
+        if (showEth)
+            return ethIP;
+        else
+            return StringHelpers::ipToString(WiFi.localIP());
+    }
     else if (state == Hotspot)
         return StringHelpers::ipToString(WiFi.softAPIP());
 

@@ -10,6 +10,8 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddIntParamConfig(channel);
     AddBoolParamConfig(broadcastMode);
     AddBoolParamConfig(streamTestMode);
+    AddIntParamConfig(testLedCount);
+    AddIntParamConfig(streamTestRate);
     AddBoolParam(wakeUpMode);
     AddBoolParamConfig(routeAll);
 
@@ -37,6 +39,7 @@ void ESPNowComponent::setupInternal(JsonObject o)
 #else
     AddIntParamConfig(channel);
     AddBoolParamConfig(autoPairing);
+    AddBoolParamConfig(pairOnAnyData);
 #endif
 
     lastReceiveTime = 0;
@@ -84,8 +87,8 @@ void ESPNowComponent::initESPNow()
     NDBG("Init ESPNow on channel " + String(channel));
     if (esp_now_init() != ESP_OK)
     {
-    NDBG("Error initializing ESP-NOW");
-    return;
+        NDBG("Error initializing ESP-NOW");
+        return;
     }
 
 #ifdef ESPNOW_BRIDGE
@@ -146,22 +149,32 @@ void ESPNowComponent::updateInternal()
     }
     else if (streamTestMode)
     {
-        if (currentTime - lastSendTime >= 20)
+        int streamMS = 1000 / max(1, streamTestRate);
+        const int maxColorsPerPacket = 80; // 250 bytes, 3 bytes per color + some margin
+        if (currentTime - lastSendTime >= streamMS)
         {
             lastSendTime = currentTime;
 
-            Color colors[32];
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < testLedCount; i++)
             {
-                colors[i] = Color::HSV(millis() / 2000.f + i / 32.f, 1, 1);
+                testStreamColor[i] = Color::HSV(millis() / 2000.f + i * 1.f / testLedCount, 1, 1);
+
+
+                if ((i + 1) % maxColorsPerPacket == 0)
+                {
+                    int universe = floor(i*1.f / maxColorsPerPacket);
+                    // NDBG("Sending " + String(maxColorsPerPacket) + " leds to universe " + String(universe));
+                    sendStream(-1, universe, testStreamColor + (i - maxColorsPerPacket), maxColorsPerPacket);
+                }
             }
 
-            for (int i = 16; i < 32; i++)
+            int remaining = testLedCount % maxColorsPerPacket;
+            if (remaining > 0)
             {
-                colors[i] = Color(255, 0, 0);
+                int universe = floor(testLedCount*1.f / maxColorsPerPacket);
+                // NDBG("Sending remaining " + String(remaining) + " leds to universe " + String(universe));
+                sendStream(-1, universe, testStreamColor + (testLedCount - remaining), remaining);
             }
-
-            sendStream(-1, 0, colors, 32);
         }
     }
     else
@@ -228,6 +241,13 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     // DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
 
     instance->lastReceiveTime = millis();
+
+#ifndef ESPNOW_BRIDGE
+    if (instance->pairingMode && instance->pairOnAnyData)
+    {
+        instance->registerBridgeMac(mac, instance->channel, false);
+    }
+#endif
 
     switch (incomingData[0])
     {
@@ -699,7 +719,7 @@ void ESPNowComponent::clearDevices()
 }
 #else
 
-void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan)
+void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan, bool sendPairing)
 {
     if (pairingMode)
     {
@@ -726,7 +746,8 @@ void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan)
     SetParam(channel, chan);
     initESPNow();
 
-    sendPairingResponse(bridgeMac);
+    if (sendPairing)
+        sendPairingResponse(bridgeMac);
 }
 
 void ESPNowComponent::sendPairingResponse(const uint8_t *_bridgeMac)
