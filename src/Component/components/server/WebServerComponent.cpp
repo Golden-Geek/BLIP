@@ -128,16 +128,16 @@ void WebServerComponent::setupConnection()
 
 #ifdef USE_FILES
         NDBG("Setting up local files to serve");
-        server.on(
-            "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
-            { request->send(200); },
-            std::bind(&WebServerComponent::handleFileUpload,
-                      this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
+        // server.on(
+        //     "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
+        //     { request->send(200); },
+        //     std::bind(&WebServerComponent::handleFileUpload,
+        //               this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 
-        fs::FS &fs = FilesComponent::instance->getFS();
-        server.serveStatic("/edit", fs, "/server/edit.html");
-        server.serveStatic("/upload", fs, "/server/upload.html");
-        server.serveStatic("/server/", fs, "/server");
+        // fs::FS &fs = FilesComponent::instance->getFS();
+        // server.serveStatic("/edit", fs, "/server/edit.html");
+        // server.serveStatic("/upload", fs, "/server/upload.html");
+        // server.serveStatic("/server/", fs, "/server");
 
 #endif
 

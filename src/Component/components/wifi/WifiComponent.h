@@ -4,8 +4,6 @@
 
 #ifdef USE_ETHERNET
 
-#define ETH_CLK_MODE ETH_CLOCK_GPIO17_OUT
-#define ETH_PHY_POWER 12
 
 #include <ETH.h>
 #endif
@@ -45,7 +43,6 @@ long lastConnectTime;
 long timeAtStateChange;
 long lastRSSIUpdate = 0;
 bool waitingForIP = false;
-
 ConnectionState state;
 
 enum WifiMode
@@ -60,27 +57,30 @@ enum WifiMode
     MODE_MAX
 };
 const String wifiModeNames[MODE_MAX]{
-    "Wifi", "AP", "Wifi+AP",
+    "Wifi",
+    "AP",
+    "Wifi+AP",
 #ifdef USE_ETHERNET
-    "Ethernet", "Wifi+Ethernet"
+    "Ethernet",
+    "Wifi+Ethernet"
 #endif
 };
 
-const wifi_power_t txPowerLevels[8] = {
+const wifi_power_t txPowerLevels[4] = {
     WIFI_POWER_15dBm,
     WIFI_POWER_17dBm,
     WIFI_POWER_19_5dBm,
-    WIFI_POWER_20_5dBm
-};
-const String txPowerLevelNames[8] = {
+    WIFI_POWER_20_5dBm};
+
+const String txPowerLevelNames[4] = {
     "15dBm",
     "17dBm",
     "19.5dBm",
-    "20.5dBm"
-};
+    "20.5dBm"};
 
 DeclareStringParam(ssid, "");
 DeclareStringParam(pass, "");
+DeclareIntParam(channel, 0);
 DeclareStringParam(manualIP, "");
 DeclareStringParam(manualGateway, "");
 DeclareBoolParam(channelScanMode, true);
@@ -107,12 +107,18 @@ bool handleCommandInternal(const String &cmd, var *val, int numData) override;
 void WiFiEvent(WiFiEvent_t event);
 #endif
 
+
+bool isUsingEthernet() const;
+bool isUsingWiFi() const;
+
 String getIP() const;
+int getChannel() const;
 
 HandleSetParamInternalStart
-CheckAndSetParam(mode);
-    CheckAndSetParam(ssid);
+    CheckAndSetParam(mode);
+CheckAndSetParam(ssid);
 CheckAndSetParam(pass);
+CheckAndSetParam(channel);
 CheckAndSetParam(manualIP);
 CheckAndSetParam(manualGateway);
 CheckAndSetParam(channelScanMode);
@@ -120,9 +126,10 @@ CheckAndSetParam(txPower);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
-FillSettingsParam(mode);
-    FillSettingsParam(ssid);
+    FillSettingsParam(mode);
+FillSettingsParam(ssid);
 FillSettingsParam(pass);
+FillSettingsParam(channel);
 FillSettingsParam(manualIP);
 FillSettingsParam(manualGateway);
 FillSettingsParam(channelScanMode);
@@ -130,9 +137,10 @@ FillSettingsParam(txPower);
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
-FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
-    FillOSCQueryStringParam(ssid);
+    FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
+FillOSCQueryStringParam(ssid);
 FillOSCQueryStringParam(pass);
+FillOSCQueryIntParam(channel);
 FillOSCQueryFloatParamReadOnly(signal);
 FillOSCQueryStringParam(manualIP);
 FillOSCQueryStringParam(manualGateway);

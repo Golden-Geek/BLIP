@@ -1,10 +1,12 @@
 #include "UnityIncludes.h"
+#include "ESPNowComponent.h"
 
 ImplementSingleton(ESPNowComponent);
 
 void ESPNowComponent::setupInternal(JsonObject o)
 {
     AddBoolParamConfig(pairingMode);
+    AddBoolParamConfig(longRange);
 
 #ifdef ESPNOW_BRIDGE
     AddIntParamConfig(channel);
@@ -52,6 +54,8 @@ bool ESPNowComponent::initInternal()
 {
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
     // wait for wifi connection
+    // if (!WifiComponent::instance->isUsingWiFi())
+        // initESPNow();
 #else
     initESPNow();
 #endif
@@ -64,25 +68,33 @@ void ESPNowComponent::initESPNow()
     if (!enabled)
         return;
 
-    if (!pairingMode)
-    {
-        NDBG("Init ESPNow on channel " + String(channel));
-    }
+#if defined USE_WIFI
 
-#if defined USE_WIFI && defined ESPNOW_BRIDGE
+#if defined ESPNOW_BRIDGE
+
 #ifdef USE_ETHERNET
-    NDBG("WiFi mode to STA");
-    WiFi.mode(WIFI_AP_STA); // Recommended mode.
-    NDBG("Setting channel " + String(channel));
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #else
-    SetParam(channel, WiFi.channel());
+    SetParam(channel, WiFiComponent::instance->getChannel());
 #endif
+
 #else
-    // esp_now_deinit();
-    WiFi.mode(WIFI_STA);
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-#endif
+#endif // END ESPNOW_BRIDGE
+
+    if (!WifiComponent::instance->isUsingWiFi())
+    {
+        NDBG("WiFi mode to STA");
+        WiFi.mode(WIFI_STA); // Recommended mode.
+        WiFi.setSleep(false);
+        NDBG("Setting TX Power to " + WifiComponent::instance->txPowerLevelNames[WifiComponent::instance->txPower]);
+        WiFi.setTxPower((wifi_power_t)WifiComponent::instance->txPowerLevels[WifiComponent::instance->txPower]);
+    }
+    else
+    {
+        NDBG("WiFi already initialized");
+    }
+#endif // END USE_WIFI
 
     NDBG("Init ESPNow on channel " + String(channel));
     if (esp_now_init() != ESP_OK)
@@ -159,10 +171,9 @@ void ESPNowComponent::updateInternal()
             {
                 testStreamColor[i] = Color::HSV(millis() / 2000.f + i * 1.f / testLedCount, 1, 1);
 
-
                 if ((i + 1) % maxColorsPerPacket == 0)
                 {
-                    int universe = floor(i*1.f / maxColorsPerPacket);
+                    int universe = floor(i * 1.f / maxColorsPerPacket);
                     // NDBG("Sending " + String(maxColorsPerPacket) + " leds to universe " + String(universe));
                     sendStream(-1, universe, testStreamColor + (i - maxColorsPerPacket), maxColorsPerPacket);
                 }
@@ -171,7 +182,7 @@ void ESPNowComponent::updateInternal()
             int remaining = testLedCount % maxColorsPerPacket;
             if (remaining > 0)
             {
-                int universe = floor(testLedCount*1.f / maxColorsPerPacket);
+                int universe = floor(testLedCount * 1.f / maxColorsPerPacket);
                 // NDBG("Sending remaining " + String(remaining) + " leds to universe " + String(universe));
                 sendStream(-1, universe, testStreamColor + (testLedCount - remaining), remaining);
             }
@@ -219,15 +230,15 @@ void ESPNowComponent::clearInternal()
 #endif
 }
 
-void ESPNowComponent::onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
+void ESPNowComponent::onDataSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
 {
     if (status == ESP_NOW_SEND_SUCCESS)
     {
-        // DBG("[ESPNow] Sent to " + StringHelpers::macToString(mac_addr));
+        // DBG("[ESPNow] Sent to " + StringHelpers::macToString(tx_info->des_addr));
     }
     return;
 
-    DBG("[ESPNow] Error sending to " + StringHelpers::macToString(mac_addr) + " : " + String(status));
+    DBG("[ESPNow] Error sending to " + StringHelpers::macToString(tx_info->des_addr) + " : " + String(status));
 }
 
 #ifdef ARDUINO_NEW_VERSION
@@ -594,6 +605,7 @@ void ESPNowComponent::setupBroadcast()
         info.channel = 0;
         info.encrypt = false;
         esp_now_add_peer(&info);
+        setupLongRange(broadcastMac);
     }
     else
     {
@@ -691,11 +703,14 @@ void ESPNowComponent::addDevicePeer(const uint8_t *deviceMac)
         NDBG("Error adding devie : Unknown error");
         break;
     }
+
+    if (result != ESP_OK)
+        return;
+
     numConnectedDevices++;
 
-    String address = StringHelpers::macToString(deviceMac);
+    setupLongRange(deviceMac);
 }
-
 void ESPNowComponent::clearDevices()
 {
     uint8_t *mac = (uint8_t *)malloc(6);
@@ -743,6 +758,8 @@ void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan, boo
     esp_now_add_peer(&info);
     bridgeInit = true;
 
+    setupLongRange(bridgeMac);
+
     SetParam(channel, chan);
     initESPNow();
 
@@ -758,6 +775,30 @@ void ESPNowComponent::sendPairingResponse(const uint8_t *_bridgeMac)
     esp_now_send(bridgeMac, sendPacketData, 1);
 }
 #endif
+
+void ESPNowComponent::setupLongRange(const uint8_t *deviceMac)
+{
+    if (longRange)
+    {
+        uint8_t protocol = WIFI_PROTOCOL_LR;
+        if (WifiComponent::instance->isUsingWiFi())
+            protocol |= WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
+
+        esp_err_t pResult = esp_wifi_set_protocol(WIFI_IF_STA, protocol);
+        if (pResult == ESP_OK)
+            NDBG("Long range protocol set");
+        else
+            NDBG("Error setting long range protocol : " + String(pResult));
+
+        esp_now_rate_config_t cfg = {};
+        cfg.rate = WIFI_PHY_RATE_LORA_250K; // or WIFI_PHY_RATE_LORA_500K, or WIFI_PHY_RATE_1M_L
+        esp_err_t lrResult = esp_now_set_peer_rate_config(deviceMac, &cfg);
+        if (lrResult == ESP_OK)
+            NDBG("Long range mode set for device");
+        else
+            NDBG("Error setting long range mode for device : " + String(lrResult));
+    }
+}
 
 void ESPNowComponent::paramValueChangedInternal(void *param)
 {

@@ -1,8 +1,7 @@
 #pragma once
 
-
 #define ESPNOW_MAX_DEVICES 20
-#define ESPNOW_MAX_STREAM_RECEIVERS 10 //How many components can listen here
+#define ESPNOW_MAX_STREAM_RECEIVERS 10 // How many components can listen here
 
 #ifndef ESPNOW_PAIRING_PRESSCOUNT
 #define ESPNOW_PAIRING_PRESSCOUNT -1
@@ -18,6 +17,7 @@
 
 DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerDerive, ESPNOW_DEFAULT_ENABLED)
     DeclareBoolParam(pairingMode, false);
+DeclareBoolParam(longRange, false);
 
 #ifdef USE_ETHERNET
 DeclareIntParam(channel, 1);
@@ -114,9 +114,8 @@ DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT);
 
 #ifdef ESPNOW_BRIDGE
 const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
- Color testStreamColor[3000]; //MAX TEST_LED
+Color testStreamColor[3000]; // MAX TEST_LED
 #endif
-
 
 long lastReceiveTime;
 long lastSendTime = 0;
@@ -144,7 +143,7 @@ void sendPacket(int id, const uint8_t *data, int len);
 void registerStreamReceiver(ESPNowStreamReceiver *receiver);
 void unregisterStreamReceiver(ESPNowStreamReceiver *receiver);
 
-static void onDataSent(const uint8_t *mac, esp_now_send_status_t status);
+static void onDataSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status);
 
 #ifdef ARDUINO_NEW_VERSION
 static void onDataReceived(const esp_now_recv_info_t *mac, const uint8_t *incomingData, int len);
@@ -169,6 +168,9 @@ void registerBridgeMac(const uint8_t *_bridgeMac, int chan, bool sendPairing = t
 void sendPairingResponse(const uint8_t *bridgeMac);
 #endif
 
+void setupLongRange(const uint8_t *deviceMac);
+
+
 void paramValueChangedInternal(void *param) override;
 bool handleCommandInternal(const String &command, var *data, int numData) override;
 
@@ -177,6 +179,7 @@ DeclareComponentEventNames("MessageReceived");
 
 HandleSetParamInternalStart
     CheckAndSetParam(pairingMode);
+CheckAndSetParam(longRange);
 
 #ifdef ESPNOW_BRIDGE
 #ifdef USE_ETHERNET
@@ -217,9 +220,10 @@ CheckAndSetParam(pairOnAnyData);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
+    FillSettingsParam(longRange);
 #ifdef ESPNOW_BRIDGE
 #ifdef USE_ETHERNET
-    FillSettingsParam(channel);
+FillSettingsParam(channel);
 #endif
 FillSettingsParam(broadcastMode);
 FillSettingsParam(testLedCount);
@@ -246,7 +250,7 @@ FillSettingsParam(remoteMac18);
 FillSettingsParam(remoteMac19);
 FillSettingsParam(remoteMac20);
 #else
-    FillSettingsParam(channel);
+FillSettingsParam(channel);
 FillSettingsParam(autoPairing);
 FillSettingsParam(pairOnAnyData);
 #endif
@@ -254,6 +258,7 @@ FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
     FillOSCQueryBoolParam(pairingMode);
+FillOSCQueryBoolParam(longRange);
 #ifdef ESPNOW_BRIDGE
 FillOSCQueryBoolParam(wakeUpMode);
 #ifdef USE_ETHERNET
@@ -270,7 +275,7 @@ FillOSCQueryBoolParam(routeAll);
 #else
 FillOSCQueryIntParam(channel);
 FillOSCQueryBoolParam(autoPairing);
-    FillOSCQueryBoolParam(pairOnAnyData);
+FillOSCQueryBoolParam(pairOnAnyData);
 
 #endif
 

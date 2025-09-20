@@ -54,8 +54,16 @@ void SettingsComponent::clearSettings()
 String SettingsComponent::getDeviceID() const
 {
     byte mac[6]{0, 0, 0, 0, 0, 0};
+
 #ifdef USE_WIFI
+#ifdef USE_ETHERNET
+    if (WifiComponent::instance->isUsingEthernet())
+        ETH.macAddress(mac);
+    else
+        WiFi.macAddress(mac);
+#else
     WiFi.macAddress(mac);
+#endif
 #endif
 
     String d = "";

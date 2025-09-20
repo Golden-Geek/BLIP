@@ -101,14 +101,6 @@ String StringHelpers::lowerCamelToTitleCase(String input)
     return result;
 }
 
-String StringHelpers::ipToString(IPAddress ip)
-{
-    return String(ip[0]) +
-           "." + String(ip[1]) +
-           "." + String(ip[2]) +
-           "." + String(ip[3]);
-}
-
 void StringHelpers::macFromString(const String &mac, uint8_t *outMac)
 {
     sscanf(mac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",

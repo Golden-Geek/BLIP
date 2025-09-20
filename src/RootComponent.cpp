@@ -53,9 +53,6 @@ void RootComponent::setupInternal(JsonObject)
 
     if (remoteWakeUpMode)
     {
-        // pinMode(18, OUTPUT);
-        // digitalWrite(18, HIGH);
-
         comm.init();
 
         DBG("Waiting for wake up " + String(millis() - timeAtStart));
@@ -65,8 +62,6 @@ void RootComponent::setupInternal(JsonObject)
 
             if ((millis() - timeAtStart) > 200)
             {
-                // pinMode(18, OUTPUT);
-                // digitalWrite(18, LOW);
                 DBG("No wake up received");
                 standby();
                 return;
@@ -280,7 +275,8 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
 
 #if defined USE_ESPNOW && defined ESPNOW_BRIDGE
-                comm.espNow.initESPNow();
+                // if (wifi.isUsingWiFi())
+                    comm.espNow.initESPNow();
 #endif
             }
         }
