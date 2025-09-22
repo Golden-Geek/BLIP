@@ -271,12 +271,11 @@ void WifiComponent::WiFiEvent(WiFiEvent_t event)
         break;
 
     case ARDUINO_EVENT_ETH_CONNECTED:
-        NDBG("Ethernet connected, getting IP..." + ETH.localIP().toString());
+        NDBG("Ethernet connected, getting IP...");
         // setState(Connected);
         break;
 
     case ARDUINO_EVENT_ETH_GOT_IP:
-        NDBG("Got IP ! " + ETH.localIP().toString());
         setState(Connected);
         break;
 

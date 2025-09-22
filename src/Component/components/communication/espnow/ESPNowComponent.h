@@ -117,6 +117,8 @@ const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 Color testStreamColor[3000]; // MAX TEST_LED
 #endif
 
+
+bool espNowInitialized = false;
 long lastReceiveTime;
 long lastSendTime = 0;
 long lastCheck = 0;

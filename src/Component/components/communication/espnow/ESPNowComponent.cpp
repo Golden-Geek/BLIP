@@ -65,8 +65,11 @@ bool ESPNowComponent::initInternal()
 
 void ESPNowComponent::initESPNow()
 {
+    espNowInitialized = false;
+
     if (!enabled)
         return;
+
 
 #if defined USE_WIFI
 
@@ -135,11 +138,15 @@ void ESPNowComponent::initESPNow()
     }
 
     NDBG("Registered " + String(numConnectedDevices) + " devices");
+
+    espNowInitialized = true;
 #endif
 }
 
 void ESPNowComponent::updateInternal()
 {
+    if(!espNowInitialized) return;
+
     unsigned long currentTime = millis();
 
 #ifdef ESPNOW_BRIDGE
