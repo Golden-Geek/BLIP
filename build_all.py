@@ -134,6 +134,12 @@ def main(selected_envs, auto_upload=False):
     if export_dir.exists() and export_dir.is_dir():
         shutil.rmtree(export_dir)
 
+    # Remove .pio/build folder if it exists before building
+    pio_build_dir = Path(".pio/build")
+    if pio_build_dir.exists() and pio_build_dir.is_dir():
+        shutil.rmtree(pio_build_dir)
+
+
     print(f"🚀 Starting parallel build for environments: {', '.join(envs)}")
     with ThreadPoolExecutor(max_workers=max_jobs) as executor:
         futures = {executor.submit(build_env, env, results): env for env in envs}
