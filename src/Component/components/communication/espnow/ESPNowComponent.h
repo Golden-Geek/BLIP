@@ -24,7 +24,7 @@ DeclareIntParam(channel, 1);
 #endif
 
 #ifdef ESPNOW_BRIDGE
-DeclareBoolParam(broadcastMode, false);
+DeclareBoolParam(broadcastMode, true);
 DeclareBoolParam(streamTestMode, false);
 DeclareIntParam(testLedCount, 50);
 DeclareIntParam(streamTestRate, 50);
