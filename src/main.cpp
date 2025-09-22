@@ -6,7 +6,7 @@ RootComponent root("root");
 void setup()
 {
   root.setup();
-  root.init();
+  root.init(); 
   DBG("Device is init");
 }
 

@@ -111,6 +111,12 @@ def upload_exports(auto_upload=False):
 
 # Main parallel build logic
 def main(selected_envs, auto_upload=False):
+    # If user requested upload-only, skip builds and upload existing exports
+    if "--upload-only" in sys.argv:
+        print("📤 Upload-only mode: uploading exported builds and exiting.")
+        upload_exports(auto_upload=True)
+        return
+    
     all_envs = get_all_envs()
     envs = selected_envs if selected_envs else all_envs
 
@@ -158,6 +164,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build and optionally upload firmwares")
     parser.add_argument("environments", nargs="*", help="Specific environments to build")
     parser.add_argument("-u", "--upload", action="store_true", help="Auto upload after successful builds")
+    parser.add_argument("--upload-only", action="store_true", help="Upload exported builds without building")
     args = parser.parse_args()
 
     main(args.environments, auto_upload=args.upload)

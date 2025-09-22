@@ -5,7 +5,7 @@
 #endif
 
 #ifndef IO_DEFAULT_PIN
-#define IO_DEFAULT_PIN 0
+#define IO_DEFAULT_PIN -1
 #endif
 
 #ifndef IO_DEFAULT_MODE

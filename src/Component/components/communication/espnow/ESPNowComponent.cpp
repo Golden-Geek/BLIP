@@ -55,7 +55,7 @@ bool ESPNowComponent::initInternal()
 #if defined USE_WIFI && defined ESPNOW_BRIDGE
     // wait for wifi connection
     // if (!WifiComponent::instance->isUsingWiFi())
-        // initESPNow();
+    // initESPNow();
 #else
     initESPNow();
 #endif
@@ -464,7 +464,8 @@ void ESPNowComponent::routeMessage(var *data, int numData)
         }
     }
 
-    sendMessage(id, targetAddress, data[1].stringValue(), &data[2], numData - 2);
+    if (shouldSend)
+        sendMessage(id, targetAddress, data[1].stringValue(), &data[2], numData - 2);
 }
 
 void ESPNowComponent::sendStream(int id, int universe, Color *colors, int numColors)

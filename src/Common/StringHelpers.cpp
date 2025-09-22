@@ -34,14 +34,22 @@ void StringHelpers::processStringMessage(const String &buffer, std::function<voi
         for (byte i = 0; i < s.length(); i++)
         {
             char c = s.charAt(i);
-            if(isDigit(c)) continue;
-            if(c == '.') {
+            if (isDigit(c))
+                continue;
+            if (c == '.')
+            {
                 numDotSigns++;
-                if(numDotSigns > 1) {
+                if (numDotSigns > 1)
+                {
                     isNumber = false;
                     break;
                 }
                 continue;
+            }
+            else
+            {
+                isNumber = false;
+                break;
             }
         }
 
@@ -107,7 +115,6 @@ void StringHelpers::macFromString(const String &mac, uint8_t *outMac)
            &outMac[0], &outMac[1], &outMac[2],
            &outMac[3], &outMac[4], &outMac[5]);
 }
-
 
 String StringHelpers::macToString(const uint8_t *mac)
 {
