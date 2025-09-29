@@ -80,11 +80,58 @@ bool WebServerComponent::initInternal()
         } });
 #endif
 
-    // server.onNotFound(std::bind(&WebServerComponent::handleNotFound, this));
+#ifdef USE_FILES
+    NDBG("Setting up local files to serve");
+    server.on(
+        "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
+        { request->send(200); },
+        std::bind(&WebServerComponent::handleFileUpload,
+                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 
-    // server.on("/", HTTP_ANY, std::bind(&WebServerComponent::handleQueryData, this));
-    // server.on("/settings", HTTP_ANY, std::bind(&WebServerComponent::handleSettings, this));
-    // server.on("/uploadFile", HTTP_POST, std::bind(&WebServerComponent::returnOK, this), std::bind(&WebServerComponent::handleFileUpload, this));
+    server.onNotFound([](AsyncWebServerRequest *request)
+                      {
+
+                        
+        if(!FilesComponent::instance->isInit) {
+            request->send(500, "text/plain", "Filesystem not initialized");
+            return;
+        }
+        File f = FilesComponent::instance->openFile(request->url(), false, false);
+        if(!f || f.isDirectory()) {
+
+                        //if doesnt exist, try to find in /server folder, and add html if no extension
+            String path = request->url();
+            if(!path.startsWith("/server/")) {
+                path = String("/server") + (path.startsWith("/")?"":"/") + path;
+                f = FilesComponent::instance->openFile(path, false, false);
+                if(!f || f.isDirectory()) {
+                    if(!path.endsWith(".html") && !path.endsWith(".htm") && !path.endsWith(".css") && !path.endsWith(".js")) {
+                        path += ".html";
+                        f = FilesComponent::instance->openFile(path, false, false);
+
+                        if(!f || f.isDirectory()) {
+                            request->send(404, "text/plain", "File not found : " + request->url()+" (also tried "+path+")");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        DBG("Serving file: " + String(f.name()) + " size: " + String(f.size()));
+
+        AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", [f](uint8_t *buffer, size_t maxLen, size_t index) mutable {
+
+            size_t len = f.read(buffer, maxLen);
+            if(len == 0) {
+                f.close();
+            }
+            return len;
+        });
+        DBG("Serving file chunk");
+        request->send(response); });
+
+#endif
 
     return true;
 }
@@ -125,21 +172,6 @@ void WebServerComponent::setupConnection()
         NDBG("Start HTTP Server");
         server.begin();
         NDBG("HTTP server started");
-
-#ifdef USE_FILES
-        NDBG("Setting up local files to serve");
-        // server.on(
-        //     "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
-        //     { request->send(200); },
-        //     std::bind(&WebServerComponent::handleFileUpload,
-        //               this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
-
-        // fs::FS &fs = FilesComponent::instance->getFS();
-        // server.serveStatic("/edit", fs, "/server/edit.html");
-        // server.serveStatic("/upload", fs, "/server/upload.html");
-        // server.serveStatic("/server/", fs, "/server");
-
-#endif
 
 #ifndef USE_ASYNC_WEBSOCKET
         ws.begin();

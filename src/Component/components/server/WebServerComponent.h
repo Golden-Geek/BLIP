@@ -64,12 +64,7 @@ void onWSEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 void sendParamFeedback(Component *c, String pName, var *data, int numData);
 void sendBye(String type);
 
-// void returnOK();
-// void returnFail(String msg);
-// void handleNotFound();
 
-// void handleQueryData();
-// void handleSettings();
 
 DeclareComponentEventTypes(UploadStart, Uploading, UploadDone, UploadCanceled);
 DeclareComponentEventNames("UploadStart", "Uploading", "UploadDone", "UploadCanceled");

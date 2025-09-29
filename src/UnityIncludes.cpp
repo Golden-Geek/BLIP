@@ -4,8 +4,6 @@
 #include "Common/Settings.cpp"
 #include "Common/StringHelpers.cpp"
 
-
-
 #include "Component/ComponentEvent.cpp"
 #include "Component/Component.cpp"
 
