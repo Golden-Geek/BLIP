@@ -1,8 +1,23 @@
 ImplementSingleton(ScriptComponent);
 
+void ScriptComponent::setupInternal(JsonObject o)
+{
+    AddStringParamConfig(scriptAtLaunch);
+}
+
 bool ScriptComponent::initInternal()
 {
-    return script.init();
+    bool result = script.init();
+
+    if(result)
+    {
+        if (scriptAtLaunch.length() > 0)
+        {
+            script.load(scriptAtLaunch);
+        }
+    }
+
+    return result;
 }
 
 void ScriptComponent::updateInternal()
