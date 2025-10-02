@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef PLAYBACK_MAX_SCRIPTS
+#define PLAYBACK_MAX_SCRIPTS 5
+#endif
+
 class LedStripPlaybackLayer : public LedStripLayer
 {
 public:

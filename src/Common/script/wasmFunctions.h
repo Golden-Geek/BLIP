@@ -67,6 +67,10 @@ m3ApiRawFunction(m3_getMicLevel);
 m3ApiRawFunction(m3_setBatterySendEnabled);
 #endif
 
+#ifdef USE_DISTANCE
+m3ApiRawFunction(m3_getDistance);
+#endif
+
 m3ApiRawFunction(m3_randomInt);
 m3ApiRawFunction(m3_noise);
 

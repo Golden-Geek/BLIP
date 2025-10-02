@@ -8,7 +8,7 @@ DeclareComponent(Motion, "motion", )
 #ifdef IMU_TYPE_BNO055
     Adafruit_BNO055 bno;
 #elif defined IMU_TYPE_M5MPU
-    MPU6886 mpu;
+    m5::IMU_Class mpu;
 double lastUpdateTime;
 #endif
 

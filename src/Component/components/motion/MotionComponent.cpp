@@ -185,12 +185,15 @@ bool MotionComponent::setupIMU()
 
     SetParam(connected, true);
 #elif defined IMU_TYPE_M5MPU
-    int result = mpu.Init();
-    if (result != 0)
+    bool result = mpu.init();
+    
+
+    if (!result)
     {
         NDBG("Error initializing MPU6886");
         return false;
     }
+
     lastUpdateTime = millis();
 #endif
 

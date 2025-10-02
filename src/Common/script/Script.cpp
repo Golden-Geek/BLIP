@@ -17,7 +17,6 @@ Script::Script(Component *localComponent) : isRunning(false),
                                             updateFunc(NULL),
                                             stopFunc(NULL)
 {
-    DBG("Script Init here");
 }
 
 bool Script::init()
@@ -234,6 +233,10 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
 
 #ifdef USE_BATTERY
     m3_LinkRawFunction(module, arduino, "setBatterySendEnabled", "v(i)", &m3_setBatterySendEnabled);
+#endif
+
+#ifdef USE_DISTANCE
+    m3_LinkRawFunction(module, arduino, "getDistance", "f(i)", &m3_getDistance);
 #endif
 
     m3_LinkRawFunction(module, arduino, "randomInt", "i(ii)", &m3_randomInt);

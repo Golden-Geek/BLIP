@@ -1,10 +1,24 @@
 #pragma once
 
+#ifndef SCRIPT_MAX_SIZE
 #define SCRIPT_MAX_SIZE 16000
+#endif
+
+#ifndef WASM_STACK_SLOTS
 #define WASM_STACK_SLOTS 2000
+#endif
+
+#ifndef SCRIPT_NATIVE_STACK_SIZE
 #define SCRIPT_NATIVE_STACK_SIZE (16 * 1024)
+#endif
+
+#ifndef WASM_MEMORY_LIMIT
 #define WASM_MEMORY_LIMIT 4096
+#endif
+
+#ifndef WASM_ASYNC
 #define WASM_ASYNC 0
+#endif
 
 class Component;
 

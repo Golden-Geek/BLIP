@@ -142,6 +142,9 @@ void LedStripComponent::updateInternal()
 
     // all layer's internal colors are updated in Component's update() function
 
+    if (doNotUpdate)
+        return;
+        
     clearColors();
     numColors = getNumColors();
 

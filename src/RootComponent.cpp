@@ -132,6 +132,10 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&motor);
 #endif
 
+#ifdef USE_DISTANCE
+    AddOwnedComponent(&distances);
+#endif
+
 #ifdef USE_PWMLED
     AddOwnedComponent(&pwmleds);
 #endif
@@ -276,7 +280,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 
 #if defined USE_ESPNOW && defined ESPNOW_BRIDGE
                 // if (wifi.isUsingWiFi())
-                    comm.espNow.initESPNow();
+                comm.espNow.initESPNow();
 #endif
             }
         }
@@ -343,7 +347,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
                 NDBG("Toggle demo mode");
                 demoMode = !demoMode;
                 demoIndex = 0;
-                script.script.load("demo" + String(demoIndex));
+                // script.script.load("demo" + String(demoIndex));
             }
 #endif
 

@@ -81,6 +81,10 @@ StepperComponent stepper;
 DCMotorComponent motor;
 #endif
 
+#ifdef USE_DISTANCE
+DistanceSensorManagerComponent distances;
+#endif
+
 static bool availablePWMChannels[16];
 int getFirstAvailablePWMChannel() const;
 

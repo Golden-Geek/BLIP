@@ -109,9 +109,7 @@ public:
     Adafruit_DotStar *dotStarStrip;
 #endif
 
-    bool updatingLeds = false;
-    bool showingLeds = false;
-    bool shouldStopTask = false;
+        bool doNotUpdate = false;
 
     void setupInternal(JsonObject o) override;
     bool initInternal() override;

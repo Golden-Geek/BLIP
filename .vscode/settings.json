@@ -68,6 +68,13 @@
         "mutex": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "complex": "cpp",
+        "netfwd": "cpp",
+        "source_location": "cpp",
+        "iostream": "cpp",
+        "variant": "cpp"
     }
 }

@@ -374,6 +374,19 @@ m3ApiRawFunction(m3_getMicLevel)
 }
 #endif
 
+#ifdef USE_DISTANCE
+m3ApiRawFunction(m3_getDistance)
+{
+    m3ApiReturnType(float);
+
+    m3ApiGetArg(uint32_t, sensorIndex);
+
+    float v = sensorIndex < RootComponent::instance->distances.count ? RootComponent::instance->distances.items[sensorIndex]->value : -1.0f;
+
+    m3ApiReturn((float)v);
+}
+#endif
+
 m3ApiRawFunction(m3_randomInt)
 {
     m3ApiReturnType(uint32_t);

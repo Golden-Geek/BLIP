@@ -21,6 +21,10 @@
 #include <ArtnetWifi.h>
 #endif
 
+#ifdef USE_M5UNIFIED
+#include <M5Unified.h>
+#endif
+
 // Firmware
 #include "Common/Helpers.h"
 #include "Common/BoardDefines.h"
@@ -119,7 +123,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #elif defined IMU_TYPE_M5MPU
-#include <utility/MPU6886.h>
 #endif
 #include "Component/components/motion/MotionComponent.h"
 #endif
@@ -169,6 +172,10 @@
 
 #ifdef USE_DC_MOTOR
 #include "Component/components/motor/DCMotorComponent.h"
+#endif
+
+#ifdef USE_DISTANCE
+#include "Component/components/distance/DistanceSensorComponent.h"
 #endif
 
 #ifdef USE_BEHAVIOUR
