@@ -3,7 +3,7 @@ void LedStripPlaybackLayer::setupInternal(JsonObject o)
 {
     LedStripLayer::setupInternal(o);
 
-#if PLAYBACK_USE_ALPHA
+#ifdef PLAYBACK_USE_ALPHA
     frameSize = strip->numColors * 4;
 #else
     frameSize = strip->numColors * 3;
