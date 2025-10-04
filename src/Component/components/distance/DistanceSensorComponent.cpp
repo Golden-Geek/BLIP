@@ -5,8 +5,11 @@ ImplementManagerSingleton(DistanceSensor);
 
 void DistanceSensorComponent::setupInternal(JsonObject o)
 {
+#ifdef DISTANCE_SENSOR_HCSR04
     AddIntParamConfig(trigPin);
     AddIntParamConfig(echoPin);
+#endif
+
     AddIntParamConfig(updateRate);
     AddIntParamConfig(distanceMax);
     AddFloatParam(value);
@@ -14,13 +17,36 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 
 bool DistanceSensorComponent::initInternal()
 {
+#ifdef DISTANCE_SENSOR_HCSR04
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
+#elif defined(DISTANCE_SENSOR_VL53L0X)
+    Wire.begin();
+    sensor.setTimeout(500);
+    if (!sensor.init())
+    {
+        NDBG("Failed to detect and initialize VL53L0X sensor!");
+        return false;
+    }
+
+    NDBG("VL53L0X sensor initialized, starting continuous measurements.");
+    sensor.startContinuous(1000 / updateRate);
+#endif
 
     return true;
 }
 
 void DistanceSensorComponent::updateInternal()
+{
+#ifdef DISTANCE_SENSOR_HCSR04
+    updateHCSR04();
+#elif defined(DISTANCE_SENSOR_VL53L0X)
+    updateVL53L0X();
+#endif
+}
+
+#ifdef DISTANCE_SENSOR_HCSR04
+void DistanceSensorComponent::updateHCSR04()
 {
     int currentEchoState = digitalRead(echoPin);
 
@@ -109,8 +135,41 @@ void DistanceSensorComponent::updateInternal()
     // Update the static variable for the next iteration
     lastEchoState = currentEchoState;
 }
+#elif defined(DISTANCE_SENSOR_VL53L0X)
+void DistanceSensorComponent::updateVL53L0X()
+{
+    if (!isInit)
+        return;
+
+    uint16_t range = 0;
+    bool success = sensor.readRangeNoBlocking(range);
+
+    if(!success)
+    {
+        // No new measurement available yet
+        return;
+    }
+
+    if (sensor.timeoutOccurred())
+    {
+        NDBG("VL53L0X sensor timeout!");
+        return;
+    }
+
+    float distance = (float)range / 10.0f; // Convert mm to cm
+
+    // NDBG("Distance: " +String(distance)+ " cm");
+
+    if (distance > distanceMax)
+        distance = distanceMax; // Cap to max range
+
+    SetParam(value, distance / distanceMax);
+}
+#endif
+
 void DistanceSensorComponent::paramValueChangedInternal(void *param)
 {
+#ifdef DISTANCE_SENSOR_HCSR04
     if (param == &trigPin)
     {
         pinMode(trigPin, OUTPUT);
@@ -119,4 +178,16 @@ void DistanceSensorComponent::paramValueChangedInternal(void *param)
     {
         pinMode(echoPin, INPUT);
     }
+#endif
+
+#ifdef DISTANCE_SENSOR_VL53L0X
+    if (param == &updateRate)
+    {
+        if(isInit)
+        {
+            sensor.stopContinuous();
+            sensor.startContinuous(1000 / updateRate);
+        }
+    }
+#endif
 }
