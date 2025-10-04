@@ -53,6 +53,7 @@ int lastEchoState = LOW;
 #elif defined(DISTANCE_SENSOR_VL53L0X)
 
 VL53L0X_mod sensor;
+unsigned long lastMeasurementTime = 0;
 
 #endif
 

@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "DistanceSensorComponent.h"
 
 ImplementManagerSingleton(DistanceSensor);
 
@@ -141,14 +140,21 @@ void DistanceSensorComponent::updateVL53L0X()
     if (!isInit)
         return;
 
+    long currentTime = millis();
+    if (currentTime - lastMeasurementTime < 1000 / updateRate)
+        return; // Not time for the next measurement yet
+
+
     uint16_t range = 0;
     bool success = sensor.readRangeNoBlocking(range);
 
-    if(!success)
+    if (!success)
     {
         // No new measurement available yet
         return;
     }
+
+    lastMeasurementTime = currentTime;
 
     if (sensor.timeoutOccurred())
     {
@@ -164,6 +170,7 @@ void DistanceSensorComponent::updateVL53L0X()
         distance = distanceMax; // Cap to max range
 
     SetParam(value, distance / distanceMax);
+
 }
 #endif
 
@@ -183,8 +190,9 @@ void DistanceSensorComponent::paramValueChangedInternal(void *param)
 #ifdef DISTANCE_SENSOR_VL53L0X
     if (param == &updateRate)
     {
-        if(isInit)
+        if (isInit)
         {
+            NDBG("Updating VL53L0X update rate to " + String(updateRate) + " Hz");
             sensor.stopContinuous();
             sensor.startContinuous(1000 / updateRate);
         }
