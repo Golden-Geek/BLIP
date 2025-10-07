@@ -1,4 +1,5 @@
-#include "LedStripPlaybackLayer.h"
+#include "UnityIncludes.h"
+
 void LedStripPlaybackLayer::setupInternal(JsonObject o)
 {
     LedStripLayer::setupInternal(o);
@@ -20,7 +21,7 @@ void LedStripPlaybackLayer::setupInternal(JsonObject o)
     curTimeMs = 0;
     prevTimeMs = 0;
     timeSinceLastSeek = 0;
-    timeToSeek = 0;
+    timeToSeek = -1;
 
 #ifdef USE_SCRIPT
     activeScriptIndex = -1;
@@ -30,7 +31,9 @@ void LedStripPlaybackLayer::setupInternal(JsonObject o)
 void LedStripPlaybackLayer::updateInternal()
 {
     if (!curFile)
+    {
         return;
+    }
 
     if (idMode)
     {
@@ -45,12 +48,6 @@ void LedStripPlaybackLayer::updateInternal()
         timeSinceLastSeek = millis();
     }
 
-    // if (!isPlaying)
-    // {
-    //     showBlackFrame();
-    //     return;
-    // }
-
     if (isPlaying)
         playFrame();
 }
@@ -61,7 +58,6 @@ void LedStripPlaybackLayer::clearInternal()
 
 bool LedStripPlaybackLayer::playFrame()
 {
-    // NDBG("Play frame");
     if (curFile.available() < frameSize)
     {
         NDBG("End of show");
@@ -169,8 +165,11 @@ void LedStripPlaybackLayer::playScripts()
 #endif
 }
 
-void LedStripPlaybackLayer::load(String path)
+void LedStripPlaybackLayer::load(String path, bool force)
 {
+    if (path == curFilename && !force)
+        return;
+
 #ifdef USE_FILES
     showBlackFrame();
 
@@ -214,10 +213,10 @@ void LedStripPlaybackLayer::load(String path)
 #endif
 
             NDBG("Loaded meta, id " + String(groupID) + ":" + String(localID) + " at " + String(fps) + " fps, "
-            #ifdef USE_SCRIPT
-             + String(numScripts) + " scripts"
-             #endif
-             );
+#ifdef USE_SCRIPT
+                 + String(numScripts) + " scripts"
+#endif
+            );
         }
 
         metaDataFile.close();
@@ -243,7 +242,8 @@ void LedStripPlaybackLayer::load(String path)
             showIdFrame();
     }
 
-// play(0);
+    curFilename = path;
+
 #endif
 }
 
@@ -253,6 +253,8 @@ void LedStripPlaybackLayer::play(float atTime)
         return;
 
     isPlaying = true;
+
+    NDBG("Play here ar time " + String(atTime));
 
     seek(atTime, false);
     prevTimeMs = millis();
@@ -264,6 +266,8 @@ void LedStripPlaybackLayer::seek(float t, bool doSendEvent)
 {
     if (!curFile)
         return;
+
+    // NDBG("Seek to " + String(t) + "s");
 
     curTimeMs = secondsToMs(t);
     prevTimeMs = millis();
@@ -352,13 +356,45 @@ bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *da
     {
         if (numData > 0 && data[0].type == 's')
         {
-            load(data[0].stringValue());
-            play(numData > 1 ? data[1].floatValue() : 0);
+            String path = data[0].stringValue();
+            if (curFilename == path && isPlaying)
+            {
+                if (numData > 1)
+                {
+                    timeToSeek = data[1].floatValue();
+                }
+            }
+            else
+            {
+                load(path);
+                play(numData > 1 ? data[1].floatValue() : 0);
+            }
         }
         else
         {
             play(numData > 0 ? data[0].floatValue() : 0);
         }
+
+        return true;
+    }
+
+    if (checkCommand(command, "playSync", numData, 2))
+    {
+        // NDBG("Received playSync command");
+        if (!isPlaying)
+        {
+            NDBG("Play sync " + data[0].stringValue() + " at " + String(data[1].floatValue()) + "s");
+            SetParam(enabled, true);
+            String path = data[0].stringValue();
+            float time = data[1].floatValue();
+            load(path);
+            play(time);
+        }
+        else
+        {
+            // NDBG("Already playing, ignore playSync");
+        }
+
         return true;
     }
 

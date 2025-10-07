@@ -12,6 +12,7 @@ public:
 
     File curFile;
     File metaDataFile;
+    String curFilename;
 
     int frameSize;
 
@@ -54,7 +55,7 @@ public:
     void playScripts();
 
     // play control
-    void load(String path);
+    void load(String path, bool force = false);
     void play(float atTime = 0);
     void seek(float t, bool doSendEvent = true);
     void pause();

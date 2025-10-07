@@ -98,7 +98,7 @@ void OSCComponent::receiveOSC()
     int size;
     if ((size = udp.parsePacket()) > 0)
     {
-        DBG("Received OSC message");
+        // DBG("Received OSC message");
         while (size--)
             msg.fill(udp.read());
         if (!msg.hasError())

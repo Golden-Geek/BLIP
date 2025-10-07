@@ -16,6 +16,7 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddIntParamConfig(streamTestRate);
     AddBoolParam(wakeUpMode);
     AddBoolParamConfig(routeAll);
+    AddBoolParamConfig(acceptCommands);
 
     AddStringParamConfig(remoteMac1);
     AddStringParamConfig(remoteMac2);
@@ -69,7 +70,6 @@ void ESPNowComponent::initESPNow()
 
     if (!enabled)
         return;
-
 
 #if defined USE_WIFI
 
@@ -145,7 +145,8 @@ void ESPNowComponent::initESPNow()
 
 void ESPNowComponent::updateInternal()
 {
-    if(!espNowInitialized) return;
+    if (!espNowInitialized)
+        return;
 
     unsigned long currentTime = millis();
 
@@ -341,7 +342,12 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
 
         // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2));
 
-        ESPNowComponent::instance->sendEvent(MessageReceived, data, dataCount);
+        bool doSendEvent = true;
+#ifdef ESPNOW_BRIDGE
+        doSendEvent = instance->acceptCommands;
+#endif
+        if (doSendEvent)
+            ESPNowComponent::instance->sendEvent(MessageReceived, data, dataCount);
     }
     break;
 
@@ -455,20 +461,22 @@ void ESPNowComponent::routeMessage(var *data, int numData)
 
     bool shouldSend = false;
     int id = -1;
-    if (routeAll)
-        shouldSend = true;
-    else
+
+    if (targetAddress.startsWith("dev."))
     {
-        if (targetAddress.startsWith("dev."))
+        int idEnd = targetAddress.indexOf('.', 4);
+        if (idEnd != -1)
         {
-            int idEnd = targetAddress.indexOf('.', 4);
-            if (idEnd != -1)
-            {
-                id = targetAddress.substring(4, idEnd).toInt();
-                targetAddress = targetAddress.substring(idEnd + 1);
-                shouldSend = true;
-            }
+            id = targetAddress.substring(4, idEnd).toInt();
+            targetAddress = targetAddress.substring(idEnd + 1);
+            shouldSend = true;
         }
+    }
+    else if (routeAll)
+    {
+        // remove all settings and comm to routeAll
+        if (!targetAddress.startsWith("settings") && !targetAddress.startsWith("comm"))
+            shouldSend = true;
     }
 
     if (shouldSend)
