@@ -283,6 +283,8 @@ void LedStripPlaybackLayer::seek(float t, bool doSendEvent)
         curFile.read((uint8_t *)colors, frameSize);
     }
 
+    timeToSeek = -1;
+
     if (doSendEvent)
         sendEvent(Seek);
 }

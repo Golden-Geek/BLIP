@@ -11,6 +11,10 @@ void ESPNowComponent::setupInternal(JsonObject o)
 #ifdef ESPNOW_BRIDGE
     AddIntParamConfig(channel);
     AddBoolParamConfig(broadcastMode);
+    AddIntParamConfig(broadcastStartID);
+    AddIntParamConfig(broadcastEndID);
+    AddIntParamConfig(streamUniverse);
+    AddIntParamConfig(streamStartChannel);
     AddBoolParamConfig(streamTestMode);
     AddIntParamConfig(testLedCount);
     AddIntParamConfig(streamTestRate);
@@ -18,26 +22,10 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(routeAll);
     AddBoolParamConfig(acceptCommands);
 
-    AddStringParamConfig(remoteMac1);
-    AddStringParamConfig(remoteMac2);
-    AddStringParamConfig(remoteMac3);
-    AddStringParamConfig(remoteMac4);
-    AddStringParamConfig(remoteMac5);
-    AddStringParamConfig(remoteMac6);
-    AddStringParamConfig(remoteMac7);
-    AddStringParamConfig(remoteMac8);
-    AddStringParamConfig(remoteMac9);
-    AddStringParamConfig(remoteMac10);
-    AddStringParamConfig(remoteMac11);
-    AddStringParamConfig(remoteMac12);
-    AddStringParamConfig(remoteMac13);
-    AddStringParamConfig(remoteMac14);
-    AddStringParamConfig(remoteMac15);
-    AddStringParamConfig(remoteMac16);
-    AddStringParamConfig(remoteMac17);
-    AddStringParamConfig(remoteMac18);
-    AddStringParamConfig(remoteMac19);
-    AddStringParamConfig(remoteMac20);
+    for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
+    {
+        AddStringParamConfig(remoteMacs[i]);
+    }
 
 #else
     AddIntParamConfig(channel);
@@ -128,10 +116,10 @@ void ESPNowComponent::initESPNow()
     NDBG("Registering devices...");
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
-        if (remoteMacs[i]->length() > 0)
+        if (remoteMacs[i].length() > 0)
         {
             uint8_t mac[6];
-            StringHelpers::macFromString(*(remoteMacs[i]), mac);
+            StringHelpers::macFromString(remoteMacs[i], mac);
             DBG("Registering device " + StringHelpers::macToString(mac));
             addDevicePeer(mac);
         }
@@ -192,7 +180,7 @@ void ESPNowComponent::updateInternal()
             {
                 int universe = floor(testLedCount * 1.f / maxColorsPerPacket);
                 // NDBG("Sending remaining " + String(remaining) + " leds to universe " + String(universe));
-                sendStream(-1, universe, testStreamColor + (testLedCount - remaining), remaining);
+                sendStream(-1, streamUniverse, testStreamColor + (testLedCount - remaining), remaining);
             }
         }
     }
@@ -272,82 +260,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     {
     case 0: // Message
     {
-        uint8_t addressLength = incomingData[1];
-
-        if (len < 2 + addressLength)
-        {
-            DBG("[ESPNow] Address length more than data received");
-            return;
-        }
-
-        String address = String((char *)(incomingData + 2), addressLength);
-
-        uint8_t commandLength = incomingData[2 + addressLength];
-        if (len < 3 + addressLength + commandLength)
-        {
-            DBG("[ESPNow] Command length more than data received");
-            return;
-        }
-
-        String command = String((char *)(incomingData + 3 + addressLength), commandLength);
-
-        var data[10];
-        data[0] = address;
-        data[1] = command;
-
-        // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(len) + " bytes");
-
-        int dataIndex = 3 + addressLength + commandLength;
-
-        int dataCount = 2;
-        while (dataIndex < len)
-        {
-            if (dataCount >= 10)
-            {
-                DBG("[ESPNow] Too many data received");
-                return;
-            }
-
-            data[dataCount].type = incomingData[dataIndex];
-            dataIndex++;
-
-            if (data[dataCount].type == 's')
-            {
-                uint8_t strLen = incomingData[dataIndex];
-                dataIndex++;
-                data[dataCount] = String((char *)(incomingData + dataIndex), strLen);
-            }
-            else if (data[dataCount].type == 'p')
-            {
-                uint8_t dataSize = incomingData[dataIndex];
-                dataIndex++;
-                data[dataCount] = var((uint8_t *)(incomingData + dataIndex), dataSize);
-            }
-            else if (data[dataCount].type == 'b')
-            {
-                data[dataCount].value.b = incomingData[dataIndex];
-            }
-            else if (data[dataCount].type == 'i')
-            {
-                memcpy(&data[dataCount].value.i, incomingData + dataIndex, sizeof(int));
-            }
-            else if (data[dataCount].type == 'f')
-            {
-                memcpy(&data[dataCount].value.f, incomingData + dataIndex, sizeof(float));
-            }
-
-            dataIndex += data[dataCount].getSize();
-            dataCount++;
-        }
-
-        // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2));
-
-        bool doSendEvent = true;
-#ifdef ESPNOW_BRIDGE
-        doSendEvent = instance->acceptCommands;
-#endif
-        if (doSendEvent)
-            ESPNowComponent::instance->sendEvent(MessageReceived, data, dataCount);
+        instance->processMessage(incomingData, len);
     }
     break;
 
@@ -395,28 +308,152 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     }
 }
 
+void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
+{
+    if (len < 3)
+        return;
+
+    uint8_t startID = incomingData[1];
+    uint8_t endID = incomingData[2];
+
+    NDBG("Processing message for IDs " + String(startID) + " to " + String(endID));
+
+    if (startID == 255 || endID == 255)
+    {
+        // message for all devices
+    }
+    else
+    {
+#ifndef ESPNOW_BRIDGE
+        if (SettingsComponent::instance->propID < startID || SettingsComponent::instance->propID > endID)
+        {
+            NDBG("Message not for us, Id " + String(SettingsComponent::instance->propID));
+            // not for us
+            return;
+        }
+#endif
+    }
+
+    uint8_t addressLength = incomingData[3];
+
+    if (len < 4 + addressLength)
+    {
+        NDBG("Address length more than data received");
+        return;
+    }
+
+    String address = String((char *)(incomingData + 4), addressLength);
+
+    uint8_t commandLength = incomingData[4 + addressLength];
+    if (len < 5 + addressLength + commandLength)
+    {
+        NDBG("Command length more than data received");
+        return;
+    }
+
+    String command = String((char *)(incomingData + 5 + addressLength), commandLength);
+
+    var data[10];
+    data[0] = address;
+    data[1] = command;
+
+    NDBG("Message received from " + address + " : " + command + " : " + String(len) + " bytes");
+
+    int dataIndex = 5 + addressLength + commandLength;
+
+    int dataCount = 2;
+    while (dataIndex < len)
+    {
+        if (dataCount >= 10)
+        {
+            NDBG("Too many data received");
+            return;
+        }
+
+        data[dataCount].type = incomingData[dataIndex];
+        dataIndex++;
+
+        if (data[dataCount].type == 's')
+        {
+            uint8_t strLen = incomingData[dataIndex];
+            dataIndex++;
+            data[dataCount] = String((char *)(incomingData + dataIndex), strLen);
+        }
+        else if (data[dataCount].type == 'p')
+        {
+            uint8_t dataSize = incomingData[dataIndex];
+            dataIndex++;
+            data[dataCount] = var((uint8_t *)(incomingData + dataIndex), dataSize);
+        }
+        else if (data[dataCount].type == 'b')
+        {
+            data[dataCount].value.b = incomingData[dataIndex];
+        }
+        else if (data[dataCount].type == 'i')
+        {
+            memcpy(&data[dataCount].value.i, incomingData + dataIndex, sizeof(int));
+        }
+        else if (data[dataCount].type == 'f')
+        {
+            memcpy(&data[dataCount].value.f, incomingData + dataIndex, sizeof(float));
+        }
+
+        dataIndex += data[dataCount].getSize();
+        dataCount++;
+    }
+
+    // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2));
+
+    bool doSendEvent = true;
+#ifdef ESPNOW_BRIDGE
+    doSendEvent = instance->acceptCommands;
+#endif
+    if (doSendEvent)
+        sendEvent(MessageReceived, data, dataCount);
+}
+
 void ESPNowComponent::sendMessage(int id, const String &address, const String &command, var *data, int numData)
 {
     // Data format for message
     //  0 - Message
-    //  1 - Address length
-    //  2 - Address
-    //  3 - Command length
-    //  4 - Command
+    //  1 - Broadcast Start ID
+    //  2 - Broadcast End ID
+    //  3 - Address length
+    //  4 - Address
+    //  5 - Command length
+    //  6 - Command
     //  for each var
-    //  5 - var type
-    //  6 - var length (if string or ptr)
-    //  7 - var data
+    //  7 - var type
+    //  8 - var length (if string or ptr)
+    //  9 - var data
 
     // NDBG("Sending message to " + mac + " : " + address + " : " + command);
 
-    sendPacketData[0] = 0; // Message
-    sendPacketData[1] = address.length();
-    memcpy(sendPacketData + 2, address.c_str(), address.length());
-    sendPacketData[2 + address.length()] = command.length();
-    memcpy(sendPacketData + 3 + address.length(), command.c_str(), command.length());
+#ifdef ESPNOW_BRIDGE
+    uint8_t startID = broadcastStartID;
+    uint8_t endID = broadcastEndID;
+#else
+    uint8_t startID = SettingsComponent::instance->propID;
+    uint8_t endID = SettingsComponent::instance->propID;
+#endif
 
-    int dataIndex = 3 + address.length() + command.length();
+    if (id != -1)
+    {
+        startID = id;
+        endID = id;
+    }
+
+    NDBG("Sending message to IDs " + String(startID) + " to " + String(endID) + " : " + address + " : " + command);
+
+    sendPacketData[0] = 0; // Message
+    sendPacketData[1] = startID;
+    sendPacketData[2] = endID;
+    sendPacketData[3] = address.length();
+    memcpy(sendPacketData + 4, address.c_str(), address.length());
+    sendPacketData[4 + address.length()] = command.length();
+    memcpy(sendPacketData + 5 + address.length(), command.c_str(), command.length());
+
+    int dataIndex = 5 + address.length() + command.length();
     for (int i = 0; i < numData; i++)
     {
         sendPacketData[dataIndex] = data[i].type;
@@ -475,7 +512,7 @@ void ESPNowComponent::routeMessage(var *data, int numData)
     else if (routeAll)
     {
         // remove all settings and comm to routeAll
-        if (!targetAddress.startsWith("settings") && !targetAddress.startsWith("comm"))
+        if (!targetAddress.startsWith("settings") && !targetAddress.startsWith("comm") || !targetAddress.startsWith("wifi"))
             shouldSend = true;
     }
 
@@ -522,15 +559,14 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
 {
 
 #ifdef ESPNOW_BRIDGE
-    // DBG("Sending packet to " + String(id) + " : " + String(len) + " bytes");
-    if (id == -1)
+
+    if (broadcastMode)
     {
-        if (broadcastMode)
-        {
-            // DBG("Broadcasting packet");
-            esp_now_send(broadcastMac, data, len);
-        }
-        else
+        esp_now_send(broadcastMac, data, len);
+    }
+    else
+    {
+        if (id == -1)
         {
             for (int i = 0; i < numConnectedDevices; i++)
             {
@@ -540,11 +576,11 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
                     delayMicroseconds(100);
             }
         }
-    }
-    else if (id >= 0 && id < numConnectedDevices)
-    {
-        // DBG("Sending to " + StringHelpers::macToString(remoteMacsBytes[id]));
-        esp_now_send(remoteMacsBytes[id], data, len);
+        else if (id >= 0 && id < numConnectedDevices)
+        {
+            // DBG("Sending to " + StringHelpers::macToString(remoteMacsBytes[id]));
+            esp_now_send(remoteMacsBytes[id], data, len);
+        }
     }
 #else
     // if (broadcastMode)
@@ -597,16 +633,11 @@ void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data
     sendPacketData[4] = universe & 0xFF;
 
     memcpy(sendPacketData + 5, data, cappedLen);
-
-    // wifi_set_channel(channel);
-    // NDBG("Sending stream " + String(totalLen) + " bytes");
-    // esp_now_send(NULL, sendPacketData, totalLen);
     sendPacket(-1, sendPacketData, totalLen);
 }
 #endif
 
 #ifdef ESPNOW_BRIDGE
-
 void ESPNowComponent::setupBroadcast()
 {
     if (!isInit)
@@ -659,7 +690,7 @@ void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
 
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
-        if (*remoteMacs[i] == address)
+        if (remoteMacs[i] == address)
         {
             // DBG("Device already registered : " + address);
             return;
@@ -668,9 +699,9 @@ void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
 
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
-        if ((*remoteMacs[i]).isEmpty())
+        if ((remoteMacs[i]).isEmpty())
         {
-            *remoteMacs[i] = address;
+            remoteMacs[i] = address;
             addDevicePeer(deviceMac);
             return;
         }
@@ -733,15 +764,15 @@ void ESPNowComponent::clearDevices()
 
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
-        if (*remoteMacs[i] == "")
+        if (remoteMacs[i] == "")
             continue;
 
-        DBG("Remove device " + *remoteMacs[i]);
+        DBG("Remove device " + remoteMacs[i]);
 
-        StringHelpers::macFromString(*remoteMacs[i], mac);
+        StringHelpers::macFromString(remoteMacs[i], mac);
 
         esp_now_del_peer(mac);
-        *remoteMacs[i] = "";
+        remoteMacs[i] = "";
     }
 
     numConnectedDevices = 0;
