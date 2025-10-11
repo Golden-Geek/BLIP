@@ -513,7 +513,7 @@ void ESPNowComponent::routeMessage(var *data, int numData)
     else if (routeAll)
     {
         // remove all settings and comm to routeAll
-        if (!targetAddress.startsWith("settings") && !targetAddress.startsWith("comm") || !targetAddress.startsWith("wifi"))
+        if (!targetAddress.startsWith("/settings") && !targetAddress.startsWith("/comm") && !targetAddress.startsWith("/wifi"))
             shouldSend = true;
     }
 
