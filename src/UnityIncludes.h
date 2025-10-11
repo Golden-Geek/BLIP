@@ -87,13 +87,8 @@
 // #define CONFIG_ASYNC_TCP_RUNNING_CORE -1 //any available core
 // #define CONFIG_ASYNC_TCP_USE_WDT 0
 
-#ifdef USE_ASYNC_WEBSOCKET
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#else
-#include <WebSocketsServer.h>
-#include <WebServer.h>
-#endif
 
 #include "Component/components/server/WebServerComponent.h"
 #endif

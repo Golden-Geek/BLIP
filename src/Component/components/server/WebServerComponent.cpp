@@ -6,9 +6,7 @@ void WebServerComponent::setupInternal(JsonObject o)
 {
     for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
     {
-#ifdef USE_ASYNC_WEBSOCKET
         uploadingFiles[i].request = nullptr;
-#endif
     }
 
     AddBoolParamConfig(sendFeedback);
@@ -16,27 +14,16 @@ void WebServerComponent::setupInternal(JsonObject o)
 
 bool WebServerComponent::initInternal()
 {
-#ifdef USE_ASYNC_WEBSOCKET
-
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");
 
     ws.onEvent(std::bind(&WebServerComponent::onAsyncWSEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
     server.addHandler(&ws);
-#else
-    ws.onEvent(std::bind<void>(&WebServerComponent::onWSEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-#endif
 
-
-#ifdef USE_ASYNC_WEBSOCKET
     server.on("/", HTTP_GET, [&](AsyncWebServerRequest *request)
-#else
-    server.on("/", HTTP_GET, [&]()
-#endif
-
               {
-        if (RequestHasArg("HOST_INFO"))
+        if (request->hasArg("HOST_INFO"))
         {
             DynamicJsonDocument doc(1000);
             JsonObject o = doc.to<JsonObject>();
@@ -59,19 +46,15 @@ bool WebServerComponent::initInternal()
             o["VERSION"] = BLIP_VERSION;
             o["OSC_PORT"] = OSC_LOCAL_PORT;
             o["OSC_TRANSPORT"] = "UDP";
-#ifndef USE_ASYNC_WEBSOCKET
-            o["WS_PORT"] = 81;
-#endif
 
             String jStr;
             serializeJson(doc, jStr);
 
-            SendRequestResponse(200, "application/json", jStr);
+            request->send(200, "application/json", jStr);
         }
         else
         {
-            std::shared_ptr<bool> showConfig = std::make_shared<bool>(RequestHasArg("config") ? RequestGetArg("config") == "1" : true);
-#ifdef USE_ASYNC_WEBSOCKET
+            std::shared_ptr<bool> showConfig = std::make_shared<bool>(request->hasArg("config") ? request->arg("config") == "1" : true);
             std::shared_ptr<OSCQueryChunk> chunk = std::make_shared<OSCQueryChunk>(OSCQueryChunk(RootComponent::instance));
 
             AsyncWebServerResponse *response = request->beginChunkedResponse("application/json", [chunk, showConfig](uint8_t *buffer, size_t maxLen, size_t index)
@@ -83,20 +66,9 @@ bool WebServerComponent::initInternal()
                                                                                  return (int)chunk->data.length(); });
 
             request->send(response);
-#else
-            OSCQueryChunk chunk = OSCQueryChunk(RootComponent::instance);
-            String response = "";
-            while (chunk.nextComponent != nullptr)
-            {
-                chunk.nextComponent->fillChunkedOSCQueryData(&chunk, *showConfig);
-                response += chunk.data;
-            }
-            SendRequestResponse(200, "application/json", response);
-#endif
         } });
 
 #ifdef USE_FILES
-#ifdef USE_ASYNC_WEBSOCKET
     NDBG("Setting up local files to serve");
     server.on(
         "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
@@ -148,14 +120,12 @@ bool WebServerComponent::initInternal()
         request->send(response); });
 
 #endif
-#endif
 
     return true; // end Init Internal
 }
 
 void WebServerComponent::updateInternal()
 {
-#ifdef USE_ASYNC_WEBSOCKET
     if (wsIsInit)
     {
         if (timeAtLastCleanup + 10000 < millis())
@@ -164,9 +134,6 @@ void WebServerComponent::updateInternal()
             ws.cleanupClients();
         }
     }
-#else
-    ws.loop();
-#endif
 }
 
 void WebServerComponent::clearInternal()
@@ -190,9 +157,6 @@ void WebServerComponent::setupConnection()
         server.begin();
         NDBG("HTTP server started");
 
-#ifndef USE_ASYNC_WEBSOCKET
-        ws.begin();
-#endif
         wsIsInit = true;
 
         NDBG("WebSocket server established");
@@ -212,15 +176,11 @@ void WebServerComponent::closeServer()
         return;
     }
 
-#ifdef USE_ASYNC_WEBSOCKET
     ws.closeAll();
-#endif
 
     NDBG("WebSocket connections closed");
 }
 
-
-#ifdef USE_ASYNC_WEBSOCKET
 void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
     NDBG("Server File upload Client:" + request->client()->remoteIP().toString() + " " + String(request->url()) + "Filename: " + filename + ", Index: " + String(index) + ", Length: " + String(len) + ", Final: " + String(final));
@@ -330,42 +290,6 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
     }
 }
 
-#else
-
-void WebServerComponent::onWSEvent(uint8_t id, WStype_t type, uint8_t *data, size_t len)
-{
-
-    switch (type)
-    {
-    case WStype_DISCONNECTED:
-        DBG("WebSocket client " + String(id) + " disconnected from " +ws.remoteIP(id).toString());
-        break;
-    case WStype_CONNECTED:
-        DBG("WebSocket client " + String(id) + " connected from " + ws.remoteIP(id).toString() + ", num connected " + String(ws.connectedClients()));
-        break;
-
-    case WStype_TEXT:
-        parseTextMessage(String((char *)data));
-        break;
-
-    case WStype_BIN:
-        parseBinaryMessage(data, len);
-        break;
-
-    case WStype_ERROR:
-    case WStype_FRAGMENT_TEXT_START:
-    case WStype_FRAGMENT_BIN_START:
-    case WStype_FRAGMENT:
-    case WStype_FRAGMENT_FIN:
-    case WStype_PING:
-    case WStype_PONG:
-        break;
-
-    default:
-        break;
-    }
-}
-#endif
 
 void WebServerComponent::parseTextMessage(String msg)
 {
@@ -422,13 +346,9 @@ void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data
     wsPrint.flush();
     msg.send(wsPrint);
 
-#ifdef USE_ASYNC_WEBSOCKET
     if (!ws.availableForWriteAll())
         return;
     ws.binaryAll(wsPrint.data, wsPrint.index);
-#else
-    ws.broadcastBIN(wsPrint.data, wsPrint.index);
-#endif
 #endif
 }
 
@@ -441,12 +361,8 @@ void WebServerComponent::sendBye(String type)
     wsPrint.flush();
     msg.send(wsPrint);
 
-#ifdef USE_ASYNC_WEBSOCKET
     if (!ws.availableForWriteAll())
         return;
     ws.binaryAll(wsPrint.data, wsPrint.index);
-#else
-    ws.broadcastBIN(wsPrint.data, wsPrint.index);
-#endif
 #endif
 }
