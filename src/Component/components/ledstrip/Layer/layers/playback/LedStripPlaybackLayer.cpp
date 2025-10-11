@@ -188,9 +188,7 @@ void LedStripPlaybackLayer::load(String path, bool force)
         DeserializationError error = deserializeJson(metaData, metaDataFile);
         if (error)
         {
-            Serial.print(F("deserializeJson() failed: "));
-            Serial.println(error.c_str());
-            Serial.println("Meta content : " + String(metaDataFile.readString()));
+            NDBG(String("DeserializeJson() failed: ") + String(error.c_str()) + "\nMeta content : " + String(metaDataFile.readString()));
         }
         else
         {

@@ -24,14 +24,9 @@ bool Settings::loadSettings()
 
 bool Settings::saveSettings()
 {
-    DBG("Save settings");
     size_t settingsSize = measureMsgPack(settings);
-    DBG("malloc");
     char *bytes = (char *)malloc(settingsSize);
-    DBG("serialize");
     size_t s = serializeMsgPack(settings, bytes, settingsSize);
-
-   
 
     prefs.clear();
     if (s == 0)
@@ -44,12 +39,8 @@ bool Settings::saveSettings()
     prefs.putBytes("settings", bytes, s);
 
     DBG("Settings saved.");
-
-    String test;
-    serializeJson(settings, test);
-    DBG("SETTINGS Json serialized and packed : " + String(settingsSize));
-    DBG(test);
-
+    free(bytes);
+    
     return true;
 }
 
@@ -60,28 +51,3 @@ bool Settings::clearSettings()
     DBG("Settings cleared.");
     return true;
 }
-
-// var Settings::getVal(JsonObject o, const String &name, var defaultVal)
-// {
-//     // DBG("Get val " + name + "/" + String((int)o.containsKey(name)));
-
-//     if (!o.containsKey(name))
-//         return defaultVal;
-
-//     JsonVariant val = o[name].containsKey("value") ? o[name]["value"].as<JsonVariant>() : o[name].as<JsonVariant>();
-
-//     switch (defaultVal.type)
-//     {
-//     case 'b':
-//         return val.as<bool>();
-//     case 'i':
-//         return val.as<int>();
-//     case 'f':
-//         return val.as<float>();
-//     case 's':
-//         return val.as<String>();
-//     }
-
-//     NDBG("Type not found " + defaultVal.type);
-//     return var();
-// }

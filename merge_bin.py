@@ -75,8 +75,8 @@ def merge_bin(source, target, env):
             print(f"[Merge] ERROR: Missing {path} at offset {hex(offset)}")
             env.Exit(1)
     python_exe = env.subst("$PYTHONEXE")
-    esptool_py = Path(env.PioPlatform().get_package_dir("tool-esptoolpy")) / "esptool.py"
-    merge_cmd = f"\"{python_exe}\" \"{esptool_py}\" --chip {chip} merge_bin -o \"{merged_firmware}\" " + \
+    esptool_py = Path(env.PioPlatform().get_package_dir("tool-esptoolpy")) / "esptool"
+    merge_cmd = f"\"{python_exe}\" \"{esptool_py}\" --chip {chip} merge-bin -o \"{merged_firmware}\" " + \
                 " ".join([f"{hex(offset)} \"{path}\"" for offset, path in sections])
     print(f"[Merge] Running: {merge_cmd}")
     if env.Execute(merge_cmd) != 0:

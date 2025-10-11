@@ -75,6 +75,7 @@
         "netfwd": "cpp",
         "source_location": "cpp",
         "iostream": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "csignal": "cpp"
     }
 }

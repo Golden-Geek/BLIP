@@ -20,7 +20,7 @@ bool Component::init()
     isInit = initInternal();
 
     if (!isInit)
-        NDBG(F("Init Error."));
+        NDBG("Init Error.");
     // else
     //     NDBG(F("Init OK"));
 
