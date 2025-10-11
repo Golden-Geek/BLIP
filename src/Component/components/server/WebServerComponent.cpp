@@ -338,10 +338,10 @@ void WebServerComponent::onWSEvent(uint8_t id, WStype_t type, uint8_t *data, siz
     switch (type)
     {
     case WStype_DISCONNECTED:
-        DBG("WebSocket client " + String(id) + " disconnected from " + StringHelpers::ipToString(ws.remoteIP(id)));
+        DBG("WebSocket client " + String(id) + " disconnected from " +ws.remoteIP(id).toString());
         break;
     case WStype_CONNECTED:
-        DBG("WebSocket client " + String(id) + " connected from " + StringHelpers::ipToString(ws.remoteIP(id)) + ", num connected " + String(ws.connectedClients()));
+        DBG("WebSocket client " + String(id) + " connected from " + ws.remoteIP(id).toString() + ", num connected " + String(ws.connectedClients()));
         break;
 
     case WStype_TEXT:
