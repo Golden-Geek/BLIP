@@ -151,7 +151,7 @@ public:
     void fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig = true);
     void setupChunkAfterComponent(OSCQueryChunk *result, const Component *c);
 
-    String getFullPath(bool includeRoot = false, bool scriptMode = false) const;
+    String getFullPath(bool includeRoot = false, bool scriptMode = false, bool serialMode = false) const;
 
 // void scripting
 #ifdef USE_SCRIPT

@@ -42,7 +42,7 @@ void Component::update()
 void Component::clear()
 {
     NDBG("Clear " + name);
-    
+
     clearInternal();
 
     for (int i = 0; i < numComponents; i++)
@@ -57,7 +57,6 @@ void Component::clear()
     // delete parameters[i];
     numParams = 0;
 }
-
 
 bool Component::handleCommand(const String &command, var *data, int numData)
 {
@@ -226,7 +225,7 @@ void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, const St
                 vArr.add(getEnumString(param));
                 break;
 
-                case ParamType::Float:
+            case ParamType::Float:
                 vArr.add((*(float *)param));
                 break;
 
@@ -307,7 +306,7 @@ void Component::setupChunkAfterComponent(OSCQueryChunk *chunk, const Component *
     }
 }
 
-String Component::getFullPath(bool includeRoot, bool scriptMode) const
+String Component::getFullPath(bool includeRoot, bool scriptMode, bool serialMode) const
 {
     if (this == RootComponent::instance && !includeRoot)
         return "";
@@ -315,7 +314,11 @@ String Component::getFullPath(bool includeRoot, bool scriptMode) const
     Component *pc = parentComponent;
     String s = name;
 
-    char separator = scriptMode ? '_' : '/';
+    char separator = '/';
+    if (scriptMode)
+        separator = '.';
+    else if (serialMode)
+        separator = '_';
 
     while (pc != NULL)
     {

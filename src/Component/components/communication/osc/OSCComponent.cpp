@@ -208,7 +208,7 @@ void OSCComponent::sendMessage(const String &source, const String &command, var 
     if (WifiComponent::instance->state != WifiComponent::Connected)
         return;
 
-    OSCMessage msg = createMessage(source, command, data, numData, true);
+    OSCMessage msg = createMessage(source, command, data, numData);
     sendMessage(msg);
 }
 
@@ -256,6 +256,17 @@ OSCMessage OSCComponent::createMessage(const String &source, const String &comma
     }
 
     return msg;
+}
+
+
+OSCMessage OSCComponent::createMessage(const var* data, int numData, bool addID)
+{
+    if(numData < 2)
+        return OSCMessage();
+
+    String source = data[0].stringValue();
+    String command = data[1].stringValue();
+    return createMessage(source, command, data + 2, numData - 2, addID);
 }
 
 var OSCComponent::OSCArgumentToVar(OSCMessage &m, int index)

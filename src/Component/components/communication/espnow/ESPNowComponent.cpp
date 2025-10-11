@@ -345,6 +345,19 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
 
     String address = String((char *)(incomingData + 4), addressLength);
 
+    // convert from OSC style to internal
+    if (address.charAt(0) == '/')
+        address = address.substring(1);
+
+    address.replace('/', '.');
+
+#ifdef ESPNOW_BRIDGE
+    if (startID == endID && startID != -1)
+    {
+        address = "dev." + String(startID) + address;
+    }
+#endif
+
     uint8_t commandLength = incomingData[4 + addressLength];
     if (len < 5 + addressLength + commandLength)
     {
@@ -358,7 +371,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
     data[0] = address;
     data[1] = command;
 
-    NDBG("Message received from " + address + " : " + command + " : " + String(len) + " bytes");
+    NDBG("Message received with  " + address + ", " + command + " : " + String(len) + " bytes");
 
     int dataIndex = 5 + addressLength + commandLength;
 
@@ -496,16 +509,19 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
 void ESPNowComponent::routeMessage(var *data, int numData)
 {
     String targetAddress = data[0].stringValue();
+    targetAddress.replace('.', '/');
+    if (targetAddress.charAt(0) != '/')
+        targetAddress = "/" + targetAddress;
 
     bool shouldSend = false;
     int id = -1;
 
-    if (targetAddress.startsWith("dev."))
+    if (targetAddress.startsWith("/dev/"))
     {
-        int idEnd = targetAddress.indexOf('.', 4);
+        int idEnd = targetAddress.indexOf('/', 5);
         if (idEnd != -1)
         {
-            id = targetAddress.substring(4, idEnd).toInt();
+            id = targetAddress.substring(5, idEnd).toInt();
             targetAddress = targetAddress.substring(idEnd + 1);
             shouldSend = true;
         }

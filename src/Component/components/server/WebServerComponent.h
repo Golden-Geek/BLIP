@@ -60,7 +60,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void parseTextMessage(String msg);
 void parseBinaryMessage(uint8_t *data, size_t len);
 
-// void sendParameterFeedback(Component *c, Parameter *p);
 void sendParamFeedback(Component *c, String pName, var *data, int numData);
 void sendBye(String type);
 

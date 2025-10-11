@@ -50,9 +50,26 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
     if (e.component == &espNow)
     {
         if (e.type == ESPNowComponent::MessageReceived)
-            sendEvent(MessageReceived, e.data, e.numData);
-    }
+        {
+#ifdef ESPNOW_BRIDGE
+            if (e.data[0].stringValue().startsWith("dev.")) // message from device, to route
+            {
+#ifdef USE_OSC
 
+                OSCMessage msg = OSCComponent::createMessage(e.data, e.numData, false);
+                osc.sendMessage(msg);
+#endif
+
+#ifdef USE_SERIAL
+                serial.sendMessage(e.data[0].stringValue(), e.data[1].stringValue(), &e.data[2], e.numData - 2);
+#endif
+            }
+
+#else
+            sendEvent(MessageReceived, e.data, e.numData);
+#endif
+        }
+    }
 #endif
 }
 
@@ -102,16 +119,20 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
         break;
     }
 
-    String baseAddress = c->getFullPath();
-
 #ifdef USE_SERIAL
     if (serial.sendFeedback)
+    {
+        String baseAddress = c->getFullPath(false, false, true);
         serial.sendMessage(baseAddress, pName, data, numData);
+    }
 #endif
 
 #ifdef USE_OSC
     if (osc.sendFeedback)
+    {
+        String baseAddress = c->getFullPath();
         osc.sendMessage(baseAddress, pName, data, numData);
+    }
 #endif
 
 #ifdef USE_ESPNOW
@@ -130,15 +151,20 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
 
 void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
 {
-    String baseAddress = e.component->getFullPath();
 #ifdef USE_SERIAL
     if (serial.sendFeedback)
+    {
+        String baseAddress = e.component->getFullPath(false, false, true);
         serial.sendMessage(baseAddress, e.getName(), e.data, e.numData);
+    }
 #endif
 
 #ifdef USE_OSC
     if (osc.sendFeedback)
+    {
+        String baseAddress = e.component->getFullPath();
         osc.sendMessage(baseAddress, e.getName(), e.data, e.numData);
+    }
 #endif
 
 #ifdef USE_ESPNOW
@@ -151,20 +177,22 @@ void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
 
 void CommunicationComponent::sendMessage(Component *c, const String &mName, const String &val)
 {
-    String baseAddress = c->getFullPath();
-
     var data[1]{val};
+
 #ifdef USE_SERIAL
-    serial.sendMessage(baseAddress, mName, data, 1);
+    String serialAddress = c->getFullPath(false, false, true);
+    serial.sendMessage(serialAddress, mName, data, 1);
 #endif
 
 #ifdef USE_OSC
-    osc.sendMessage(baseAddress, mName, data, 1);
+    String oscAddress = c->getFullPath();
+    osc.sendMessage(oscAddress, mName, data, 1);
 #endif
 
 #ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
-        espNow.sendMessage(-1, baseAddress, mName, data, 1);
+    String espnowAddress = c->getFullPath(false, false, true);
+    espNow.sendMessage(-1, espnowAddress, mName, data, 1);
 #endif
 #endif
 }

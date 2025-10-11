@@ -30,7 +30,8 @@ void sendMessage(OSCMessage &m);
 void sendMessage(String address);
 void sendMessage(const String &source, const String &command, var *data, int numData);
 
-static OSCMessage createMessage(const String &source, const String &command, const var *data, int numData, bool addID);
+static OSCMessage createMessage(const String &source, const String &command, const var *data, int numData, bool addID = true);
+static OSCMessage createMessage(const var* data, int numData, bool addID = true);
 
 // Helper
 var OSCArgumentToVar(OSCMessage &m, int index);
