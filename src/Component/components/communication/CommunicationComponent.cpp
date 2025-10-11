@@ -114,6 +114,13 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
         osc.sendMessage(baseAddress, pName, data, numData);
 #endif
 
+#ifdef USE_ESPNOW
+#ifndef ESPNOW_BRIDGE
+    if (espNow.sendFeedback)
+        espNow.sendMessage(-1, baseAddress, pName, data, numData);
+#endif
+#endif
+
 #ifdef USE_SERVER
     // maybe should find away so calls are not crossed with websocket ?
     if (WebServerComponent::instance->sendFeedback)
@@ -133,6 +140,13 @@ void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
     if (osc.sendFeedback)
         osc.sendMessage(baseAddress, e.getName(), e.data, e.numData);
 #endif
+
+#ifdef USE_ESPNOW
+#ifndef ESPNOW_BRIDGE
+    if (espNow.sendFeedback)
+        espNow.sendMessage(-1, baseAddress, e.getName(), e.data, e.numData);
+#endif
+#endif
 }
 
 void CommunicationComponent::sendMessage(Component *c, const String &mName, const String &val)
@@ -146,5 +160,11 @@ void CommunicationComponent::sendMessage(Component *c, const String &mName, cons
 
 #ifdef USE_OSC
     osc.sendMessage(baseAddress, mName, data, 1);
+#endif
+
+#ifdef USE_ESPNOW
+#ifndef ESPNOW_BRIDGE
+        espNow.sendMessage(-1, baseAddress, mName, data, 1);
+#endif
 #endif
 }

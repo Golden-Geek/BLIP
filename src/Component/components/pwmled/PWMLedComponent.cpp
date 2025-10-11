@@ -156,9 +156,7 @@ void PWMLedComponent::setupPins()
     {
         if (attachedPins[i] != -1)
         {
-#ifdef ARDUINO_NEW_VERSION
             ledcDetach(attachedPins[i]);
-#endif
         }
     }
 
@@ -170,15 +168,8 @@ void PWMLedComponent::setupPins()
         if (pins[i] == -1)
             continue;
 
-#ifdef ARDUINO_NEW_VERSION
         // NDBG("Setting up pin " + String(pins[i])+ " with frequency " + String(pwmFrequency * 1000) + " and resolution " + String(pwmResolution));
         ledcAttach(pins[i], pwmFrequency * 1000, pwmResolution); // pwmChannels[i]);
-#else
-        pwmChannels[i] = RootComponent::instance->getFirstAvailablePWMChannel();
-        ledcSetup(pwmChannels[i], pwmFrequency * 1000, pwmResolution); // 0-1024 at a 5khz resolution
-        ledcAttachPin(pins[i], pwmChannels[i]);                        // pwmChannels[i]);
-        RootComponent::availablePWMChannels[pwmChannels[i]] = false;
-#endif
     }
 }
 
@@ -208,11 +199,7 @@ void PWMLedComponent::updatePins()
         if (pins[i] == -1)
             continue;
 
-#ifdef ARDUINO_NEW_VERSION
         ledcWrite(pins[i], cols[i] * multiplier);
-#else
-        ledcWrite(pwmChannels[i], cols[i] * multiplier);
-#endif
     }
 }
 

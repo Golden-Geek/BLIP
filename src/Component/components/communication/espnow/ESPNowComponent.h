@@ -45,6 +45,7 @@ DeclareIntParam(nodeID, -1);
 DeclareIntParam(channel, 1);
 DeclareBoolParam(autoPairing, true);
 DeclareBoolParam(pairOnAnyData, true);
+DeclareBoolParam(sendFeedback, false);
 
 bool wakeUpReceived = false;
 
@@ -90,11 +91,8 @@ void unregisterStreamReceiver(ESPNowStreamReceiver *receiver);
 
 static void onDataSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status);
 
-#ifdef ARDUINO_NEW_VERSION
 static void onDataReceived(const esp_now_recv_info_t *mac, const uint8_t *incomingData, int len);
-#else
-static void onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len);
-#endif
+void dataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len);
 
 void processMessage(const uint8_t *incomingData, int len);
 
@@ -153,6 +151,7 @@ for(int i=0; i<ESPNOW_MAX_DEVICES; i++)
 CheckAndSetParam(channel);
 CheckAndSetParam(autoPairing);
 CheckAndSetParam(pairOnAnyData);
+CheckAndSetParam(sendFeedback);
 #endif
 HandleSetParamInternalEnd;
 
@@ -179,6 +178,7 @@ for(int i=0; i<ESPNOW_MAX_DEVICES; i++)
 FillSettingsParam(channel);
 FillSettingsParam(autoPairing);
 FillSettingsParam(pairOnAnyData);
+FillSettingsParam(sendFeedback);
 #endif
 FillSettingsInternalEnd;
 
@@ -207,6 +207,7 @@ FillOSCQueryBoolParam(acceptCommands);
 FillOSCQueryIntParam(channel);
 FillOSCQueryBoolParam(autoPairing);
 FillOSCQueryBoolParam(pairOnAnyData);
+FillOSCQueryBoolParam(sendFeedback);
 
 #endif
 

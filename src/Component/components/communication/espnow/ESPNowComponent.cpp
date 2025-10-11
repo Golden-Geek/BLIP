@@ -31,6 +31,7 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddIntParamConfig(channel);
     AddBoolParamConfig(autoPairing);
     AddBoolParamConfig(pairOnAnyData);
+    AddBoolParamConfig(sendFeedback);
 #endif
 
     lastReceiveTime = 0;
@@ -237,22 +238,22 @@ void ESPNowComponent::onDataSent(const esp_now_send_info_t *tx_info, esp_now_sen
     DBG("[ESPNow] Error sending to " + StringHelpers::macToString(tx_info->des_addr) + " : " + String(status));
 }
 
-#ifdef ARDUINO_NEW_VERSION
 void ESPNowComponent::onDataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len)
 {
-    const uint8_t *mac = info->src_addr;
-#else
-void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
+    instance->dataReceived(info, incomingData, len);
+}
+
+void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len)
 {
-#endif
+    const uint8_t *mac = info->src_addr;
     // DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
 
-    instance->lastReceiveTime = millis();
+    lastReceiveTime = millis();
 
 #ifndef ESPNOW_BRIDGE
-    if (instance->pairingMode && instance->pairOnAnyData)
+    if (pairingMode && pairOnAnyData)
     {
-        instance->registerBridgeMac(mac, instance->channel, false);
+        registerBridgeMac(mac, channel, false);
     }
 #endif
 
@@ -260,7 +261,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     {
     case 0: // Message
     {
-        instance->processMessage(incomingData, len);
+        processMessage(incomingData, len);
     }
     break;
 
@@ -268,9 +269,9 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     {
         for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
         {
-            if (ESPNowComponent::instance->streamReceivers[i] != nullptr)
+            if (ESPNowComponent::streamReceivers[i] != nullptr)
             {
-                ESPNowComponent::instance->streamReceivers[i]->onStreamReceived(incomingData + 1, len - 1);
+                ESPNowComponent::streamReceivers[i]->onStreamReceived(incomingData + 1, len - 1);
             }
         }
     }
@@ -280,7 +281,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     {
 #ifndef ESPNOW_BRIDGE
 
-        instance->registerBridgeMac(mac, incomingData[1]);
+        registerBridgeMac(mac, incomingData[1]);
 
 #endif
     }
@@ -290,7 +291,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     {
 #ifdef ESPNOW_BRIDGE
         // DBG("[ESPNow] Pairing response received");
-        instance->registerDevice(mac);
+        registerDevice(mac);
 #endif
     }
     break;
@@ -298,7 +299,7 @@ void ESPNowComponent::onDataReceived(const uint8_t *mac, const uint8_t *incoming
     case 4: // remote wakeup
     {
 #ifndef ESPNOW_BRIDGE
-        instance->wakeUpReceived = true;
+        wakeUpReceived = true;
 #endif
     }
     break;
@@ -406,7 +407,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
 
     bool doSendEvent = true;
 #ifdef ESPNOW_BRIDGE
-    doSendEvent = instance->acceptCommands;
+    doSendEvent = acceptCommands;
 #endif
     if (doSendEvent)
         sendEvent(MessageReceived, data, dataCount);

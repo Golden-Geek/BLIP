@@ -2,10 +2,6 @@
 
 #include "Arduino.h"
 
-#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-#define ARDUINO_NEW_VERSION
-#endif
-
 #include <Wire.h>
 
 // Declarations

@@ -58,18 +58,9 @@ void IOComponent::setupPin()
 {
     if (curPin != -1) // prevPin was a PWM pin
     {
-#ifdef ARDUINO_NEW_VERSION
         // NDBG("Detach Pin " + String(curPin));
         if (ledCAttached)
             ledcDetach(curPin);
-#else
-        if (pwmChannel != -1)
-        {
-            ledcDetachPin(pwmChannel);
-            RootComponent::availablePWMChannels[pwmChannel] = true;
-            pwmChannel = -1;
-        }
-#endif
     }
 
     curPin = pin;
@@ -115,26 +106,9 @@ void IOComponent::setupPin()
         {
             if (m == A_OUTPUT || m == A_OSC)
             {
-#ifdef ARDUINO_NEW_VERSION
                 // NDBG("Attach pin " + String(curPin) + " to PWM");
                 ledcAttach(curPin, 5000, 10);
                 ledCAttached = true;
-#else
-
-                int channel = RootComponent::instance->getFirstAvailablePWMChannel();
-                if (channel >= 0)
-                {
-                    pwmChannel = channel;
-                    ledcSetup(pwmChannel, 5000, 10); // 0-1024 at a 5khz resolution
-                    ledcAttachPin(curPin, pwmChannel);
-                    RootComponent::availablePWMChannels[pwmChannel] = false;
-                    NDBG("Attach pin " + String(pin) + " to " + String(pwmChannel));
-                }
-                else
-                {
-                    NDBG("Max channels reached, not able to create another A_OUTPUT");
-                }
-#endif
             }
         }
     }
@@ -219,11 +193,7 @@ void IOComponent::updatePin()
             float sv = sin(millis() * value) * 0.5f + 0.5f;
             uint32_t v = sv * 1024;
 // NDBG("Set PWM with value " + String(v));
-#ifdef ARDUINO_NEW_VERSION
             ledcWrite(pin, v);
-#else
-            ledcWrite(pwmChannel, v);
-#endif
         }
     }
     break;
