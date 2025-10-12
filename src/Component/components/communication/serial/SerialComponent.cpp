@@ -38,6 +38,8 @@ void HWSerialComponent::clearInternal()
 
 void HWSerialComponent::processMessage(String buffer)
 {
+    SettingsComponent::instance->gotSignal = true;
+   
     if (buffer.substring(0, 2) == "yo")
     {
         Serial.println("wassup " + DeviceID + " \"" + String(DeviceType) + "\" \"" + String(DeviceName) + "\" \"" + String(BLIP_VERSION) + "\"");
@@ -52,6 +54,8 @@ void HWSerialComponent::processMessage(String buffer)
 
 void HWSerialComponent::sendMessage(String source, String command, var *data, int numData)
 {
+    if(!enabled) return;
+    
     String msg = (source == "" ? "" : source + ".") + command;
     for (int i = 0; i < numData; i++)
     {

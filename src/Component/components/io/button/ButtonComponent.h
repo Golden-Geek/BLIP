@@ -31,8 +31,9 @@ class ButtonComponent : public IOComponent
 public:
     ButtonComponent(const String &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
 
-    int debounceCount;
-    long timeAtPress;
+    int debounceCount = 0;
+    long timeAtPress = 0;
+    bool wasPressedAtBoot = false;
 
     DeclareBoolParam(canShutDown, BUTTON_DEFAULT_SHUTDOWN);
     DeclareIntParam(multiPressCount, 0);

@@ -43,6 +43,8 @@ void IOComponent::clearInternal()
 
 void IOComponent::paramValueChangedInternal(void *param)
 {
+    if(!enabled) return;
+    
     if (param == &pin || param == &mode)
         setupPin();
     if (param == &value)

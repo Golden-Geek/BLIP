@@ -8,11 +8,24 @@ public:
 
     long timeAtStartup = 0;
 
+    DeclareBoolParam(showBattery, false);
+
     void setupInternal(JsonObject o) override;
     void updateInternal() override;
     void clearInternal() override;
 
-    void showStartupAnimation();
+    void showBatteryStatus();
     void updateConnectionStatus();
     void updateShutdown();
+
+
+    HandleSetParamInternalStart
+        HandleSetParamInternalMotherClass(LedStripLayer);
+        CheckAndSetParam(showBattery);
+    HandleSetParamInternalEnd;
+
+    FillOSCQueryInternalStart
+        FillOSCQueryInternalMotherClass(LedStripLayer);
+        FillOSCQueryBoolParam(showBattery);
+    FillOSCQueryInternalEnd;
 };

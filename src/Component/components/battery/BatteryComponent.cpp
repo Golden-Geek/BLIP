@@ -1,4 +1,5 @@
-#include "BatteryComponent.h"
+#include "UnityIncludes.h"
+
 ImplementSingleton(BatteryComponent);
 
 void BatteryComponent::setupInternal(JsonObject o)
@@ -89,14 +90,12 @@ void BatteryComponent::updateInternal()
 #ifdef BATTERY_VOLTAGE_CUSTOM_FUNC
             float voltage = BATTERY_VOLTAGE_CUSTOM_FUNC(val);
 #else
-            const float maxVoltage = 4.2f;
-            const float minVoltage = 3.5f;
 
 #ifdef BATTERY_READ_MILLIVOLTS
             float voltage = val; // Convert to volts
 #else
-            float relVal = (val - rawMin) / (rawMax - rawMin);
-            float voltage = minVoltage + relVal * (maxVoltage - minVoltage);
+            batteryValue = (val - rawMin) / (rawMax - rawMin);
+            float voltage = BATTERY_MIN_VOLTAGE + batteryValue * (BATTERY_MAX_VOLTAGE - BATTERY_MIN_VOLTAGE);
 #endif
 #endif
             SetParam(batteryLevel, voltage);
@@ -129,14 +128,13 @@ Color BatteryComponent::getBatteryColor()
     Color mid(255, 255, 0);
     Color low(255, 0, 0);
 
-    float relBattery = (batteryLevel - lowBatteryThreshold) / (4.2f - lowBatteryThreshold);
-    relBattery = constrain(relBattery, 0, 1);
+    batteryValue = constrain(batteryValue, 0, 1);
 
     Color result;
-    if (relBattery < .5f)
-        result = low.lerp(mid, relBattery * 2);
+    if (batteryValue < .5f)
+        result = low.lerp(mid, batteryValue * 2);
     else
-        result = mid.lerp(full, (relBattery - .5f) * 2);
+        result = mid.lerp(full, (batteryValue - .5f) * 2);
 
     return result;
 }

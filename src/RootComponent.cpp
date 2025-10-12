@@ -55,20 +55,20 @@ void RootComponent::setupInternal(JsonObject)
     {
         comm.init();
 
-        DBG("Waiting for wake up " + String(millis() - timeAtStart));
+        NDBG("Waiting for wake up " + String(millis() - timeAtStart));
         while (!comm.espNow.wakeUpReceived)
         {
             comm.update();
 
             if ((millis() - timeAtStart) > 200)
             {
-                DBG("No wake up received");
+                NDBG("No wake up received");
                 standby();
                 return;
             }
         }
 
-        DBG("Wake up received");
+        NDBG("Wake up received");
         ESP.restart();
     }
 #endif
@@ -173,26 +173,29 @@ void RootComponent::shutdown(bool restarting)
 
     if (restarting)
     {
-        timer.in(1000, [](void *) -> bool
-                 { RootComponent::instance->reboot(); return false; });
+        timer.in(SHUTDOWN_ANIM_TIME * 1000, [](void *) -> bool
+                 {
+                     RootComponent::instance->reboot();
+                     return false; });
     }
     else
     {
-        timer.in(1000, [](void *) -> bool
+        timer.in(SHUTDOWN_ANIM_TIME * 1000, [](void *) -> bool
                  {  
-                RootComponent::instance->powerdown(); return false; });
+                    RootComponent::instance->powerdown(); 
+                    return false; });
     }
 }
 
 void RootComponent::restart()
 {
-    DBG("Restarting...");
+    NDBG("Restarting...");
     shutdown(true);
 }
 
 void RootComponent::standby()
 {
-    DBG("Standby !");
+    NDBG("Standby !");
 
     comm.sendMessage(this, "bye", String("standby"));
     server.sendBye(String("standby"));
@@ -360,7 +363,6 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
             else if (bc->multiPressCount == ESPNOW_ENABLED_PRESSCOUNT)
             {
                 comm.espNow.toggleEnabled();
-                DBG("Set espNow enabled " + String(comm.espNow.enabled));
                 settings.saveSettings();
                 restart();
             }
@@ -380,8 +382,8 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
         restart();
     else if (command == "stats")
     {
-        DBG("Heap " + String(ESP.getFreeHeap()) + " free / " + String(ESP.getHeapSize()) + " total");
-        DBG("Free Stack size  " + String((int)uxTaskGetStackHighWaterMark(NULL)) + " free");
+        NDBG("Heap " + String(ESP.getFreeHeap()) + " free / " + String(ESP.getHeapSize()) + " total");
+        NDBG("Free Stack size  " + String((int)uxTaskGetStackHighWaterMark(NULL)) + " free");
         // comm->sendMessage(this, "freeHeap", String(ESP.getFreeHeap()) + " bytes");
     }
     else if (command == "log")

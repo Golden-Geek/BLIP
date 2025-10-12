@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 ImplementSingleton(SettingsComponent);
 
 void SettingsComponent::setupInternal(JsonObject o)
@@ -8,6 +10,36 @@ void SettingsComponent::setupInternal(JsonObject o)
 #ifdef USE_POWER
     AddIntParamConfig(wakeUpButton);
     AddBoolParamConfig(wakeUpState);
+    AddIntParamConfig(shutdownChargeNoSignal); // seconds, 0 = disabled
+#endif
+}
+
+void SettingsComponent::updateInternal()
+{
+#ifdef USE_POWER
+    if (gotSignal)
+        return;
+
+    if (shutdownChargeNoSignal > 0 && !gotSignal)
+    {
+        #ifdef USE_BUTTON
+        if(RootComponent::instance->buttons.count > 0)
+        {
+            if (RootComponent::instance->buttons.items[0]->wasPressedAtBoot) return; // do not shutdown if button was pressed at boot
+        }
+        #endif
+
+        #ifdef USE_BATTERY
+        if (BatteryComponent::instance->chargePin != -1 && !BatteryComponent::instance->charging) return; // only shutdown if charging
+        #endif
+
+        if(millis() > shutdownChargeNoSignal * 1000) {
+            NDBG("No signal received for " + String(shutdownChargeNoSignal) + " seconds while charging, shutting down.");
+            delay(200);
+            RootComponent::instance->shutdown();
+            gotSignal = true; // prevent multiple shutdown calls
+        }
+    }
 #endif
 }
 

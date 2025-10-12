@@ -31,6 +31,14 @@
 #define BATTERY_DEFAULT_LOW_VOLTAGE 3.5f
 #endif
 
+#ifndef BATTERY_MIN_VOLTAGE
+#define BATTERY_MIN_VOLTAGE 3.5f
+#endif
+
+#ifndef BATTERY_MAX_VOLTAGE
+#define BATTERY_MAX_VOLTAGE 4.2f
+#endif
+
 #ifndef BATTERY_READ_MILLIVOLTS_MULTIPLIER
 #define BATTERY_READ_MILLIVOLTS_MULTIPLIER 1
 #endif
@@ -47,7 +55,7 @@ DeclareFloatParam(lowBatteryThreshold, BATTERY_DEFAULT_LOW_VOLTAGE);
 
 DeclareBoolParam(sendFeedback, true);
 
-DeclareFloatParam(batteryLevel, 4.2f);
+DeclareFloatParam(batteryLevel, BATTERY_MAX_VOLTAGE);
 DeclareBoolParam(charging, false);
 
 long lastBatteryCheck = 0;
@@ -55,6 +63,7 @@ long lastBatterySet = 0;
 long timeAtLowBattery = 0;
 float values[BATTERY_AVERAGE_WINDOW];
 int valuesIndex = 0;
+float batteryValue = 1.0f;
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;

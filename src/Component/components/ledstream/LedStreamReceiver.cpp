@@ -99,6 +99,7 @@ void LedStreamReceiverComponent::setupConnection()
 #ifdef USE_ARTNET
 void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
 {
+    SettingsComponent::instance->gotSignal = true;
     instance->dispatchStreamData(universe, data, length);
 }
 #endif
@@ -131,7 +132,7 @@ void LedStreamReceiverComponent::dispatchStreamData(uint16_t universe, const uin
 
 #if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
 void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
-{
+{    
     if (len < 4)
     {
         DBG("Not enough data received");

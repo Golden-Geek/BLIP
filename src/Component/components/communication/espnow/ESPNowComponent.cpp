@@ -128,8 +128,9 @@ void ESPNowComponent::initESPNow()
 
     NDBG("Registered " + String(numConnectedDevices) + " devices");
 
-    espNowInitialized = true;
 #endif
+
+    espNowInitialized = true;
 }
 
 void ESPNowComponent::updateInternal()
@@ -197,7 +198,7 @@ void ESPNowComponent::updateInternal()
 #else
     if (!pairingMode && currentTime - lastCheck > 500)
     {
-        // NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
+        NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
 
         if (RootComponent::instance->remoteWakeUpMode || (autoPairing && currentTime - lastReceiveTime > 2000))
         {
@@ -249,6 +250,8 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
     // DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
 
     lastReceiveTime = millis();
+
+    SettingsComponent::instance->gotSignal = true;
 
 #ifndef ESPNOW_BRIDGE
     if (pairingMode && pairOnAnyData)
@@ -428,6 +431,8 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
 
 void ESPNowComponent::sendMessage(int id, const String &address, const String &command, var *data, int numData)
 {
+    if (!enabled)
+        return;
     // Data format for message
     //  0 - Message
     //  1 - Broadcast Start ID

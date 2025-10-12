@@ -23,7 +23,9 @@ bool WebServerComponent::initInternal()
 
     server.on("/", HTTP_GET, [&](AsyncWebServerRequest *request)
               {
-        if (request->hasArg("HOST_INFO"))
+            SettingsComponent::instance->gotSignal = true;
+
+            if (request->hasArg("HOST_INFO"))
         {
             DynamicJsonDocument doc(1000);
             JsonObject o = doc.to<JsonObject>();
@@ -290,7 +292,6 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
     }
 }
 
-
 void WebServerComponent::parseTextMessage(String msg)
 {
     DBG("Text message: " + msg);
@@ -315,7 +316,6 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
     }
 #endif
 }
-
 
 void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data, int numData)
 {

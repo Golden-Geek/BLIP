@@ -21,12 +21,11 @@ Script::Script(Component *localComponent) : isRunning(false),
 
 bool Script::init()
 {
-    DBG("Script init.");
     env = m3_NewEnvironment();
 
     if (!env)
     {
-        DBG("Script environment error");
+        DBG("!Script environment error");
         return false;
     }
 
@@ -50,7 +49,7 @@ void Script::load(const String &path)
 {
     if (isRunning)
     {
-        DBG("Script is running, stop before load");
+        DBG("!Script is running, stop before load");
         stop();
     }
 
@@ -60,14 +59,14 @@ void Script::load(const String &path)
     File f = FilesComponent::instance->openFile("/scripts/" + path + ".wasm", false); // false is for reading
     if (!f)
     {
-        DBG("Error reading file " + path);
+        DBG("!Error reading file " + path);
         return;
     }
 
     long totalBytes = f.size();
     if (totalBytes > SCRIPT_MAX_SIZE)
     {
-        DBG("Script size is more than max size");
+        DBG("!Script size is more than max size");
         return;
     }
     scriptSize = totalBytes;
@@ -115,7 +114,7 @@ void Script::launchWasmTask()
     runtime = m3_NewRuntime(env, WASM_STACK_SLOTS, NULL);
     if (!runtime)
     {
-        DBG("Script runtime setup error");
+        DBG("!Script runtime setup error");
         return;
     }
 

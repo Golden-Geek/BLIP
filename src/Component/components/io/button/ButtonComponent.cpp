@@ -30,6 +30,11 @@ void ButtonComponent::updateInternal()
 
     if (value)
     {
+        if(millis() < 1000 && !wasPressedAtBoot) {
+            wasPressedAtBoot = true;
+            NDBG("Button was pressed at boot");
+        }
+
         if (!longPress && millis() > timeAtPress + LONGPRESS_TIME)
         {
             SetParam(longPress, true);

@@ -144,7 +144,7 @@ void LedStripComponent::updateInternal()
 
     if (doNotUpdate)
         return;
-        
+
     clearColors();
     numColors = getNumColors();
 
@@ -155,11 +155,16 @@ void LedStripComponent::updateInternal()
     processLayer(&systemLayer);
 #endif
 
+    if (RootComponent::instance->isShuttingDown())
+        NDBG("Shutdown color: " + String(colors[20].r) + ", " + String(colors[20].g) + ", " + String(colors[20].b) + ", " + String(colors[20].a));
+
     showLeds();
 }
 
 void LedStripComponent::clearInternal()
 {
+    NDBG("Clearing Led Strip Component");
+
     clearColors();
     showLeds();
     setStripPower(false);
@@ -248,7 +253,9 @@ void LedStripComponent::onEnabledChanged()
 
 void LedStripComponent::setStripPower(bool value)
 {
-    if(!isInit) return;
+    if (!isInit)
+        return;
+        
     NDBG("Set Strip Power " + String(value));
     if (enPin > 0)
         digitalWrite(enPin, value); // enable LEDs
@@ -303,12 +310,14 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
 
         case LedStripLayer::Alpha:
         {
+
             float a = c.a / 255.0f;
             colors[i].r = colors[i].r + ((int)c.r - colors[i].r) * a;
             colors[i].g = colors[i].g + ((int)c.g - colors[i].g) * a;
             colors[i].b = colors[i].b + ((int)c.b - colors[i].b) * a;
             colors[i].a = max(colors[i].a, c.a);
         }
+        break;
 
         default:
             break;
