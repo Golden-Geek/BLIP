@@ -155,9 +155,6 @@ void LedStripComponent::updateInternal()
     processLayer(&systemLayer);
 #endif
 
-    if (RootComponent::instance->isShuttingDown())
-        NDBG("Shutdown color: " + String(colors[20].r) + ", " + String(colors[20].g) + ", " + String(colors[20].b) + ", " + String(colors[20].a));
-
     showLeds();
 }
 

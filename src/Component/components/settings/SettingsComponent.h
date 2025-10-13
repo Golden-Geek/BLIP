@@ -17,10 +17,8 @@ DeclareStringParam(deviceType, DEVICE_TYPE);
 #ifdef USE_POWER
 DeclareIntParam(wakeUpButton, POWER_WAKEUP_BUTTON);
 DeclareBoolParam(wakeUpState, POWER_WAKEUP_BUTTON_STATE);
-DeclareIntParam(shutdownChargeNoSignal, 0); // seconds, 0 = disabled
 #endif
 
-bool gotSignal = false;
 
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
@@ -29,6 +27,7 @@ bool handleCommandInternal(const String &command, var *data, int numData) overri
 
 void saveSettings();
 void clearSettings();
+
 
 String getDeviceID() const;
 
@@ -42,7 +41,6 @@ HandleSetParamInternalStart
     #ifdef USE_POWER
     CheckAndSetParam(wakeUpButton);
     CheckAndSetParam(wakeUpState);
-    CheckAndSetParam(shutdownChargeNoSignal);
     #endif
 HandleSetParamInternalEnd;
 
@@ -53,7 +51,6 @@ FillSettingsInternalStart
     #ifdef USE_POWER
     FillSettingsParam(wakeUpButton);
     FillSettingsParam(wakeUpState);
-    FillSettingsParam(shutdownChargeNoSignal);
     #endif
 FillSettingsInternalEnd
 
@@ -62,11 +59,10 @@ FillSettingsInternalEnd
     FillOSCQueryTrigger(clearSettings);
     FillOSCQueryIntParam(propID);
     FillOSCQueryStringParam(deviceName);
-    FillOSCQueryStringParam(deviceType);
+    FillOSCQueryStringParamReadOnly(deviceType);
     #ifdef USE_POWER
     FillOSCQueryIntParam(wakeUpButton);
     FillOSCQueryBoolParam(wakeUpState);
-    FillOSCQueryIntParam(shutdownChargeNoSignal);
     #endif
 FillOSCQueryInternalEnd
 

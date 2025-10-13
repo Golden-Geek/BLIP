@@ -38,7 +38,7 @@ void HWSerialComponent::clearInternal()
 
 void HWSerialComponent::processMessage(String buffer)
 {
-    SettingsComponent::instance->gotSignal = true;
+    RootComponent::instance->timeAtLastSignal = millis();
    
     if (buffer.substring(0, 2) == "yo")
     {

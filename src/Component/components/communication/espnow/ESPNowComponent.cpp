@@ -251,7 +251,7 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
 
     lastReceiveTime = millis();
 
-    SettingsComponent::instance->gotSignal = true;
+    RootComponent::instance->timeAtLastSignal = millis();
 
 #ifndef ESPNOW_BRIDGE
     if (pairingMode && pairOnAnyData)

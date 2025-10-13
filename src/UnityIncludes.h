@@ -93,12 +93,17 @@
 #include "Component/components/script/ScriptComponent.h"
 #endif
 
-#ifdef USE_IO
+#if defined USE_IO || defined USE_BUTTON
 #include "Component/components/io/IOComponent.h"
+#endif
+
 #ifdef USE_BUTTON
 #include "Component/components/io/button/ButtonComponent.h"
-#endif // BUTTON
-#endif // IO
+#endif
+
+#ifdef USE_IR
+#include "Component/components/ir/IRComponent.h"
+#endif
 
 #ifdef USE_BATTERY
 #include "Component/components/battery/BatteryComponent.h"

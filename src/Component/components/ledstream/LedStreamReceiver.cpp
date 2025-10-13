@@ -99,7 +99,7 @@ void LedStreamReceiverComponent::setupConnection()
 #ifdef USE_ARTNET
 void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
 {
-    SettingsComponent::instance->gotSignal = true;
+    RootComponent::instance->timeAtLastSignal = millis();
     instance->dispatchStreamData(universe, data, length);
 }
 #endif

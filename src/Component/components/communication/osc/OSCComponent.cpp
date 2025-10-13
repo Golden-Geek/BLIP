@@ -112,8 +112,6 @@ void OSCComponent::receiveOSC()
 
 void OSCComponent::processMessage(OSCMessage &msg)
 {
-    SettingsComponent::instance->gotSignal = true;
-
     if (msg.match("/yo"))
     {
         char hostData[32];

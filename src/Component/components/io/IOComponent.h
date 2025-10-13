@@ -29,7 +29,6 @@ DeclareIntParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
 
 bool ledCAttached;
-int pwmChannel;
 int curPin;
 
 DeclareFloatParam(value, 0);
@@ -45,20 +44,7 @@ virtual void clearInternal() override;
 virtual void setupPin();
 void updatePin();
 
-// void onParameterEventInternal(const ParameterEvent &e) override;
-
 void paramValueChangedInternal(void *param) override;
-
-
-// #ifdef USE_SCRIPT
-// LinkScriptFunctionsStart
-//     LinkScriptFunction(IOComponent, get, f, );
-// LinkScriptFunction(IOComponent, set, , f);
-// LinkScriptFunctionsEnd
-
-// DeclareScriptFunctionReturn0(IOComponent, get, float) { return value; }
-// DeclareScriptFunctionVoid1(IOComponent, set, float) { SetParam(value, arg1); }
-// #endif
 
 HandleSetParamInternalStart
     CheckAndSetParam(pin);

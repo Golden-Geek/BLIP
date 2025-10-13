@@ -17,8 +17,6 @@
 
 ImplementSingleton(RootComponent);
 
-bool RootComponent::availablePWMChannels[16] = {true};
-
 void RootComponent::setupInternal(JsonObject)
 {
     BoardInit;
@@ -109,11 +107,15 @@ void RootComponent::setupInternal(JsonObject)
 #endif
 
 #ifdef USE_IO
-    // memset(availablePWMChannels, true, sizeof(availablePWMChannels));
     AddOwnedComponent(&ios);
+#endif
+
 #ifdef USE_BUTTON
     AddOwnedComponent(&buttons);
 #endif
+
+#ifdef USE_IR
+    AddOwnedComponent(&ir);
 #endif
 
 #ifdef USE_MOTION
@@ -295,9 +297,6 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
     {
         if (e.type == BatteryComponent::CriticalBattery)
         {
-#ifdef USE_LEDSTRIP
-            strips.items[0]->setBrightness(.05f);
-#endif
             NDBG("Critical battery, shutting down");
             shutdown();
         }
@@ -398,14 +397,4 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
     }
 
     return true;
-}
-
-int RootComponent::getFirstAvailablePWMChannel() const
-{
-    for (int i = 0; i < 16; i++)
-    {
-        if (availablePWMChannels[i])
-            return i;
-    }
-    return -1;
 }

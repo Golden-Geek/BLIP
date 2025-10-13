@@ -50,6 +50,8 @@ def merge_bin(source, target, env):
     merged_firmware = build_dir / "merge_firmware.bin"
     
     framework_dir = Path(env.PioPlatform().get_package_dir("framework-arduinoespressif32"))
+    
+    firmware_offset = 0x10000
 
     # Set correct sections based on chip
     if chip == "esp32":
@@ -57,14 +59,14 @@ def merge_bin(source, target, env):
             (0x1000, build_dir / "bootloader.bin"),
             (0x8000, build_dir / "partitions.bin"),
             (0xe000, framework_dir / "tools/partitions/boot_app0.bin"),
-            (0x10000, build_dir / "firmware.bin"),
+            (firmware_offset, build_dir / "firmware.bin"),
         ]
     elif chip == "esp32c6":
         sections = [
             (0x0, build_dir / "bootloader.bin"),
             (0x8000, build_dir / "partitions.bin"),
             (0xe000, framework_dir / "tools/partitions/boot_app0.bin"),
-            (0x10000, build_dir / "firmware.bin"),
+            (firmware_offset, build_dir / "firmware.bin"),
         ]
     else:
         print(f"[Merge] ERROR: Unknown chip type '{chip}'")
@@ -91,6 +93,7 @@ def merge_bin(source, target, env):
         "chip": chip,
         "vids": vids,
         "pids": pids,
+        "firmwareOffset": hex(firmware_offset),
         "espOptions": {
             "baud": env.get("ESP_BAUD", 921600),
             "before": env.get("ESP_BEFORE", "default_reset"),
@@ -110,7 +113,8 @@ def merge_bin(source, target, env):
     # Export
     export_dir = Path("export") / camel_case(device_type)
     export_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(merged_firmware, export_dir / "firmware.bin")
+    shutil.copy2(merged_firmware, export_dir / "firmware_full.bin")
+    shutil.copy2(build_dir / "firmware.bin", export_dir / "firmware.bin")
     shutil.copy2(manifest_path, export_dir / "manifest.json")
     print(f"📦 Exported to: {export_dir}")
 

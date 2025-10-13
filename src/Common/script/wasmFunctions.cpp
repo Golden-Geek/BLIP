@@ -241,7 +241,7 @@ m3ApiRawFunction(m3_resetFX)
 m3ApiRawFunction(m3_setBatterySendEnabled)
 {
     m3ApiGetArg(uint32_t, en);
-    RootComponent::instance->battery.sendFeedback = (bool)en;
+    RootComponent::instance->battery.feedbackInterval = en ? 5 : 0;
     m3ApiSuccess();
 }
 #endif

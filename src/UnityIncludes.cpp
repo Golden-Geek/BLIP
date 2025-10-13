@@ -48,11 +48,16 @@
 #endif
 
 
-#ifdef USE_IO
+#if defined USE_IO || defined USE_BUTTON
 #include "Component/components/io/IOComponent.cpp"
+#endif
+
 #ifdef USE_BUTTON
 #include "Component/components/io/button/ButtonComponent.cpp"
 #endif
+
+#ifdef USE_IR
+#include "Component/components/ir/IRComponent.cpp"
 #endif
 
 #ifdef USE_BATTERY

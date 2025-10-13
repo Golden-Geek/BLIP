@@ -32,7 +32,7 @@
 #endif
 
 #ifndef BATTERY_MIN_VOLTAGE
-#define BATTERY_MIN_VOLTAGE 3.5f
+#define BATTERY_MIN_VOLTAGE 3.3f
 #endif
 
 #ifndef BATTERY_MAX_VOLTAGE
@@ -53,33 +53,42 @@ DeclareIntParam(rawMax, BATTERY_DEFAULT_RAW_MAX);
 #endif
 DeclareFloatParam(lowBatteryThreshold, BATTERY_DEFAULT_LOW_VOLTAGE);
 
-DeclareBoolParam(sendFeedback, true);
+DeclareIntParam(feedbackInterval, 3); // seconds
 
-DeclareFloatParam(batteryLevel, BATTERY_MAX_VOLTAGE);
+DeclareFloatParam(batteryLevel, 1.0f);
+DeclareFloatParam(voltage, BATTERY_MAX_VOLTAGE);
 DeclareBoolParam(charging, false);
+DeclareIntParam(shutdownChargeNoSignal, 0);      // seconds, 0 = disabled
+DeclareIntParam(shutdownChargeSignalTimeout, 0); // seconds, 0 = disabled
 
 long lastBatteryCheck = 0;
 long lastBatterySet = 0;
 long timeAtLowBattery = 0;
 float values[BATTERY_AVERAGE_WINDOW];
 int valuesIndex = 0;
-float batteryValue = 1.0f;
+
+bool readChargePinOnNextCheck = false;
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 
-Color getBatteryColor();
+void readChargePin();
+void readBatteryLevel();
 
-float getVoltage_c6(float val);
+void checkShouldAutoShutdown();
+
+bool isBatteryLow() const { return voltage < lowBatteryThreshold; }
+
+Color getBatteryColor();
 
 DeclareComponentEventTypes(CriticalBattery);
 DeclareComponentEventNames("CriticalBattery");
 
-CheckFeedbackParamInternalStart 
-if (!sendFeedback) return false;
+CheckFeedbackParamInternalStart if (feedbackInterval <= 0) return false;
 CheckAndSendParamFeedback(batteryLevel);
+CheckAndSendParamFeedback(voltage);
 CheckAndSendParamFeedback(charging);
 CheckFeedbackParamInternalEnd;
 
@@ -91,9 +100,10 @@ CheckAndSetParam(rawMin);
 CheckAndSetParam(rawMax);
 #endif
 CheckAndSetParam(lowBatteryThreshold);
-CheckAndSetParam(sendFeedback);
-CheckAndSetParam(batteryLevel);
+CheckAndSetParam(feedbackInterval);
 CheckAndSetParam(charging);
+CheckAndSetParam(shutdownChargeNoSignal);
+CheckAndSetParam(shutdownChargeSignalTimeout);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
@@ -104,9 +114,10 @@ FillSettingsParam(rawMin);
 FillSettingsParam(rawMax);
 #endif
 FillSettingsParam(lowBatteryThreshold);
-FillSettingsParam(sendFeedback);
-FillSettingsParam(batteryLevel);
+FillSettingsParam(feedbackInterval);
 FillSettingsParam(charging);
+FillSettingsParam(shutdownChargeNoSignal);
+FillSettingsParam(shutdownChargeSignalTimeout);
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
@@ -116,10 +127,13 @@ FillOSCQueryIntParam(chargePin);
 FillOSCQueryIntParam(rawMin);
 FillOSCQueryIntParam(rawMax);
 #endif
-FillOSCQueryRangeParam(lowBatteryThreshold, 3.3, 4.2)
-    FillOSCQueryBoolParam(sendFeedback);
-FillOSCQueryRangeParamReadOnly(batteryLevel, lowBatteryThreshold, 4.2f);
+FillOSCQueryRangeParam(lowBatteryThreshold, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE)
+    FillOSCQueryIntParam(feedbackInterval);
+FillOSCQueryRangeParamReadOnly(batteryLevel, 0, 1);
+FillOSCQueryRangeParamReadOnly(voltage, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE);
 FillOSCQueryBoolParamReadOnly(charging);
+FillOSCQueryIntParam(shutdownChargeNoSignal);
+FillOSCQueryIntParam(shutdownChargeSignalTimeout);
 FillOSCQueryInternalEnd
 
     EndDeclareComponent

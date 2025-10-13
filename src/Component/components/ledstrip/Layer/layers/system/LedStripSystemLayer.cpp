@@ -14,8 +14,8 @@ void LedStripSystemLayer::updateInternal()
 
     clearColors();
     updateConnectionStatus();
-    updateShutdown();
     showBatteryStatus();
+    updateShutdown();
 }
 
 void LedStripSystemLayer::clearInternal()
@@ -28,8 +28,9 @@ void LedStripSystemLayer::showBatteryStatus()
 #ifdef USE_BATTERY
     if (showBattery)
     {
-        float val = BatteryComponent::instance->batteryValue;
-        fillRange(BatteryComponent::instance->getBatteryColor(), 0, val, true);
+        fillAll(Color(0, 0, 0)); // clear strip
+        float val = BatteryComponent::instance->batteryLevel;
+        fillRange(BatteryComponent::instance->getBatteryColor(), 0, val, false);
         return;
     }
 #endif
@@ -81,14 +82,13 @@ void LedStripSystemLayer::updateConnectionStatus()
     {
 #if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
 
-
         if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
         {
-            NDBG("Show espnow pairing mode "+ String(ESPNowComponent::instance->pairingMode) + " bridge init " + String(ESPNowComponent::instance->bridgeInit));
+            NDBG("Show espnow pairing mode " + String(ESPNowComponent::instance->pairingMode) + " bridge init " + String(ESPNowComponent::instance->bridgeInit));
             float t = millis() / 1000.0f;
             float val = (cos(t * 2 * PI / 5 + PI) * .5f + .5f) * .3f + .3f;
 
-            fillAll(Color(0,0,0));
+            fillAll(Color(0, 0, 0));
             if (ESPNowComponent::instance->pairingMode)
             {
                 if (ESPNowComponent::instance->bridgeInit)
@@ -186,8 +186,17 @@ void LedStripSystemLayer::updateShutdown()
         return;
 
     float t = (millis() - RootComponent::instance->timeAtShutdown) / 1000.0f;
-
     float relT = t / SHUTDOWN_ANIM_TIME;
+
+#ifdef USE_BATTERY
+    if (BatteryComponent::instance->isBatteryLow())
+    {
+        // reverse saw red animation
+        float val = max(1 - fmodf(relT * 3, 1) * 1.5f, 0.f);
+        fillAll(Color(val * 255, 0, 0));
+        return; // battery animation has priority
+    }
+#endif
 
     float alpha = min(relT * 3, 1.f);
     Color black = Color(0, 0, 0).withMultipliedAlpha(alpha);
@@ -204,8 +213,8 @@ void LedStripSystemLayer::updateShutdown()
     else
     {
         float rel = constrain((1 - t) * 2, 0, 1);
-        float start = strip->invertStrip? 1 - rel : 0;
-        float end = strip->invertStrip? 1 : rel;
+        float start = strip->invertStrip ? 1 - rel : 0;
+        float end = strip->invertStrip ? 1 : rel;
         fillRange(c.withMultipliedAlpha(alpha), start, end, false);
     }
 }

@@ -23,10 +23,10 @@ bool WebServerComponent::initInternal()
 
     server.on("/", HTTP_GET, [&](AsyncWebServerRequest *request)
               {
-            SettingsComponent::instance->gotSignal = true;
+        RootComponent::instance->timeAtLastSignal = millis();
 
-            if (request->hasArg("HOST_INFO"))
-        {
+        if (request->hasArg("HOST_INFO"))
+            {
             DynamicJsonDocument doc(1000);
             JsonObject o = doc.to<JsonObject>();
             JsonObject eo = o.createNestedObject("EXTENSIONS");

@@ -5,7 +5,6 @@ ImplementManagerSingleton(IO);
 void IOComponent::setupInternal(JsonObject o)
 {
     curPin = -1;
-    pwmChannel = -1;
     ledCAttached = false;
 
     if (index == 0 && pin == -1)
@@ -43,8 +42,9 @@ void IOComponent::clearInternal()
 
 void IOComponent::paramValueChangedInternal(void *param)
 {
-    if(!enabled) return;
-    
+    if (!enabled)
+        return;
+
     if (param == &pin || param == &mode)
         setupPin();
     if (param == &value)
@@ -109,8 +109,11 @@ void IOComponent::setupPin()
             if (m == A_OUTPUT || m == A_OSC)
             {
                 // NDBG("Attach pin " + String(curPin) + " to PWM");
-                ledcAttach(curPin, 5000, 10);
-                ledCAttached = true;
+                bool result = ledcAttach(curPin, 5000, 10);
+                if (!result)
+                    NDBG("Failed to attach pin " + String(curPin) + " to PWM");
+
+                ledCAttached = result;
             }
         }
     }
@@ -194,7 +197,7 @@ void IOComponent::updatePin()
         {
             float sv = sin(millis() * value) * 0.5f + 0.5f;
             uint32_t v = sv * 1024;
-// NDBG("Set PWM with value " + String(v));
+            // NDBG("Set PWM with value " + String(v));
             ledcWrite(pin, v);
         }
     }

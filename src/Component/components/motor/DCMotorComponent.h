@@ -14,7 +14,8 @@
 
 DeclareComponent(DCMotor, "DCMotor", )
 
-    int pwmChannel;
+    int curPin = -1;
+    bool ledCAttached = false;
 
 DeclareIntParam(enPin, DC_MOTOR_DEFAULT_EN_PIN);
 DeclareIntParam(dir1Pin, DC_MOTOR_DEFAULT_DIR1_PIN);
@@ -25,6 +26,8 @@ void setupInternal(JsonObject o) override;
 bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
+
+void setupPins();
 void paramValueChangedInternal(void *param) override;
 
 HandleSetParamInternalStart

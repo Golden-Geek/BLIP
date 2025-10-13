@@ -56,9 +56,14 @@ ScriptComponent script;
 
 #ifdef USE_IO
 IOManagerComponent ios;
+#endif
+
 #ifdef USE_BUTTON
 ButtonManagerComponent buttons;
 #endif
+
+#ifdef USE_IR
+IRComponent ir;
 #endif
 
 #ifdef USE_BEHAVIOUR
@@ -89,14 +94,11 @@ DCMotorComponent motor;
 DistanceSensorManagerComponent distances;
 #endif
 
-static bool availablePWMChannels[16];
-int getFirstAvailablePWMChannel() const;
-
 // Behaviour
 Timer<5> timer;
-long timeAtStart;
-long timeAtShutdown;
-
+unsigned long timeAtStart;
+unsigned long timeAtShutdown;
+unsigned long timeAtLastSignal = 0;
 
 DeclareBoolParam(testMode, false);
 bool demoMode = false;
