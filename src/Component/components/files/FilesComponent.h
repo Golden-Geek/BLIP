@@ -25,7 +25,7 @@
 #define FILES_DEFAULT_EN -1
 #endif
 
-#if defined(FILES_TYPE_SD) || defined(FILES_TYPE_MMC)
+#if defined(FILES_TYPE_SD) || defined(FILES_TYPE_FLASH)
 #define FILES_USE_SPI
 #endif
 
