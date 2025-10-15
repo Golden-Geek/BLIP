@@ -85,6 +85,7 @@ def upload_exports(auto_upload=False):
 
     for folder in folders:
         firmware = folder / "firmware.bin"
+        firmware_full = folder / "firmware_full.bin"
         manifest = folder / "manifest.json"
         if not firmware.exists() or not manifest.exists():
             print(f"⚠️ Skipping {folder.name}: Missing firmware or manifest.")
@@ -93,6 +94,7 @@ def upload_exports(auto_upload=False):
         print(f"📤 Uploading {folder.name} to {url}...")
         files = {
             "firmware": open(firmware, "rb"),
+            "firmware_full": open(firmware_full, "rb"),
             "manifest": open(manifest, "rb")
         }
         data = {"device_type": folder.name}
