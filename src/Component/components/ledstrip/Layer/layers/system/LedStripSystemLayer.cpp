@@ -84,9 +84,9 @@ void LedStripSystemLayer::updateConnectionStatus()
 
         if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
         {
-            NDBG("Show espnow pairing mode " + String(ESPNowComponent::instance->pairingMode) + " bridge init " + String(ESPNowComponent::instance->bridgeInit));
+            // NDBG("Show espnow pairing mode " + String(ESPNowComponent::instance->pairingMode) + " bridge init " + String(ESPNowComponent::instance->bridgeInit));
             float t = millis() / 1000.0f;
-            float val = (cos(t * 2 * PI / 5 + PI) * .5f + .5f) * .3f + .3f;
+            float val = (cos(t * 2 * PI / 5 + PI) * .5f + .5f) * .5f + .3f;
 
             fillAll(Color(0, 0, 0));
             if (ESPNowComponent::instance->pairingMode)

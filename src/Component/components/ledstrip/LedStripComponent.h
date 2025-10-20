@@ -41,7 +41,7 @@ public:
                                                                                           ,
                                                                                           fx(this)
 #endif
-                                                                                          
+
     {
     }
 
@@ -109,12 +109,13 @@ public:
     Adafruit_DotStar *dotStarStrip;
 #endif
 
-        bool doNotUpdate = false;
+    bool currentStripPower = false;
+    bool doNotUpdate = false;
 
     void setupInternal(JsonObject o) override;
     bool initInternal() override;
     void updateInternal() override;
-    
+
     void clearInternal() override;
     void shutdown();
 

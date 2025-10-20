@@ -1,8 +1,8 @@
 #pragma once
 
 #ifdef USE_ARTNET
-#define LEDSTREAM_MAX_LEDS 1000
-#define LEDSTREAM_MAX_PACKET_SIZE LEDSTREAM_MAX_LEDS * 4 + 1
+#define LEDSTREAM_MAX_LEDS_PER_PACKET 170 // 170 leds if RGB, goes to 510 channels (not using the last 2 bytes of the 512 DMX packet)
+#define LEDSTREAM_MAX_PACKET_SIZE LEDSTREAM_MAX_LEDS_PER_PACKET * 4 + 1
 #define LEDSTREAM_ARTNET_PORT 5678
 #endif
 
@@ -27,7 +27,7 @@ public:
     void updateInternal() override;
     void clearInternal() override;
 
-    void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len) override;
+    void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 
     HandleSetParamInternalStart
         HandleSetParamInternalMotherClass(LedStripLayer)

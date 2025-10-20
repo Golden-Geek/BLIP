@@ -160,30 +160,17 @@ void ESPNowComponent::updateInternal()
     else if (streamTestMode)
     {
         int streamMS = 1000 / max(1, streamTestRate);
-        const int maxColorsPerPacket = 80; // 250 bytes, 3 bytes per color + some margin
         if (currentTime - lastSendTime >= streamMS)
         {
             lastSendTime = currentTime;
 
             for (int i = 0; i < testLedCount; i++)
             {
-                testStreamColor[i] = Color::HSV(millis() / 2000.f + i * 1.f / testLedCount, 1, 1);
-
-                if ((i + 1) % maxColorsPerPacket == 0)
-                {
-                    int universe = floor(i * 1.f / maxColorsPerPacket);
-                    // NDBG("Sending " + String(maxColorsPerPacket) + " leds to universe " + String(universe));
-                    sendStream(-1, universe, testStreamColor + (i - maxColorsPerPacket), maxColorsPerPacket);
-                }
+                Color c = Color::HSV(millis() / 2000.f + i * 1.f / testLedCount, 1, 1);
+                colorBuffer[i] = Color3(c.r, c.g, c.b);
             }
 
-            int remaining = testLedCount % maxColorsPerPacket;
-            if (remaining > 0)
-            {
-                int universe = floor(testLedCount * 1.f / maxColorsPerPacket);
-                // NDBG("Sending remaining " + String(remaining) + " leds to universe " + String(universe));
-                sendStream(-1, streamUniverse, testStreamColor + (testLedCount - remaining), remaining);
-            }
+            sendStream(-1, 0, colorBuffer, testLedCount);
         }
     }
     else
@@ -198,7 +185,7 @@ void ESPNowComponent::updateInternal()
 #else
     if (!pairingMode && currentTime - lastCheck > 500)
     {
-        NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
+        // NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
 
         if (RootComponent::instance->remoteWakeUpMode || (autoPairing && currentTime - lastReceiveTime > 2000))
         {
@@ -320,7 +307,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
     uint8_t startID = incomingData[1];
     uint8_t endID = incomingData[2];
 
-    NDBG("Processing message for IDs " + String(startID) + " to " + String(endID));
+    // NDBG("Processing message for IDs " + String(startID) + " to " + String(endID));
 
     if (startID == 255 || endID == 255)
     {
@@ -374,7 +361,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
     data[0] = address;
     data[1] = command;
 
-    NDBG("Message received with  " + address + ", " + command + " : " + String(len) + " bytes");
+    // NDBG("Message received with  " + address + ", " + command + " : " + String(len) + " bytes");
 
     int dataIndex = 5 + addressLength + commandLength;
 
@@ -462,7 +449,7 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
         endID = id;
     }
 
-    NDBG("Sending message to IDs " + String(startID) + " to " + String(endID) + " : " + address + " : " + command);
+    // NDBG("Sending message to IDs " + String(startID) + " to " + String(endID) + " : " + address + " : " + command);
 
     sendPacketData[0] = 0; // Message
     sendPacketData[1] = startID;
@@ -542,38 +529,57 @@ void ESPNowComponent::routeMessage(var *data, int numData)
         sendMessage(id, targetAddress, data[1].stringValue(), &data[2], numData - 2);
 }
 
-void ESPNowComponent::sendStream(int id, int universe, Color *colors, int numColors)
+void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numColors)
 {
     // Data format for stream
     //  0 - Stream (1)
-    //  1-4 - Universe
+    //  1-2 - Universe
+    //  3-4 - Start Channel
     //  for each color
     //  R
     //  G
     //  B
 
-    uint8_t totalLen = 5 + numColors * 3;
-    if (totalLen > 250)
+    const int maxColorsPerPacket = 80; // 250 bytes max packet size. 80*3 + 7 = 247 bytes.
+    const int colorsPerUniverse = 170;
+    const int headerSize = 5;
+
+    int colorsSent = 0;
+    // DBG("Streaming now, numColors : " + String(numColors) + ", universe : " + String(universe));
+
+    while (colorsSent < numColors)
     {
-        DBG("Stream data too long, max ~80 colors allowed per packet.");
-        return;
+        int currentUniverse = universe + floor((float)colorsSent / colorsPerUniverse);
+        int startColorIndex = colorsSent % colorsPerUniverse;
+        int startDmxChannel = 1 + startColorIndex * 3;
+
+        // DBG("Preparing to send stream packet, colorsSent : " + String(colorsSent) + ", currentUniverse : " + String(currentUniverse) + ", startColorIndex : " + String(startColorIndex) + ", startDmxChannel : " + String(startDmxChannel));
+
+        int remainingInUniverse = colorsPerUniverse - startColorIndex;
+        int remainingToSend = numColors - colorsSent;
+
+        int colorsInThisPacket = min({maxColorsPerPacket, remainingInUniverse, remainingToSend});
+
+        int dataLen = headerSize + colorsInThisPacket * 3;
+        if (dataLen > 250)
+        {
+            DBG("Stream packet too large");
+            return;
+        }
+
+        sendPacketData[0] = 1; // Stream
+        sendPacketData[1] = (currentUniverse >> 8) & 0xFF;
+        sendPacketData[2] = currentUniverse & 0xFF;
+        sendPacketData[3] = (startDmxChannel >> 8) & 0xFF;
+        sendPacketData[4] = startDmxChannel & 0xFF;
+
+        // DBG("Sending stream to ID " + String(id) + ", universe " + String(currentUniverse) + ", start channel " + String(startDmxChannel) + ", start color index : " + String(startColorIndex) + ", colors " + String(colorsInThisPacket));
+        memcpy(sendPacketData + headerSize, colors + colorsSent, colorsInThisPacket * 3);
+
+        sendPacket(id, sendPacketData, dataLen);
+
+        colorsSent += colorsInThisPacket;
     }
-
-    sendPacketData[0] = 1; // Stream
-    sendPacketData[1] = (universe >> 24) & 0xFF;
-    sendPacketData[2] = (universe >> 16) & 0xFF;
-    sendPacketData[3] = (universe >> 8) & 0xFF;
-    sendPacketData[4] = universe & 0xFF;
-
-    for (int i = 0; i < numColors; i++)
-    {
-        sendPacketData[5 + i * 3] = colors[i].r;
-        sendPacketData[5 + i * 3 + 1] = colors[i].g;
-        sendPacketData[5 + i * 3 + 2] = colors[i].b;
-    }
-
-    // wifi_set_channel(channel);
-    sendPacket(id, sendPacketData, totalLen);
 }
 #endif
 
@@ -642,24 +648,14 @@ void ESPNowComponent::unregisterStreamReceiver(ESPNowStreamReceiver *receiver)
     }
 }
 
+#ifdef ESPNOW_BRIDGE
 #ifdef USE_STREAMING
-void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len)
+void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
-    const int cappedLen = min((int)len, 245); // max 245 bytes
-    int totalLen = 5 + cappedLen;
-
-    sendPacketData[0] = 1; // Stream
-    sendPacketData[1] = (universe >> 24) & 0xFF;
-    sendPacketData[2] = (universe >> 16) & 0xFF;
-    sendPacketData[3] = (universe >> 8) & 0xFF;
-    sendPacketData[4] = universe & 0xFF;
-
-    memcpy(sendPacketData + 5, data, cappedLen);
-    sendPacket(-1, sendPacketData, totalLen);
+    sendStream(-1, universe, (Color3 *)data, len / 3);
 }
 #endif
 
-#ifdef ESPNOW_BRIDGE
 void ESPNowComponent::setupBroadcast()
 {
     if (!isInit)

@@ -178,7 +178,6 @@ void LedStripComponent::clearInternal()
 
 void LedStripComponent::shutdown()
 {
-    DBG("Set strip on shutdown ");
     setStripPower(true); // force turn on leds for shutdown section
 }
 
@@ -252,17 +251,26 @@ void LedStripComponent::setStripPower(bool value)
 {
     if (!isInit)
         return;
-        
-    NDBG("Set Strip Power " + String(value));
-    if (enPin > 0)
-        digitalWrite(enPin, value); // enable LEDs
 
+    if (value == currentStripPower)
+        return;
+
+    currentStripPower = value;
+
+    if (enPin > 0)
+    {
+        NDBG("Set Strip Power " + String(value));
+        digitalWrite(enPin, value); // enable LEDs
+    }
+    else
+    {
 #if defined(LED_USE_FASTLED)
 #else
 #ifndef LED_EN_NO_OPEN_DRAIN
-    pinMode(dataPin, value ? OUTPUT : OPEN_DRAIN);
+        pinMode(dataPin, value ? OUTPUT : OPEN_DRAIN);
 #endif
 #endif
+    }
 }
 
 // Layer functions

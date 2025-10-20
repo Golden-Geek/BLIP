@@ -4,6 +4,25 @@ typedef uint16_t ColorType;
 typedef uint8_t ColorType;
 #endif
 
+struct Color3
+{
+    union
+    {
+        struct
+        {
+            ColorType r;
+            ColorType g;
+            ColorType b;
+        };
+        ColorType raw[3];
+    };
+
+    Color3(ColorType r = 0, ColorType g = 0, ColorType b = 0)
+        : r(r), g(g), b(b)
+    {
+    }
+};
+
 struct Color
 {
     union

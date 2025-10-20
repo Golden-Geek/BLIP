@@ -15,7 +15,13 @@
 #define ESPNOW_DEFAULT_ENABLED false
 #endif
 
-DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerDerive, ESPNOW_DEFAULT_ENABLED)
+#ifdef ESPNOW_BRIDGE
+#define LedStreamListenerActualDerive LedStreamListenerDerive
+#else
+#define LedStreamListenerActualDerive
+#endif
+
+DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerActualDerive, ESPNOW_DEFAULT_ENABLED)
     DeclareBoolParam(pairingMode, false);
 DeclareBoolParam(longRange, false);
 
@@ -58,9 +64,9 @@ DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT);
 
 #ifdef ESPNOW_BRIDGE
 const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-Color testStreamColor[3000]; // MAX TEST_LED
 #endif
 
+Color3 colorBuffer[512]; // For streaming and test patterns
 
 bool espNowInitialized = false;
 long lastReceiveTime;
@@ -81,7 +87,7 @@ void sendMessage(int id, const String &address, const String &command, var *data
 
 #ifdef ESPNOW_BRIDGE
 void routeMessage(var *data, int numData);
-void sendStream(int id, int universe, Color *colors, int numColors);
+void sendStream(int id, int universe, Color3 *colors, int numColors);
 #endif
 
 void sendPacket(int id, const uint8_t *data, int len);
@@ -96,11 +102,13 @@ void dataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 
 void processMessage(const uint8_t *incomingData, int len);
 
+#ifdef ESPNOW_BRIDGE
+
 #ifdef USE_STREAMING
-void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len) override;
+void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 #endif
 
-#ifdef ESPNOW_BRIDGE
+
 void setupBroadcast();
 void sendPairingRequest();
 void sendPing();

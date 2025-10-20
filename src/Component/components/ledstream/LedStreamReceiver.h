@@ -28,14 +28,15 @@ void setupConnection();
 static void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data);
 #endif
 
-std::vector<LedStreamListener *> streamListeners;
-void registerStreamListener(LedStreamListener *listener);
-void unregisterStreamListener(LedStreamListener *listener);
-void dispatchStreamData(uint16_t universe, const uint8_t *data, uint16_t len);
-
 #if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
 void onStreamReceived(const uint8_t *data, int len) override;
 #endif
+
+std::vector<LedStreamListener *> streamListeners;
+void registerStreamListener(LedStreamListener *listener);
+void unregisterStreamListener(LedStreamListener *listener);
+void dispatchStreamData(uint16_t universe, const uint8_t *data, uint16_t startChannel , uint16_t len);
+
 
 
 

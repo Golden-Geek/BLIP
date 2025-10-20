@@ -100,7 +100,32 @@ void LedStreamReceiverComponent::setupConnection()
 void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
 {
     RootComponent::instance->timeAtLastSignal = millis();
-    instance->dispatchStreamData(universe, data, length);
+    instance->dispatchStreamData(universe, data, 1, length);
+}
+#endif
+
+
+#if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
+void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
+{    
+    if (len < 4)
+    {
+        DBG("Not enough data received");
+        return;
+    }
+
+    uint16_t universe = (data[0] << 8) | data[1];
+    uint16_t startChannel = (data[2] << 8) | data[3];
+
+    // DBG("Received stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len - 4) + " bytes");
+    
+    if (len <= 4)
+    {
+        DBG("Error parsing stream data, not enough data");
+        return;
+    }
+
+    dispatchStreamData(universe, data + 4, startChannel, len - 4);
 }
 #endif
 
@@ -121,34 +146,11 @@ void LedStreamReceiverComponent::unregisterStreamListener(LedStreamListener *lis
     }
 }
 
-void LedStreamReceiverComponent::dispatchStreamData(uint16_t universe, const uint8_t *data, uint16_t len)
+void LedStreamReceiverComponent::dispatchStreamData(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
-    // DBG("Dispatching stream data for universe " + String(universe) + " with " + String(len) + " bytes");
+    // DBG("Dispatching stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len) + " bytes to " + String(streamListeners.size()) + " listeners");
     for (auto &listener : streamListeners)
     {
-        listener->onLedStreamReceived(universe, data, len);
+        listener->onLedStreamReceived(universe, data, startChannel, len);
     }
 }
-
-#if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
-void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
-{    
-    if (len < 4)
-    {
-        DBG("Not enough data received");
-        return;
-    }
-
-    int universe = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
-
-    // NDBG("Stream data received on universe " + String(universe) + " with " + String(len) + " bytes");
-
-    if (len <= 4)
-    {
-        DBG("Error parsing stream data, not enough data");
-        return;
-    }
-
-    dispatchStreamData(universe, data + 4, len - 4);
-}
-#endif

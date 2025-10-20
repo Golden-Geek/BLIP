@@ -87,7 +87,7 @@
 #endif
 
 #ifndef LED_BRIGHTNESS_FACTOR
-#define LED_BRIGHTNESS_FACTOR 1.0f
+#define LED_BRIGHTNESS_FACTOR .5f
 #endif
 
 #ifndef LED_LEDS_PER_PIXEL

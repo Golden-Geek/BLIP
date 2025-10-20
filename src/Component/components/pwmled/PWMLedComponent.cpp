@@ -249,7 +249,7 @@ void PWMLedComponent::RGBToRGBW(float r, float g, float b, float &rOut, float &g
     bOut = b - (wOut * wFactorB);
 }
 
-void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t len)
+void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
     if (!isInit || RootComponent::instance->isShuttingDown() || !RootComponent::instance->isInit)
         return;

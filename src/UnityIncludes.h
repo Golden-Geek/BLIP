@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "Arduino.h"
 
 #include <Wire.h>
@@ -7,6 +8,8 @@
 // Declarations
 #define ARDUINOJSON_USE_LONG_LONG 0
 #define ARDUINOJSON_USE_DOUBLE 0
+
+#define SHUTDOWN_ANIM_TIME 1
 
 #include <ArduinoJson.h>
 #include <FS.h>

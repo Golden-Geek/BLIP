@@ -25,7 +25,7 @@ bool Script::init()
 
     if (!env)
     {
-        DBG("!Script environment error");
+        DBG("[script] !Script environment error");
         return false;
     }
 
@@ -49,46 +49,46 @@ void Script::load(const String &path)
 {
     if (isRunning)
     {
-        DBG("!Script is running, stop before load");
+        DBG("[script] Script is running, stop before load");
         stop();
     }
 
-    DBG("Load script " + path + "...");
+    DBG("[script] Load script " + path + "...");
 
 #ifdef USE_FILES
     File f = FilesComponent::instance->openFile("/scripts/" + path + ".wasm", false); // false is for reading
     if (!f)
     {
-        DBG("!Error reading file " + path);
+        DBG("[script] !Error reading file " + path);
         return;
     }
 
     long totalBytes = f.size();
     if (totalBytes > SCRIPT_MAX_SIZE)
     {
-        DBG("!Script size is more than max size");
+        DBG("[script] !Script size is more than max size");
         return;
     }
     scriptSize = totalBytes;
 
     f.read(scriptData, scriptSize);
 
-    DBG("Script read " + String(scriptSize) + " bytes");
+    DBG("[script] Script read " + String(scriptSize) + " bytes");
     launchWasm();
 #else
-    DBG("Script loading not supported, USE_FILES not defined");
+    DBG("[script] Script loading not supported, USE_FILES not defined");
 #endif
 }
 
 void Script::launchWasm()
 {
-    DBG("Script Launching wasm...");
+    DBG("[script] Script Launching wasm...");
     if (isRunning)
         stop();
 
 #if WASM_ASYNC
     xTaskCreate(&Script::launchWasmTaskStatic, "wasm3", SCRIPT_NATIVE_STACK_SIZE, this, 5, NULL);
-    DBG("Wasm task launched");
+    DBG("[script] Wasm task launched");
 #else
     launchWasmTask();
 #endif
@@ -107,14 +107,14 @@ void Script::launchWasmTask()
 
     if (runtime != NULL)
     {
-        DBG("New run free Runtime");
+        DBG("[script] New run free Runtime");
         m3_FreeRuntime(runtime);
     }
 
     runtime = m3_NewRuntime(env, WASM_STACK_SLOTS, NULL);
     if (!runtime)
     {
-        DBG("!Script runtime setup error");
+        DBG("[script] !Script runtime setup error");
         return;
     }
 
@@ -135,7 +135,7 @@ void Script::launchWasmTask()
     if (result)
         FATAL("LinkArduino", result);
 
-    DBG("Finding functions");
+    DBG("[script] Finding functions");
     String foundFunc;
     result = m3_FindFunction(&initFunc, runtime, "init");
     if (initFunc != NULL)
@@ -152,7 +152,7 @@ void Script::launchWasmTask()
     if (setScriptParamFunc != NULL)
         foundFunc += " / setParam";
 
-    DBG("Found functions : " + foundFunc);
+    DBG("[script] Found functions : " + foundFunc);
 
     isRunning = true;
 
@@ -160,7 +160,7 @@ void Script::launchWasmTask()
 
     if (initFunc != NULL)
     {
-        DBG("Calling init");
+        DBG("[script] Calling init");
         result = m3_CallV(initFunc);
     }
 
@@ -220,9 +220,12 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "setIMUEnabled", "v(i)", &m3_setIMUEnabled);
     m3_LinkRawFunction(module, arduino, "calibrateIMU", "v()", &m3_calibrateIMU);
     m3_LinkRawFunction(module, arduino, "getThrowState", "i()", &m3_getThrowState);
-    m3_LinkRawFunction(module, arduino, "getButtonState", "i(i)", &m3_getButtonState);
     m3_LinkRawFunction(module, arduino, "getActivity", "f()", &m3_getActivity);
     m3_LinkRawFunction(module, arduino, "getSpin", "f()", &m3_getSpin);
+#endif
+
+#ifdef USE_BUTTON
+    m3_LinkRawFunction(module, arduino, "getButtonState", "i(i)", &m3_getButtonState);
 #endif
 
 #ifdef USE_MIC
@@ -253,7 +256,7 @@ void Script::stop()
 {
     if (isRunning)
     {
-        DBG("Stopping script");
+        DBG("[script] Stopping script");
 
         if (stopFunc != NULL)
             m3_CallV(stopFunc);
@@ -264,7 +267,7 @@ void Script::stop()
     }
     else
     {
-        DBG("Not stopping script, because non was running");
+        DBG("[script] Not stopping script, because non was running");
     }
 }
 

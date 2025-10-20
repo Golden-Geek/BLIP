@@ -1,6 +1,5 @@
 #pragma once
 
-#define SHUTDOWN_ANIM_TIME 1
 
 
 DeclareComponentSingleton(Root, "root", )

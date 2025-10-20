@@ -2,7 +2,7 @@
 class LedStreamListener
 {
 public:
-  virtual void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t len) = 0;
+  virtual void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) = 0;
 };
 
 #define LedStreamListenerDerive , public LedStreamListener
