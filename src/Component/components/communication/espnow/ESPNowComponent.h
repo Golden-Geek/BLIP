@@ -66,7 +66,7 @@ DeclareIntParam(pairingMultiPressCount, ESPNOW_PAIRING_PRESSCOUNT);
 const uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #endif
 
-Color3 colorBuffer[512]; // For streaming and test patterns
+Color3 colorBuffer[1000]; // For streaming and test patterns
 
 bool espNowInitialized = false;
 long lastReceiveTime;
