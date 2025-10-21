@@ -32,6 +32,7 @@ DeclareIntParam(echoPin, DISTANCE_DEFAULT_ECHO_PIN);
 DeclareIntParam(updateRate, 20); // in Hz
 DeclareIntParam(distanceMax, 100);
 DeclareFloatParam(value, 0);
+DeclareBoolParam(sendFeedback, false);
 
 #ifdef DISTANCE_SENSOR_HCSR04
 // Variables for the state machine
@@ -76,10 +77,13 @@ CheckAndSetParam(echoPin);
 #endif
 CheckAndSetParam(updateRate);
 CheckAndSetParam(distanceMax);
+CheckAndSetParam(sendFeedback);
 HandleSetParamInternalEnd;
 
-CheckFeedbackParamInternalStart
-    CheckAndSendParamFeedback(value);
+CheckFeedbackParamInternalStart;
+if (!sendFeedback)
+    return false;
+CheckAndSendParamFeedback(value);
 CheckFeedbackParamInternalEnd;
 
 FillSettingsInternalStart
@@ -89,6 +93,7 @@ FillSettingsParam(echoPin);
 #endif
 FillSettingsParam(updateRate);
 FillSettingsParam(distanceMax);
+FillSettingsParam(sendFeedback);
 FillSettingsInternalEnd
 
     FillOSCQueryInternalStart
@@ -99,6 +104,7 @@ FillOSCQueryIntParam(echoPin);
 FillOSCQueryIntParam(updateRate);
 FillOSCQueryIntParam(distanceMax);
 FillOSCQueryRangeParamReadOnly(value, 0, 1);
+FillOSCQueryBoolParam(sendFeedback);
 FillOSCQueryInternalEnd
 
     EndDeclareComponent

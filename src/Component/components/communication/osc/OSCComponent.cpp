@@ -174,6 +174,8 @@ void OSCComponent::processMessage(OSCMessage &msg)
 
 void OSCComponent::sendMessage(OSCMessage &msg)
 {
+    NDBG("Sending OSC message to " + remoteHost + " : " + String(msg.getAddress()));
+    
     if (!udpIsInit || !enabled || remoteHost.length() == 0)
         return;
 

@@ -181,6 +181,7 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
     m3_LinkRawFunction(module, arduino, "printFloat", "v(f)", &m3_printFloat);
     m3_LinkRawFunction(module, arduino, "printInt", "v(i)", &m3_printInt);
+    m3_LinkRawFunction(module, arduino, "printString", "v(ii)", &m3_printString);
 
 #ifdef USE_LEDSTRIP
     m3_LinkRawFunction(module, arduino, "clearLeds", "v()", &m3_clearLeds);

@@ -55,13 +55,24 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
             if (e.data[0].stringValue().startsWith("dev.")) // message from device, to route
             {
 #ifdef USE_OSC
-
-                OSCMessage msg = OSCComponent::createMessage(e.data, e.numData, false);
-                osc.sendMessage(msg);
+                if (osc.sendFeedback)
+                {
+                    OSCMessage msg = OSCComponent::createMessage(e.data, e.numData, false);
+                    osc.sendMessage(msg);
+                }
 #endif
 
 #ifdef USE_SERIAL
-                serial.sendMessage(e.data[0].stringValue(), e.data[1].stringValue(), &e.data[2], e.numData - 2);
+                if (serial.sendFeedback)
+                    serial.sendMessage(e.data[0].stringValue(), e.data[1].stringValue(), &e.data[2], e.numData - 2);
+#endif
+
+#ifdef USE_SERVER
+                if (WebServerComponent::instance->sendFeedback)
+                {
+
+                    WebServerComponent::instance->sendParamFeedback(StringHelpers::serialPathToOSC(e.data[0].stringValue()), e.data[1].stringValue(), &e.data[2], e.numData - 2);
+                }
 #endif
             }
 

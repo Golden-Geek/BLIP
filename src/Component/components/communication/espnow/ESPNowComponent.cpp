@@ -336,15 +336,13 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
     String address = String((char *)(incomingData + 4), addressLength);
 
     // convert from OSC style to internal
-    if (address.charAt(0) == '/')
-        address = address.substring(1);
-
-    address.replace('/', '.');
+    address = StringHelpers::oscPathToSerial(address);
 
 #ifdef ESPNOW_BRIDGE
     if (startID == endID && startID != -1)
     {
-        address = "dev." + String(startID) + address;
+        // DBG("Message from device ID " + String(startID));
+        address = "dev." + String(startID) + "." + address;
     }
 #endif
 
@@ -406,7 +404,11 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
         dataCount++;
     }
 
-    // DBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2));
+    // NDBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2) + " arguments : ");
+    // for (int i = 0; i < dataCount; i++)
+    // {
+    //     NDBG(" > " + data[i].stringValue());
+    // }
 
     bool doSendEvent = true;
 #ifdef ESPNOW_BRIDGE
@@ -418,7 +420,8 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
 
 void ESPNowComponent::sendMessage(int id, const String &address, const String &command, var *data, int numData)
 {
-    if (!enabled)
+
+    if (!enabled || !espNowInitialized)
         return;
     // Data format for message
     //  0 - Message
@@ -439,6 +442,9 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
     uint8_t startID = broadcastStartID;
     uint8_t endID = broadcastEndID;
 #else
+    if (!bridgeInit)
+        return;
+
     uint8_t startID = SettingsComponent::instance->propID;
     uint8_t endID = SettingsComponent::instance->propID;
 #endif
@@ -462,8 +468,8 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
     int dataIndex = 5 + address.length() + command.length();
     for (int i = 0; i < numData; i++)
     {
-        sendPacketData[dataIndex] = data[i].type;
-        dataIndex++;
+        sendPacketData[dataIndex++] = data[i].type;
+
         if (data[i].type == 'p')
         {
             sendPacketData[dataIndex++] = data[i].getSize();
@@ -500,10 +506,7 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
 #ifdef ESPNOW_BRIDGE
 void ESPNowComponent::routeMessage(var *data, int numData)
 {
-    String targetAddress = data[0].stringValue();
-    targetAddress.replace('.', '/');
-    if (targetAddress.charAt(0) != '/')
-        targetAddress = "/" + targetAddress;
+    String targetAddress = StringHelpers::serialPathToOSC(data[0].stringValue());
 
     bool shouldSend = false;
     int id = -1;

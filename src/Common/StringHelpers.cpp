@@ -125,3 +125,21 @@ String StringHelpers::macToString(const uint8_t *mac)
            String(mac[4], HEX) + ":" +
            String(mac[5], HEX);
 }
+
+String StringHelpers::oscPathToSerial(const String &oscPath)
+{
+    String serialPath = oscPath;
+    if (serialPath.startsWith("/"))
+        serialPath = serialPath.substring(1);
+    serialPath.replace('/', '.');
+    return serialPath;
+}
+
+String StringHelpers::serialPathToOSC(const String &serialPath)
+{
+    String oscPath = serialPath;
+    oscPath.replace('.', '/');
+    if (oscPath.charAt(0) != '/')
+        oscPath = "/" + oscPath;
+    return oscPath;
+}

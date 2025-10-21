@@ -61,6 +61,7 @@ void parseTextMessage(String msg);
 void parseBinaryMessage(uint8_t *data, size_t len);
 
 void sendParamFeedback(Component *c, String pName, var *data, int numData);
+void sendParamFeedback(String path, String pName, var *data, int numData);
 void sendBye(String type);
 
 DeclareComponentEventTypes(UploadStart, Uploading, UploadDone, UploadCanceled);

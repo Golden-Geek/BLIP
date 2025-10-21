@@ -10,4 +10,7 @@ public:
     static void macFromString(const String &mac, uint8_t *outMac);
 
     static String macToString(const uint8_t *mac);
+
+    static String oscPathToSerial(const String& oscPath);
+    static String serialPathToOSC(const String& serialPath);
 };

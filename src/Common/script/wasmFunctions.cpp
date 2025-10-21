@@ -38,6 +38,16 @@ m3ApiRawFunction(m3_printInt)
     m3ApiSuccess();
 }
 
+m3ApiRawFunction(m3_printString)
+{
+    m3ApiGetArgMem(const uint8_t *, buf) // pointer into Wasm memory
+    m3ApiGetArg(uint32_t, len)       // length in bytes
+
+    DBG("Print from script : " + String(buf, len));
+
+    m3ApiSuccess();
+}
+
 #ifdef USE_LEDSTRIP
 m3ApiRawFunction(m3_clearLeds)
 {

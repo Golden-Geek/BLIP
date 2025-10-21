@@ -12,6 +12,7 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
     AddIntParamConfig(updateRate);
     AddIntParamConfig(distanceMax);
     AddFloatParam(value);
+    AddBoolParamConfig(sendFeedback);
 }
 
 bool DistanceSensorComponent::initInternal()

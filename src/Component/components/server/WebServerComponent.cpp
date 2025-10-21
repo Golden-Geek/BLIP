@@ -319,8 +319,15 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
 
 void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data, int numData)
 {
+    if(!sendFeedback) return;
+    sendParamFeedback(c->getFullPath(), pName, data, numData);
+}
+
+void WebServerComponent::sendParamFeedback(String path, String pName, var *data, int numData)
+{
+    if(!sendFeedback) return;
 #ifdef USE_OSC
-    OSCMessage msg = OSCComponent::createMessage(c->getFullPath(), pName, data, numData, false);
+    OSCMessage msg = OSCComponent::createMessage(path, pName, data, numData, false);
 
     char addr[64];
     msg.getAddress(addr);
@@ -332,6 +339,7 @@ void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data
 
     if (!ws.availableForWriteAll())
         return;
+
     ws.binaryAll(wsPrint.data, wsPrint.index);
 #endif
 }
