@@ -6,6 +6,8 @@
 #include <wasm3.h>
 #include <m3_env.h>
 
+m3ApiRawFunction(m3_as_abort);
+
 m3ApiRawFunction(m3_arduino_millis);
 m3ApiRawFunction(m3_arduino_getTime);
 m3ApiRawFunction(m3_arduino_delay);

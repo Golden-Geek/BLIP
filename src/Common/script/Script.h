@@ -55,6 +55,8 @@ public:
     void shutdown();
     void stop();
 
+    void logWasm(String funcName, M3Result r);
+
     void setScriptParam(int index, float value);
 
 #if WASM_ASYNC

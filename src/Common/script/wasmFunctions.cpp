@@ -3,6 +3,20 @@
 
 SimplexNoise sn;
 
+m3ApiRawFunction(m3_as_abort)
+{
+    // We don’t need the strings; just consume the args to keep the stack sane
+    m3ApiGetArg(uint32_t, msg);
+    m3ApiGetArg(uint32_t, file);
+    m3ApiGetArg(uint32_t, line);
+    m3ApiGetArg(uint32_t, col);
+    // Optional: log something if desired
+    // Serial.printf("AS abort: line=%u col=%u\n", line, col);
+
+    DBG("Script abort called from WebAssembly : line " + String(line) + " col " + String(col));
+    m3ApiSuccess();
+}
+
 m3ApiRawFunction(m3_arduino_millis)
 {
     m3ApiReturnType(uint32_t);
@@ -41,9 +55,9 @@ m3ApiRawFunction(m3_printInt)
 m3ApiRawFunction(m3_printString)
 {
     m3ApiGetArgMem(const uint8_t *, buf) // pointer into Wasm memory
-    m3ApiGetArg(uint32_t, len)       // length in bytes
+        m3ApiGetArg(uint32_t, len)       // length in bytes
 
-    DBG("Print from script : " + String(buf, len));
+        DBG("Print from script : " + String(buf, len));
 
     m3ApiSuccess();
 }

@@ -39,7 +39,8 @@ void Script::update()
         // TSTART()
         if (updateFunc != NULL)
         {
-            m3_CallV(updateFunc);
+            M3Result r = m3_CallV(updateFunc);
+            logWasm("update", r);
         }
         // TFINISH("Script ")
     }
@@ -158,13 +159,18 @@ void Script::launchWasmTask()
 
     timeAtLaunch = millis() / 1000.0f;
 
+    Serial.println("Running WebAssembly...");
+
     if (initFunc != NULL)
     {
         DBG("[script] Calling init");
         result = m3_CallV(initFunc);
+        logWasm("init", result);
     }
-
-    Serial.println("Running WebAssembly...");
+    else
+    {
+        DBG("[script] No init function found");
+    }
 
 #if WASM_ASYNC
     vTaskDelete(NULL);
@@ -174,6 +180,8 @@ void Script::launchWasmTask()
 M3Result Script::LinkArduino(IM3Runtime runtime)
 {
     IM3Module module = runtime->modules;
+    m3_LinkRawFunction(module, "env", "abort", "v(iiii)", &m3_as_abort);
+
     const char *arduino = "arduino";
 
     m3_LinkRawFunction(module, arduino, "millis", "i()", &m3_arduino_millis);
@@ -260,7 +268,14 @@ void Script::stop()
         DBG("[script] Stopping script");
 
         if (stopFunc != NULL)
-            m3_CallV(stopFunc);
+        {
+            M3Result result = m3_CallV(stopFunc);
+            logWasm("stop", result);
+        }
+        else
+        {
+            DBG("[script] No stop function found");
+        }
 
         isRunning = false;
         m3_FreeRuntime(runtime);
@@ -270,6 +285,17 @@ void Script::stop()
     {
         DBG("[script] Not stopping script, because non was running");
     }
+}
+
+void Script::logWasm(String funcName, M3Result r)
+{
+    if (!r)
+        return;
+    M3ErrorInfo info;
+    m3_GetErrorInfo(runtime, &info);
+    DBG(String("[m3] Calling ") + funcName + " failed: " + info.message);
+    if (info.file && info.function)
+        DBG(String(" @ ") + String(info.file) + " :: " + String(info.function->names[0]) + " (line " + String(info.line) + ")");
 }
 
 void Script::setScriptParam(int index, float value)
