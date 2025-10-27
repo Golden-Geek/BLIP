@@ -36,6 +36,7 @@ void StringHelpers::processStringMessage(const String &buffer, std::function<voi
             char c = s.charAt(i);
             if (isDigit(c))
                 continue;
+
             if (c == '.')
             {
                 numDotSigns++;
@@ -46,11 +47,12 @@ void StringHelpers::processStringMessage(const String &buffer, std::function<voi
                 }
                 continue;
             }
-            else
-            {
-                isNumber = false;
-                break;
-            }
+            
+
+            
+            isNumber = false;
+            break;
+            
         }
 
         if (isNumber)
