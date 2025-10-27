@@ -86,32 +86,34 @@ bool LedStripPlaybackLayer::playFrame()
 
     playScripts();
 
-    int skippedFrames = 0;
-    while (fPos < pos)
+    if (fPos < pos)
     {
         skippedFrames++;
         curFile.read((uint8_t *)colors, frameSize);
         fPos = curFile.position();
-        if (curFile.available() < frameSize)
-        {
-            DBG("Player overflowed, should not be here");
-            return false;
-        }
-    }
 
-    if (skippedFrames > 0)
-    {
-        DBG("Skipped frame " + String(skippedFrames));
+        if (fPos < pos)
+        {
+            DBG("Skipped framed but still behind, seeking");
+            curFile.seek(fPos);
+            fPos = curFile.position();
+        }
     }
 
     if (fPos != pos)
     {
         DBG("Error, position is " + String(fPos) + ", expected " + String(pos));
+        return false;
+    }
+
+    if (curFile.available() < frameSize)
+    {
+        DBG("Player overflowed, should not be here");
+        return false;
     }
 
     curFile.read((uint8_t *)colors, frameSize);
 
-    // showCurrentFrame();
     return true;
 }
 
