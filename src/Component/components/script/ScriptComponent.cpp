@@ -1,7 +1,11 @@
+#include "UnityIncludes.h"
+
 ImplementSingleton(ScriptComponent);
 
 void ScriptComponent::setupInternal(JsonObject o)
 {
+    script.localComponent = this;
+
     AddStringParamConfig(scriptAtLaunch);
 }
 
@@ -9,7 +13,7 @@ bool ScriptComponent::initInternal()
 {
     bool result = script.init();
 
-    if(result)
+    if (result)
     {
         if (scriptAtLaunch.length() > 0)
         {
@@ -42,11 +46,31 @@ bool ScriptComponent::handleCommandInternal(const String &command, var *data, in
         script.stop();
         return true;
     }
-    else if (CheckCommand("setScriptParam", 2))
+    else if (CheckCommand("setParam", 2))
     {
-        script.setScriptParam(data[0].intValue(), (float)data[1]);
+        script.setScriptParam(data[0].stringValue(), (float)data[1]);
+        return true;
+    }
+    else if (CheckCommand("trigger", 1))
+    {
+        script.triggerFunction(data[0].stringValue());
         return true;
     }
 
     return false;
+}
+
+void ScriptComponent::sendScriptEvent(String eventName)
+{
+    var data[1];
+    data[0] = eventName;
+    sendEvent(ScriptEvent, data, 1);
+}
+
+void ScriptComponent::sendScriptParamFeedback(String paramName, float value)
+{
+    var data[2];
+    data[0] = paramName;
+    data[1] = value;
+    sendEvent(ScriptParamFeedback, data, 2);
 }

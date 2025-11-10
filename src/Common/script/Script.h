@@ -20,19 +20,49 @@
 #define WASM_ASYNC 0
 #endif
 
-class Component;
+#ifndef WASM_VARIABLES_MAX
+#define WASM_VARIABLES_MAX 20
+#endif
+
+#ifndef WASM_FUNCTIONS_MAX
+#define WASM_FUNCTIONS_MAX 20
+#endif
+
+#ifndef WASM_EVENTS_MAX
+#define WASM_EVENTS_MAX 20
+#endif
+
+class ScriptComponent;
 
 class Script
 {
 public:
-    Script(Component *localComponent = NULL);
+    Script();
     ~Script() {}
 
     bool isRunning;
     unsigned char scriptData[SCRIPT_MAX_SIZE];
+    
+    // struct ScriptVariable
+    // {
+        // String name;
+        // String niceName;
+        // float min;
+        // float max;
+    // };
+
+    String variableNames[WASM_VARIABLES_MAX];
+    int variableCount;
+
+    String functionNames[WASM_FUNCTIONS_MAX];
+    int functionCount;
+    
+    String eventNames[WASM_EVENTS_MAX];
+    int eventCount;
+
     long scriptSize;
 
-    Component *localComponent;
+    ScriptComponent *localComponent;
 
     IM3Runtime runtime;
     IM3Environment env;
@@ -41,6 +71,7 @@ public:
     IM3Function updateFunc;
     IM3Function stopFunc;
     IM3Function setScriptParamFunc;
+    IM3Function triggerFunctionFunc;
 
     static float timeAtLaunch;
 
@@ -57,7 +88,12 @@ public:
 
     void logWasm(String funcName, M3Result r);
 
-    void setScriptParam(int index, float value);
+    void setScriptParam(String paramName, float value);
+    void triggerFunction(String funcName);
+
+    void sendScriptEvent(int eventId);
+    void sendScriptParamFeedback(int paramId, float value);
+
 
 #if WASM_ASYNC
     static void launchWasmTaskStatic(void *);

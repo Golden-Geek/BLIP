@@ -9,13 +9,16 @@
 
 float Script::timeAtLaunch = 0.f;
 
-Script::Script(Component *localComponent) : isRunning(false),
-                                            localComponent(localComponent),
-                                            runtime(NULL),
-                                            // env(NULL),
-                                            initFunc(NULL),
-                                            updateFunc(NULL),
-                                            stopFunc(NULL)
+Script::Script() : localComponent(NULL),
+                   isRunning(false),
+                   runtime(NULL),
+                   variableCount(0),
+                   functionCount(0),
+                   eventCount(0),
+                   // env(NULL),
+                   initFunc(NULL),
+                   updateFunc(NULL),
+                   stopFunc(NULL)
 {
 }
 
@@ -62,6 +65,62 @@ void Script::load(const String &path)
     {
         DBG("[script] !Error reading file " + path);
         return;
+    }
+
+    StaticJsonDocument<1024> metaDataDoc;
+    File mf = FilesComponent::instance->openFile("/scripts/" + path + "_metadata.wmeta", false); // false is for reading
+    if (mf)
+    {
+        DeserializationError error = deserializeJson(metaDataDoc, mf);
+        if (!error)
+        {
+            JsonObject obj = metaDataDoc.as<JsonObject>();
+            JsonArray varNames = obj["variables"].as<JsonArray>();
+            variableCount = 0;
+            for (JsonVariant v : varNames)
+            {
+                if (variableCount >= WASM_VARIABLES_MAX)
+                    break;
+                JsonObject varObj = v.as<JsonObject>();
+                variableNames[variableCount] = varObj["name"].as<String>();
+                variableCount++;
+            }
+
+            DBG("[script] Loaded " + String(variableCount) + " variable names from metadata");
+
+            JsonArray funcNames = obj["functions"].as<JsonArray>();
+            functionCount = 0;
+            for (JsonVariant v : funcNames)
+            {
+                if (functionCount >= WASM_FUNCTIONS_MAX)
+                    break;
+
+                JsonObject varObj = v.as<JsonObject>();
+                functionNames[functionCount] = varObj["name"].as<String>();
+                functionCount++;
+            }
+
+            DBG("[script] Loaded " + String(functionCount) + " function names from metadata");
+
+            JsonArray evNames = obj["events"].as<JsonArray>();
+            eventCount = 0;
+            for (JsonVariant v : evNames)
+            {
+                if (eventCount >= WASM_EVENTS_MAX)
+                    break;
+                eventNames[eventCount] = v.as<String>();
+                eventCount++;
+            }
+            DBG("[script] Loaded " + String(eventCount) + " event names from metadata");
+        }
+        else
+        {
+            DBG("[script] !Error parsing metadata json");
+        }
+    }
+    else
+    {
+        DBG("[script] No metadata file found for script " + path);
     }
 
     long totalBytes = f.size();
@@ -153,6 +212,10 @@ void Script::launchWasmTask()
     if (setScriptParamFunc != NULL)
         foundFunc += " / setParam";
 
+    result = m3_FindFunction(&triggerFunctionFunc, runtime, "triggerFunction");
+    if (triggerFunctionFunc != NULL)
+        foundFunc += " / triggerFunction";
+
     DBG("[script] Found functions : " + foundFunc);
 
     isRunning = true;
@@ -190,6 +253,8 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "printFloat", "v(f)", &m3_printFloat);
     m3_LinkRawFunction(module, arduino, "printInt", "v(i)", &m3_printInt);
     m3_LinkRawFunction(module, arduino, "printString", "v(ii)", &m3_printString);
+    m3_LinkRawFunction(module, arduino, "sendEvent", "v(i)", &m3_sendEvent);
+    m3_LinkRawFunction(module, arduino, "sendParamFeedback", "v(if)", &m3_sendParamFeedback);
 
 #ifdef USE_LEDSTRIP
     m3_LinkRawFunction(module, arduino, "clearLeds", "v()", &m3_clearLeds);
@@ -298,10 +363,57 @@ void Script::logWasm(String funcName, M3Result r)
         DBG(String(" @ ") + String(info.file) + " :: " + String(info.function->names[0]) + " (line " + String(info.line) + ")");
 }
 
-void Script::setScriptParam(int index, float value)
+void Script::setScriptParam(String paramName, float value)
 {
-    if (stopFunc != NULL)
-        m3_CallV(setScriptParamFunc, index, value);
+    int paramIndex = -1;
+    for (int i = 0; i < variableCount; i++)
+    {
+        if (variableNames[i] == paramName)
+        {
+            paramIndex = i;
+            break;
+        }
+    }
+
+    if (paramIndex != -1 && setScriptParamFunc != NULL)
+        m3_CallV(setScriptParamFunc, paramIndex, value);
+}
+
+void Script::triggerFunction(String funcName)
+{
+    int funcIndex = -1;
+    for (int i = 0; i < functionCount; i++)
+    {
+        if (functionNames[i] == funcName)
+        {
+            funcIndex = i;
+            break;
+        }
+    }
+
+    if (funcIndex != -1 && triggerFunctionFunc != NULL)
+    {
+        m3_CallV(triggerFunctionFunc, funcIndex);
+    }
+}
+
+void Script::sendScriptEvent(int eventId)
+{
+    if (eventId < 0 || eventId >= eventCount)
+        return;
+
+    String eventName = eventNames[eventId];
+    localComponent->sendScriptEvent(eventName);
+}
+
+void Script::sendScriptParamFeedback(int paramId, float value)
+{
+    if (paramId < 0 || paramId >= variableCount)
+        return;
+
+    String paramName = variableNames[paramId];
+
+    localComponent->sendScriptParamFeedback(paramName, value);
 }
 
 void Script::shutdown()

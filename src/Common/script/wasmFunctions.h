@@ -14,6 +14,8 @@ m3ApiRawFunction(m3_arduino_delay);
 m3ApiRawFunction(m3_printFloat);
 m3ApiRawFunction(m3_printInt);
 m3ApiRawFunction(m3_printString);
+m3ApiRawFunction(m3_sendEvent);
+m3ApiRawFunction(m3_sendParamFeedback);
 
 #ifdef USE_LEDSTRIP
 m3ApiRawFunction(m3_clearLeds);

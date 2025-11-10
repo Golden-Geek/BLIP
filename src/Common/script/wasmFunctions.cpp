@@ -54,11 +54,26 @@ m3ApiRawFunction(m3_printInt)
 
 m3ApiRawFunction(m3_printString)
 {
-    m3ApiGetArgMem(const uint8_t *, buf) // pointer into Wasm memory
-        m3ApiGetArg(uint32_t, len)       // length in bytes
+    m3ApiGetArgMem(const uint8_t *, buf); // pointer into Wasm memory
+    m3ApiGetArg(uint32_t, len);           // length in bytes
 
-        DBG("Print from script : " + String(buf, len));
+    DBG("Print from script : " + String(buf, len));
 
+    m3ApiSuccess();
+}
+
+m3ApiRawFunction(m3_sendEvent)
+{
+    m3ApiGetArg(uint32_t, eventId);
+    ScriptComponent::instance->script.sendScriptEvent((int)eventId);
+    m3ApiSuccess();
+}
+
+m3ApiRawFunction(m3_sendParamFeedback)
+{
+    m3ApiGetArg(uint32_t, paramId);
+    m3ApiGetArg(float, value);
+    ScriptComponent::instance->script.sendScriptParamFeedback((int)paramId, value);
     m3ApiSuccess();
 }
 
