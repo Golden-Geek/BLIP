@@ -184,6 +184,13 @@ void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
     }
 #endif
 
+#ifdef USE_SERVER
+    if (WebServerComponent::instance->sendFeedback)
+    {
+        WebServerComponent::instance->sendParamFeedback(baseAddress, e.getName(), e.data, e.numData);
+    }
+#endif
+
 #ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
     if (espNow.sendFeedback)
