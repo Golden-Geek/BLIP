@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "DistanceSensorComponent.h"
 
 ImplementManagerSingleton(DistanceSensor);
 
@@ -7,6 +8,8 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 #ifdef DISTANCE_SENSOR_HCSR04
     AddIntParamConfig(trigPin);
     AddIntParamConfig(echoPin);
+#elif defined(DISTANCE_SENSOR_VL53L0X)
+    AddBoolParam(isConnected);
 #endif
 
     AddIntParamConfig(updateRate);
@@ -17,19 +20,15 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 
 bool DistanceSensorComponent::initInternal()
 {
+    if(!enabled) return false;
+
 #ifdef DISTANCE_SENSOR_HCSR04
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
 #elif defined(DISTANCE_SENSOR_VL53L0X)
     Wire.begin();
     sensor.setTimeout(500);
-    if (!sensor.init())
-    {
-        NDBG("Failed to detect and initialize VL53L0X sensor!");
-        return false;
-    }
-
-    NDBG("VL53L0X sensor initialized, starting continuous measurements.");
+    initVL53L0X();
     sensor.startContinuous(1000 / updateRate);
 #endif
 
@@ -38,6 +37,8 @@ bool DistanceSensorComponent::initInternal()
 
 void DistanceSensorComponent::updateInternal()
 {
+    if(!enabled) return;
+    
 #ifdef DISTANCE_SENSOR_HCSR04
     updateHCSR04();
 #elif defined(DISTANCE_SENSOR_VL53L0X)
@@ -136,15 +137,39 @@ void DistanceSensorComponent::updateHCSR04()
     lastEchoState = currentEchoState;
 }
 #elif defined(DISTANCE_SENSOR_VL53L0X)
+
+bool DistanceSensorComponent::initVL53L0X()
+{
+    if (!sensor.init())
+    {
+        NDBG("Failed to detect and initialize VL53L0X sensor!");
+        SetParam(isConnected, false);
+        return false;
+    }
+
+    NDBG("VL53L0X sensor initialized, starting continuous measurements.");
+    SetParam(isConnected, true);
+    return true;
+}
+
 void DistanceSensorComponent::updateVL53L0X()
 {
     if (!isInit)
         return;
 
+    if (!isConnected)
+    {
+        if (millis() - lastConnectTime > 1000)
+        {
+            initVL53L0X();
+            lastConnectTime = millis();
+        }
+        return;
+    }
+
     long currentTime = millis();
     if (currentTime - lastMeasurementTime < 1000 / updateRate)
         return; // Not time for the next measurement yet
-
 
     uint16_t range = 0;
     bool success = sensor.readRangeNoBlocking(range);
@@ -160,6 +185,7 @@ void DistanceSensorComponent::updateVL53L0X()
     if (sensor.timeoutOccurred())
     {
         NDBG("VL53L0X sensor timeout!");
+        SetParam(isConnected, false);
         return;
     }
 
@@ -171,7 +197,6 @@ void DistanceSensorComponent::updateVL53L0X()
         distance = distanceMax; // Cap to max range
 
     SetParam(value, distance / distanceMax);
-
 }
 #endif
 

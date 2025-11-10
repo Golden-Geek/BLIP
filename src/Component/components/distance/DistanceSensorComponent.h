@@ -27,6 +27,8 @@ DeclareComponent(DistanceSensor, "distance", )
 #ifdef DISTANCE_SENSOR_HCSR04
     DeclareIntParam(trigPin, DISTANCE_DEFAULT_TRIGGER_PIN);
 DeclareIntParam(echoPin, DISTANCE_DEFAULT_ECHO_PIN);
+#elif defined(DISTANCE_SENSOR_VL53L0X)
+    DeclareBoolParam(isConnected, false);
 #endif
 
 DeclareIntParam(updateRate, 20); // in Hz
@@ -53,6 +55,7 @@ int lastEchoState = LOW;
 
 #elif defined(DISTANCE_SENSOR_VL53L0X)
 
+unsigned long lastConnectTime = 0;
 VL53L0X_mod sensor;
 unsigned long lastMeasurementTime = 0;
 
@@ -65,6 +68,7 @@ void updateInternal() override;
 #ifdef DISTANCE_SENSOR_HCSR04
 void updateHCSR04();
 #elif defined(DISTANCE_SENSOR_VL53L0X)
+bool initVL53L0X();
 void updateVL53L0X();
 #endif
 
@@ -81,6 +85,7 @@ CheckAndSetParam(sendFeedback);
 HandleSetParamInternalEnd;
 
 CheckFeedbackParamInternalStart;
+CheckAndSendParamFeedback(isConnected);
 if (!sendFeedback)
     return false;
 CheckAndSendParamFeedback(value);
@@ -100,6 +105,8 @@ FillSettingsInternalEnd
 #ifdef DISTANCE_SENSOR_HCSR04
         FillOSCQueryIntParam(trigPin);
 FillOSCQueryIntParam(echoPin);
+#elif defined(DISTANCE_SENSOR_VL53L0X)
+        FillOSCQueryBoolParamReadOnly(isConnected);
 #endif
 FillOSCQueryIntParam(updateRate);
 FillOSCQueryIntParam(distanceMax);
