@@ -26,6 +26,10 @@
 #define BUTTON_DEFAULT_MODE D_INPUT
 #endif
 
+#ifndef BUTTON_DEFAULT_INVERTED
+#define BUTTON_DEFAULT_INVERTED false
+#endif
+
 class ButtonComponent : public IOComponent
 {
 public:

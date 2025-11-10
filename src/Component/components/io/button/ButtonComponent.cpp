@@ -6,8 +6,12 @@ void ButtonComponent::setupInternal(JsonObject o)
     // SetParam(value,false);
 
     mode = BUTTON_DEFAULT_MODE;
-     if(index == 0) pin = BUTTON_DEFAULT_PIN;
-
+     if(index == 0) 
+     {
+        pin = BUTTON_DEFAULT_PIN;
+        inverted = BUTTON_DEFAULT_INVERTED;
+     }
+     
     IOComponent::setupInternal(o);
 
     debounceCount = 0;
