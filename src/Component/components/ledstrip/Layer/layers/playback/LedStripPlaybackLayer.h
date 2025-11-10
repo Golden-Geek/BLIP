@@ -31,9 +31,11 @@ public:
     // playing
     bool isPlaying;
     long curTimeMs;
+    long startTimeMs;
     long prevTimeMs;
     long timeSinceLastSeek;
     float timeToSeek; // used to limit seeking
+    bool resyncPending;
 
 #ifdef USE_SCRIPT
     int numScripts;
@@ -68,16 +70,16 @@ public:
     bool handleCommandInternal(const String &command, var *data, int numData) override;
 
     // Time computation helpers
-    long msToBytePos(long t) const { return msToFrame(t) * frameSize; } // rgba
-    long msToFrame(long timeMs) const { return timeMs * fps / 1000; }
+    int64_t msToBytePos(int64_t timeMs) const { return msToFrame(timeMs) * (int64_t)frameSize; } // rgba
+    int64_t msToFrame(int64_t timeMs) const { return (int64_t)floor((double)timeMs * (double)fps / 1000.0); }
     long frameToMs(long frame) const { return frame * 1000 / fps; }
     float frameToSeconds(long frame) const { return frame * 1.0f / fps; };
     float msToSeconds(long timeMs) const { return timeMs / 1000.0f; }
-    long secondsToMs(float s) const { return s * 1000; }
+    int64_t secondsToMs(float s) const { return (int64_t)llround((double)s * 1000.0); }
     long secondsToFrame(float s) const { return s * fps; }
-    long bytePosToFrame(long pos) const { return pos / frameSize; }
-    long bytePosToMs(long pos) const { return frameToMs(bytePosToFrame(pos)); }
-    long bytePosToSeconds(long pos) const { return frameToSeconds(bytePosToFrame(pos)); }
+    long bytePosToFrame(int64_t pos) const { return pos / frameSize; }
+    long bytePosToMs(int64_t pos) const { return frameToMs(bytePosToFrame(pos)); }
+    long bytePosToSeconds(int64_t pos) const { return frameToSeconds(bytePosToFrame(pos)); }
 
     DeclareComponentEventTypes(Loaded, LoadError, Playing, Paused, Stopped, Seek, Looped);
     DeclareComponentEventNames("Loaded", "LoadError", "Playing", "Paused", "Stopped", "Seek", "Looped");

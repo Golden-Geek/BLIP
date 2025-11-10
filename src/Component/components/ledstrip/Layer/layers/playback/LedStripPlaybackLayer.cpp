@@ -20,8 +20,11 @@ void LedStripPlaybackLayer::setupInternal(JsonObject o)
     isPlaying = false;
     curTimeMs = 0;
     prevTimeMs = 0;
+    startTimeMs = 0;
     timeSinceLastSeek = 0;
     timeToSeek = -1;
+    resyncPending = false;
+
 
 #ifdef USE_SCRIPT
     activeScriptIndex = -1;
@@ -56,66 +59,142 @@ void LedStripPlaybackLayer::clearInternal()
 {
 }
 
+
 bool LedStripPlaybackLayer::playFrame()
 {
+    if (!isPlaying || !curFile) return false;
+
+    // 1) End-of-file handling
     if (curFile.available() < frameSize)
     {
         NDBG("End of show");
         if (loop)
         {
             sendEvent(Looped);
-            play(0);
+            play(0.0f);
         }
         else
         {
             stop();
         }
+        return false;
     }
 
-    long mil = millis();
-    curTimeMs += mil - prevTimeMs;
-    prevTimeMs = mil;
+    // 2) Absolute timing → target frame index
+    const double fps_d = (double)fps;              // ensure float math
+    const unsigned long now = millis();
+    const unsigned long elapsedMs = now - startTimeMs;  // startTimeMs set in play()
+    if (fps_d <= 0.0) return false;
 
-    long fPos = curFile.position();
-    long pos = msToBytePos(curTimeMs);
+    // target frame using floor to avoid oscillation
+    const int64_t targetFrame = (int64_t)floor((elapsedMs * fps_d) / 1000.0);
+    const int64_t desiredPos = targetFrame * (int64_t)frameSize;
 
-    if (pos < 0)
-        return false;
-    if (pos < fPos)
-        return false; // waiting for frame
+    // 3) Read current file position and align sanity
+    int64_t currentPos = curFile.position();
 
-    playScripts();
-
-    if (fPos < pos)
-    {
-        skippedFrames++;
-        curFile.read((uint8_t *)colors, frameSize);
-        fPos = curFile.position();
-
-        if (fPos < pos)
-        {
-            DBG("Skipped framed but still behind, seeking");
-            curFile.seek(fPos);
-            fPos = curFile.position();
+    // Force a one-time hard snap right after a seek during playback
+    if (resyncPending) {
+        if (!curFile.seek(desiredPos)) {
+            DBG("resync seek() failed to " + String((long)desiredPos));
+            return false;
         }
+        resyncPending = false;
+        // update currentPos to the new location
+        // (optional realign if needed)
     }
 
-    if (fPos != pos)
+    // (Optional) snap obviously off-boundary positions down to nearest frame boundary
+    if (currentPos % frameSize != 0)
     {
-        DBG("Error, position is " + String(fPos) + ", expected " + String(pos));
-        return false;
+        const int64_t aligned = (currentPos / frameSize) * (int64_t)frameSize;
+        curFile.seek(aligned);
+        currentPos = curFile.position();
     }
 
+    // 4) Compute drift in bytes (+ ahead, - behind)
+    const int64_t delta = currentPos - desiredPos;
+
+    // thresholds (tune as needed)
+    const int64_t ONE_FRAME = (int64_t)frameSize;
+    const int64_t MAX_LAX = ONE_FRAME;        // within ±1 frame → wait/skip without error
+    const int64_t FORCE_SEEK = ONE_FRAME * 2; // ≥2 frames → snap with seek
+
+    // 5) Correct big drifts with seek()
+    if (llabs(delta) >= FORCE_SEEK)
+    {
+        if (!curFile.seek(desiredPos))
+        {
+            DBG("seek() failed to " + String((long)desiredPos));
+            return false;
+        }
+        currentPos = curFile.position();
+        // After successful seek, treat as perfectly aligned
+    }
+    else
+    {
+        // 6) Small drift handling without errors
+        if (delta > 0 && delta <= MAX_LAX)
+        {
+            // We are up to one frame AHEAD of time → wait until time catches up
+            // (do not read; let scheduler call us again soon)
+            return false;
+        }
+        else if (delta < 0 && -delta <= MAX_LAX)
+        {
+            // We are up to one frame BEHIND → skip one frame to catch up
+            if (curFile.available() >= frameSize)
+            {
+                uint8_t dummy[1]; // avoid large stack; do an actual seek instead of read
+                // Fast-forward by exactly one frame without allocating:
+                const int64_t skipTo = currentPos + ONE_FRAME;
+                if (!curFile.seek(skipTo))
+                {
+                    DBG("skip seek() failed");
+                    return false;
+                }
+                currentPos = curFile.position();
+            }
+            else
+            {
+                return false; // nothing to read yet
+            }
+        }
+        // else delta == 0 → perfectly aligned
+    }
+
+    // 7) Final alignment check (only warn if still off by weird amount)
+    currentPos = curFile.position();
+    const int64_t finalDelta = currentPos - desiredPos;
+    if (finalDelta != 0 && llabs(finalDelta) != ONE_FRAME)
+    {
+        // Only log occasionally to avoid spam
+        DBG("Position mismatch tolerated: file=" + String((long)currentPos) +
+            ", expected=" + String((long)desiredPos) +
+            ", delta=" + String((long)finalDelta));
+        // Continue anyway (don’t hard fail)
+    }
+
+    // 8) Ensure we have a full frame buffered
     if (curFile.available() < frameSize)
     {
-        DBG("Player overflowed, should not be here");
+        // Small underrun — try again on next tick
         return false;
     }
 
-    curFile.read((uint8_t *)colors, frameSize);
+    // 9) Read the frame
+    size_t n = curFile.read((uint8_t*)colors, frameSize);
+    if (n != (size_t)frameSize)
+    {
+        DBG("Short read: " + String((long)n) + " of " + String(frameSize));
+        return false;
+    }
 
+    // 10) Trigger per-frame scripts AFTER the read (so visuals are up to date)
+    playScripts();
     return true;
 }
+
 
 void LedStripPlaybackLayer::showBlackFrame()
 {
@@ -249,44 +328,78 @@ void LedStripPlaybackLayer::load(String path, bool force)
 
 void LedStripPlaybackLayer::play(float atTime)
 {
-    if (!curFile)
-        return;
+    if (!curFile) return;
 
     isPlaying = true;
+    NDBG("Play at time " + String(atTime));
 
-    NDBG("Play here ar time " + String(atTime));
+    // time reference
+    curTimeMs   = (int64_t)(atTime * 1000.0f);
+    startTimeMs = millis() - (unsigned long)curTimeMs;
 
-    seek(atTime, false);
+    // seek to exact frame boundary for start
+    int64_t startPos = msToFrame(curTimeMs) * (int64_t)frameSize; // floor via msToFrame
+    // snap to boundary just in case
+    startPos = (startPos / frameSize) * (int64_t)frameSize;
+
+    if (!curFile.seek(startPos))
+    {
+        DBG("Initial seek failed to " + String((long)startPos));
+        isPlaying = false;
+        return;
+    }
+
     prevTimeMs = millis();
-
     sendEvent(Playing);
 }
 
 void LedStripPlaybackLayer::seek(float t, bool doSendEvent)
 {
-    if (!curFile)
-        return;
+    if (!curFile) return;
 
-    // NDBG("Seek to " + String(t) + "s");
-
+    // 1) Target playback time (can be negative to show black)
     curTimeMs = secondsToMs(t);
-    prevTimeMs = millis();
 
-    curFile.seek(msToBytePos(max(curTimeMs, (long)0)));
+    // 2) Keep absolute-time reference consistent with the new time
+    //    This is the key piece that makes mid-play seeks work.
+    startTimeMs = millis() - (unsigned long) (curTimeMs > 0 ? curTimeMs : 0);
 
-    if (curTimeMs < 0)
-    {
+    // 3) Compute target byte position on a frame boundary
+    int64_t targetPos;
+    if (curTimeMs < 0) {
+        targetPos = 0;           // before start → clamp to file start
+    } else {
+        targetPos = msToBytePos(curTimeMs);
+        // snap to exact frame boundary (paranoia)
+        targetPos = (targetPos / (int64_t)frameSize) * (int64_t)frameSize;
+    }
+
+    // 4) Seek file
+    if (!curFile.seek(targetPos)) {
+        DBG("seek() failed to " + String((long)targetPos));
+        return;
+    }
+
+    // 5) Visual state for negative times
+    if (curTimeMs < 0) {
         showBlackFrame();
-    }
-    else if (!isPlaying)
-    {
-        curFile.read((uint8_t *)colors, frameSize);
+    } else if (!isPlaying) {
+        // If paused/stopped, optionally prefetch current frame so 'colors' matches the seek position
+        if (curFile.available() >= frameSize) {
+            curFile.read((uint8_t*)colors, frameSize);
+            // step back one frame so next playFrame will read the same frame again if desired
+            int64_t back = curFile.position() - (int64_t)frameSize;
+            if (back >= 0) curFile.seek(back);
+        }
+    } else {
+        // We are seeking while playing: request a hard resync on next tick
+        resyncPending = true;
     }
 
-    timeToSeek = -1;
+    prevTimeMs = millis();   // not strictly necessary with absolute timing, but harmless
 
-    if (doSendEvent)
-        sendEvent(Seek);
+    if (doSendEvent) sendEvent(Seek);
+    // If you also want an external "PositionChanged" event, fire it here.
 }
 
 void LedStripPlaybackLayer::pause()
