@@ -12,6 +12,10 @@
 #define IO_DEFAULT_MODE IOComponent::D_OUTPUT
 #endif
 
+#ifndef IO_PULL_DEBOUNCE
+#define IO_PULL_DEBOUNCE 5  // denoising, needs five reads to validate a change
+#endif
+
 DeclareComponent(IO, "io", )
 
     enum PinMode { D_INPUT,
@@ -33,6 +37,8 @@ int curPin;
 
 DeclareFloatParam(value, 0);
 float prevValue;
+
+int debounceCount = 0;
 
 const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
 

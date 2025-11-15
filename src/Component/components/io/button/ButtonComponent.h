@@ -4,7 +4,6 @@
 #define VERYLONGPRESS_TIME 1500 // more than 1500ms is very long press
 #define SHORTPRESS_TIME 500     // less than 500ms is short press
 #define MULTIPRESS_TIME 300     // each new press shorter than 500ms after the previous one will increase the multiclick
-#define BUTTONPRESS_DEBOUNCE 5  // denoising, needs five reads to validate a change
 
 #ifndef BUTTON_DEFAULT_SHUTDOWN
 #ifdef USE_BATTERY
@@ -35,7 +34,6 @@ class ButtonComponent : public IOComponent
 public:
     ButtonComponent(const String &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
 
-    int debounceCount = 0;
     long timeAtPress = 0;
     bool wasPressedAtBoot = false;
 

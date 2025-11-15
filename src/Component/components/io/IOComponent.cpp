@@ -136,11 +136,30 @@ void IOComponent::updatePin()
         if (inverted)
             val = !val;
 
-        if (value != val)
+        if (m == D_INPUT)
         {
-            SetParam(value, val);
+            if (value != val)
+            {
+                SetParam(value, val);
+            }
         }
-        // SetParam(value, val);
+        else
+        {
+            int newDebounceCount = min(max(debounceCount + (val ? 1 : -1), 0), IO_PULL_DEBOUNCE);
+            if (newDebounceCount != debounceCount)
+            {
+                // DBG("Debounce count changed to " + String(newDebounceCount) + " val : " + String(val));
+                debounceCount = newDebounceCount;
+                if (debounceCount == IO_PULL_DEBOUNCE)
+                {
+                    SetParam(value, true);
+                }
+                else if (debounceCount == 0)
+                {
+                    SetParam(value, false);
+                }
+            }
+        }
     }
     break;
 
