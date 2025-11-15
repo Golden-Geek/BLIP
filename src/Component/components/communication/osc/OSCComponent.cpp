@@ -266,7 +266,8 @@ OSCMessage OSCComponent::createMessage(const var* data, int numData, bool addID)
     if(numData < 2)
         return OSCMessage();
 
-    String source = data[0].stringValue();
+    
+    String source = StringHelpers::serialPathToOSC(data[0].stringValue());
     String command = data[1].stringValue();
     return createMessage(source, command, data + 2, numData - 2, addID);
 }
