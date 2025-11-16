@@ -37,6 +37,7 @@ def merge_bin(source, target, env):
     # Extract defines
     cpp_defines = env.get("CPPDEFINES", [])
     device_type = extract_define(cpp_defines, "DEVICE_TYPE", env.subst("$PIOENV"))
+    device_category = extract_define(cpp_defines, "DEVICE_CATEGORY", "")
     blip_version = extract_define(cpp_defines, "BLIP_VERSION", "0.0.0")
     vids_str = extract_define(cpp_defines, "VIDS", "")
     pids_str = extract_define(cpp_defines, "PIDS", "")
@@ -44,7 +45,7 @@ def merge_bin(source, target, env):
     vids = parse_vidpid(vids_str, ["0x303A"])
     pids = parse_vidpid(pids_str, ["0x1001"])
 
-    print(f"[Merge] DEVICE_TYPE='{device_type}', VERSION='{blip_version}', VIDS={vids}, PIDS={pids}")
+    print(f"[Merge] DEVICE_TYPE='{device_type}', DEVICE_CATEGORY='{device_category}', VERSION='{blip_version}', VIDS={vids}, PIDS={pids}")
 
     # Merge firmware
     merged_firmware = build_dir / "merge_firmware.bin"
@@ -89,6 +90,7 @@ def merge_bin(source, target, env):
     # Write manifest.json
     manifest = {
         "name": device_type,
+        "category": device_category,
         "version": blip_version,
         "chip": chip,
         "vids": vids,
