@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "SettingsComponent.h"
 
 ImplementSingleton(SettingsComponent);
 
@@ -8,6 +7,7 @@ void SettingsComponent::setupInternal(JsonObject o)
     AddIntParam(propID);
     AddStringParam(deviceName);
     AddStringParamConfig(deviceType);
+    AddStringParamConfig(firmwareVersion);
 #ifdef USE_POWER
     AddIntParamConfig(wakeUpButton);
     AddBoolParamConfig(wakeUpState);

@@ -77,6 +77,13 @@ m3ApiRawFunction(m3_sendParamFeedback)
     m3ApiSuccess();
 }
 
+m3ApiRawFunction(m3_getDeviceID)
+{
+    m3ApiReturnType(uint32_t);
+    uint32_t deviceId = SettingsComponent::instance->propID;
+    m3ApiReturn(deviceId);
+}
+
 #ifdef USE_LEDSTRIP
 m3ApiRawFunction(m3_clearLeds)
 {

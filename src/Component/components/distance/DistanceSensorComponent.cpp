@@ -15,7 +15,7 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
     AddIntParamConfig(updateRate);
     AddIntParamConfig(distanceMax);
     AddFloatParam(value);
-    AddBoolParamConfig(sendFeedback);
+    AddIntParamConfig(sendRate);
 }
 
 bool DistanceSensorComponent::initInternal()
@@ -159,7 +159,7 @@ void DistanceSensorComponent::updateVL53L0X()
 
     if (!isConnected)
     {
-        if (millis() - lastConnectTime > 1000)
+        if (millis() - lastConnectTime > 5000)
         {
             initVL53L0X();
             lastConnectTime = millis();

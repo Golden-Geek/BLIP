@@ -15,6 +15,10 @@ void CommunicationComponent::setupInternal(JsonObject o)
 #ifdef USE_ESPNOW
     AddOwnedComponent(&espNow);
 #endif
+
+#ifdef USE_SERVER
+    AddOwnedComponent(&server);
+#endif
 }
 
 void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)

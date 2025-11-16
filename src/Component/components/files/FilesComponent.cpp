@@ -96,9 +96,9 @@ bool FilesComponent::initInternal()
     // Create default directories on the active filesystem
     if (mounted && _fs)
     {
-        _fs->mkdir("/scripts");
-        _fs->mkdir("/playback");
-        _fs->mkdir("/server");
+        // _fs->mkdir("/scripts");
+        // _fs->mkdir("/playback");
+        // _fs->mkdir("/server");
     }
 
     return mounted;
@@ -148,7 +148,7 @@ bool FilesComponent::deleteFolder(String path)
         NDBG("Failed to open directory or not a directory: " + path);
         return false;
     }
-
+    
     File file;
     while (file = dir.openNextFile())
     {
@@ -158,7 +158,11 @@ bool FilesComponent::deleteFolder(String path)
         }
         else
         {
-            _fs->remove(file.path());
+            //here, because file is open, we cannot delete while iterating, so close first
+            String path = String(file.path());
+            file.close();
+            NDBG("Deleting file: " + path);
+            _fs->remove(path.c_str());
         }
     }
 
@@ -175,6 +179,24 @@ void FilesComponent::deleteFileIfExists(String path)
     if (_fs->exists(path.c_str()))
     {
         _fs->remove(path.c_str());
+    }
+}
+
+
+void FilesComponent::createFolderIfNotExists(String path)
+{
+    if (!_fs || !isInit)
+        return;
+
+    if (!path.startsWith("/"))
+    {
+        path = "/" + path;
+    }
+
+    if (!_fs->exists(path.c_str()))
+    {
+        _fs->mkdir(path.c_str());
+        NDBG("Created folder: " + path);
     }
 }
 
@@ -227,13 +249,26 @@ String FilesComponent::getFileSystemInfo()
     if (!_fs)
         return "FS not mounted";
 
-    String info = "Filesystem Info:\n";
-    #if defined FILES_TYPE_FLASH || defined FILES_TYPE_SD
-    info += "SD Card Size: " + String(SD.cardSize() / (1024 * 1024)) + " MB\n";
-    info += "SD Card Used: " + String(SD.usedBytes() / (1024 * 1024)) + " MB\n";
-    #endif
 
-    NDBG(info);
+#if defined FILES_TYPE_FLASH || defined FILES_TYPE_SD
+    String fsType = "SDCard/Flash";
+    int bytesUsed = SD.usedBytes();
+    int bytesTotal = SD.totalBytes();
+#elif defined FILES_TYPE_MMC
+    String fsType = "SDMMC";
+    int bytesUsed = SD_MMC.usedBytes();
+    int bytesTotal = SD_MMC.totalBytes();
+#else
+    String fsType = "LittleFS";
+    int bytesUsed = LittleFS.usedBytes();
+    int bytesTotal = LittleFS.totalBytes();
+#endif
+
+    String info = "Filesystem Info:\n \
+    Type: " + fsType + "\n \
+    Used % : " + String((bytesUsed * 100) / bytesTotal) + "%\n \
+    Used Size: " + String(bytesUsed / 1024) + " KB\n\
+    Total Size: " + String(bytesTotal / 1024) + " KB";
 
     return info;
 }
@@ -275,6 +310,10 @@ bool FilesComponent::handleCommandInternal(const String &command, var *data, int
         infoData.type = 's';
         infoData.s = getFileSystemInfo();
         sendEvent(FilesInfo, &infoData, 1);
+        return true;
+    }else if(checkCommand(command, "deleteAll", numData, 0))
+    {
+        NDBG("Deleting all files and folders in filesystem.");
         return true;
     }
 

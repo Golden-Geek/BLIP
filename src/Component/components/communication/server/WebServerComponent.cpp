@@ -74,7 +74,11 @@ bool WebServerComponent::initInternal()
     NDBG("Setting up local files to serve");
     server.on(
         "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
-        { request->send(200); },
+        { 
+            AsyncWebServerResponse *response = request->beginResponse(200);
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            request->send(response);
+     },
         std::bind(&WebServerComponent::handleFileUpload,
                   this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 
@@ -188,6 +192,15 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
     NDBG("Server File upload Client:" + request->client()->remoteIP().toString() + " " + String(request->url()) + "Filename: " + filename + ", Index: " + String(index) + ", Length: " + String(len) + ", Final: " + String(final));
 
 #ifdef USE_FILES
+
+#ifdef USE_OTA
+    if (filename == "firmware.bin")
+    {
+        handleOTAUpload(request, index, data, len, final);
+        return;
+    }
+#endif
+
     if (index == 0)
     {
         // First chunk of a new upload, find a free slot
@@ -208,16 +221,19 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             return;
         }
 
-        String dest = "";
+        String destFolder = "";
         if (filename.endsWith(".wasm") || filename.endsWith(".wmeta"))
-            dest = "/scripts";
+            destFolder = "/scripts";
         else if (filename.endsWith(".colors") || filename.endsWith(".meta"))
-            dest = "/playback";
+            destFolder = "/playback";
         else if (filename.endsWith(".seq"))
-            dest = "/playback";
-        if (dest == "")
-            dest = request->hasArg("folder") ? request->arg("folder") : "";
-        dest += "/" + filename;
+            destFolder = "/playback";
+
+        if (destFolder == "")
+            destFolder = request->hasArg("folder") ? request->arg("folder") : "";
+
+        FilesComponent::instance->createFolderIfNotExists(destFolder);
+        String dest = destFolder + "/" + filename;
 
         DBG("Upload Start: " + String(dest));
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
@@ -258,6 +274,46 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 #endif
 }
 
+#ifdef USE_OTA
+void WebServerComponent::handleOTAUpload(AsyncWebServerRequest *request, size_t index, uint8_t *data, size_t len, bool final)
+{
+    NDBG("OTA Upload Handler");
+
+    if (index == 0)
+    {
+        NDBG("OTA Update Start");
+        if (!Update.begin(UPDATE_SIZE_UNKNOWN))
+        {
+            NDBG("OTA Update Begin Failed");
+            return;
+        }
+    }
+
+    if (len > 0)
+    {
+        size_t written = Update.write(data, len);
+        if (written != len)
+        {
+            NDBG("OTA Update Write Failed");
+            return;
+        }
+    }
+
+    if (final)
+    {
+        if (Update.end(true))
+        {
+            NDBG("OTA Update Complete. Rebooting...");
+            RootComponent::instance->restart();
+        }
+        else
+        {
+            NDBG("OTA Update End Failed");
+        }
+    }
+}
+#endif
+
 void WebServerComponent::onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
                                         void *arg, uint8_t *data, size_t len)
 {
@@ -295,6 +351,7 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
 void WebServerComponent::parseTextMessage(String msg)
 {
     DBG("Text message: " + msg);
+
 }
 
 void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
@@ -319,13 +376,15 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
 
 void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data, int numData)
 {
-    if(!sendFeedback) return;
+    if (!sendFeedback)
+        return;
     sendParamFeedback(c->getFullPath(), pName, data, numData);
 }
 
 void WebServerComponent::sendParamFeedback(String path, String pName, var *data, int numData)
 {
-    if(!sendFeedback) return;
+    if (!sendFeedback)
+        return;
 #ifdef USE_OSC
     OSCMessage msg = OSCComponent::createMessage(path, pName, data, numData, false);
 

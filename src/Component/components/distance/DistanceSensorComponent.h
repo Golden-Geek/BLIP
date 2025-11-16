@@ -34,7 +34,7 @@ DeclareIntParam(echoPin, DISTANCE_DEFAULT_ECHO_PIN);
 DeclareIntParam(updateRate, 20); // in Hz
 DeclareIntParam(distanceMax, 100);
 DeclareFloatParam(value, 0);
-DeclareBoolParam(sendFeedback, false);
+DeclareIntParam(sendRate, 0); // in Hz, 0 = send every update, -1 = never
 
 #ifdef DISTANCE_SENSOR_HCSR04
 // Variables for the state machine
@@ -58,6 +58,7 @@ int lastEchoState = LOW;
 unsigned long lastConnectTime = 0;
 VL53L0X_mod sensor;
 unsigned long lastMeasurementTime = 0;
+unsigned long lastSendTime = 0;
 
 #endif
 
@@ -81,13 +82,17 @@ CheckAndSetParam(echoPin);
 #endif
 CheckAndSetParam(updateRate);
 CheckAndSetParam(distanceMax);
-CheckAndSetParam(sendFeedback);
+CheckAndSetParam(sendRate);
 HandleSetParamInternalEnd;
 
 CheckFeedbackParamInternalStart;
 CheckAndSendParamFeedback(isConnected);
-if (!sendFeedback)
+if (sendRate < 0)
     return false;
+if (sendRate > 0 && millis() - lastSendTime < (1000 / sendRate))
+    return false;
+
+lastSendTime = millis();
 CheckAndSendParamFeedback(value);
 CheckFeedbackParamInternalEnd;
 
@@ -98,7 +103,7 @@ FillSettingsParam(echoPin);
 #endif
 FillSettingsParam(updateRate);
 FillSettingsParam(distanceMax);
-FillSettingsParam(sendFeedback);
+FillSettingsParam(sendRate);
 FillSettingsInternalEnd
 
     FillOSCQueryInternalStart
@@ -111,7 +116,7 @@ FillOSCQueryIntParam(echoPin);
 FillOSCQueryIntParam(updateRate);
 FillOSCQueryIntParam(distanceMax);
 FillOSCQueryRangeParamReadOnly(value, 0, 1);
-FillOSCQueryBoolParam(sendFeedback);
+FillOSCQueryIntParam(sendRate);
 FillOSCQueryInternalEnd
 
     EndDeclareComponent

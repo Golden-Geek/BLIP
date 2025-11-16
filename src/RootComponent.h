@@ -24,9 +24,7 @@ DisplayComponent display;
 FilesComponent files;
 #endif
 
-#ifdef USE_SERVER
-WebServerComponent server;
-#endif
+
 
 #ifdef USE_BATTERY
 BatteryComponent battery;
@@ -105,6 +103,7 @@ int demoIndex = 0;
 
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
+
 
 void shutdown(bool restarting = false);
 void restart();

@@ -81,7 +81,7 @@ def upload_exports(auto_upload=False):
     else:
         print("📤 Auto upload enabled: uploading all exported builds...")
 
-    url = "https://benjamin.kuperberg.fr/bentuino/uploadfw.php"  # Set your server URL here
+    url = "https://www.goldengeek.org/blip/download/firmware/uploadfw.php"  # Set your server URL here
 
     for folder in folders:
         firmware = folder / "firmware.bin"
@@ -99,6 +99,7 @@ def upload_exports(auto_upload=False):
         }
         data = {"device_type": folder.name}
         try:
+            print(f"   - Sending data: {data}")
             response = requests.post(url, files=files, data=data)
             if response.status_code == 200:
                 print(f"✅ {folder.name} upload successful!")

@@ -9,17 +9,15 @@
 
 #include "Component/components/settings/SettingsComponent.cpp"
 
-//SD shit
+// SD shit
 #ifdef USE_FILES
 #include <SD.h>
 #include "Component/components/files/FilesComponent.cpp"
 #endif
 
-
 #ifdef USE_WIFI
 #include "Component/components/wifi/WifiComponent.cpp"
 #endif
-
 
 #ifdef USE_OSC
 #include "Component/components/communication/osc/OSCComponent.cpp"
@@ -33,12 +31,12 @@
 #include "Component/components/communication/espnow/ESPNowComponent.cpp"
 #endif
 
+#ifdef USE_SERVER
+#include "Component/components/communication/server/WebServerComponent.cpp"
+#endif
+
 #include "Component/components/communication/CommunicationComponent.cpp"
 
-
-#ifdef USE_SERVER
-#include "Component/components/server/WebServerComponent.cpp"
-#endif
 
 #ifdef USE_SCRIPT
 #include "Common/script/Script.cpp"
@@ -46,7 +44,6 @@
 #include "Common/script/wasmFunctions.cpp"
 #include "Component/components/script/ScriptComponent.cpp"
 #endif
-
 
 #if defined USE_IO || defined USE_BUTTON
 #include "Component/components/io/IOComponent.cpp"
@@ -112,7 +109,6 @@
 #ifdef USE_BEHAVIOUR
 #include "Component/components/behaviour/BehaviourComponent.cpp"
 #endif
-
 
 #ifdef USE_DISPLAY
 #include "Component/components/display/DisplayComponent.cpp"

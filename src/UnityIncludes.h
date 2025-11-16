@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Arduino.h"
 
 #include <Wire.h>
@@ -80,17 +79,20 @@
 #include "Component/components/communication/espnow/ESPNowComponent.h"
 #endif
 
-#include "Component/components/communication/CommunicationComponent.h"
-
 #ifdef USE_SERVER
-// #define CONFIG_ASYNC_TCP_RUNNING_CORE -1 //any available core
-// #define CONFIG_ASYNC_TCP_USE_WDT 0
 
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-#include "Component/components/server/WebServerComponent.h"
+#include "Component/components/communication/server/WebServerComponent.h"
 #endif
+
+#ifdef USE_OTA
+#include "Update.h"
+#endif
+
+#include "Component/components/communication/CommunicationComponent.h"
+
 
 #ifdef USE_SCRIPT
 #include "Component/components/script/ScriptComponent.h"

@@ -78,9 +78,7 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&strips);
 #endif
 
-#ifdef USE_SERVER
-    AddOwnedComponent(&server);
-#endif
+
 
 #ifdef USE_WIFI
     AddOwnedComponent(&wifi);
@@ -165,7 +163,7 @@ void RootComponent::shutdown(bool restarting)
     NDBG("Sleep now, baby.");
 
     comm.sendMessage(this, "bye", String(restarting ? "restart" : "shutdown"));
-    server.sendBye(String(restarting ? "restart" : "shutdown"));
+    comm.server.sendBye(String(restarting ? "restart" : "shutdown"));
 
 #ifdef USE_LEDSTRIP
     strips.shutdown();
@@ -200,7 +198,7 @@ void RootComponent::standby()
     NDBG("Standby !");
 
     comm.sendMessage(this, "bye", String("standby"));
-    server.sendBye(String("standby"));
+    comm.server.sendBye(String("standby"));
 
     clear();
     esp_sleep_enable_timer_wakeup(3 * 1000000); // Set wakeup timer for 3 seconds
@@ -273,7 +271,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
             if (wifi.state == WifiComponent::Connected)
             {
                 NDBG("Setup connections now");
-                server.setupConnection();
+                comm.server.setupConnection();
 
 #ifdef USE_STREAMING
                 streamReceiver.setupConnection();
@@ -375,15 +373,29 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
 
 bool RootComponent::handleCommandInternal(const String &command, var *data, int numData)
 {
+    NDBG("Root handling command: " + command+ " is stats ? "+String(command.compareTo("stats")));
     if (command == "shutdown")
         shutdown();
     else if (command == "restart")
         restart();
     else if (command == "stats")
     {
-        NDBG("Heap " + String(ESP.getFreeHeap()) + " free / " + String(ESP.getHeapSize()) + " total");
-        NDBG("Free Stack size  " + String((int)uxTaskGetStackHighWaterMark(NULL)) + " free");
-        // comm->sendMessage(this, "freeHeap", String(ESP.getFreeHeap()) + " bytes");
+        uint32_t freeHeap = ESP.getFreeHeap();
+        uint32_t heapSize = ESP.getHeapSize();
+
+        String stats = DeviceName + ", ID " + String(DeviceID) + " : \
+        \nHeap Size: " +
+                       String(heapSize / 1024) + " kb, Free Heap: " + String(freeHeap / 1024) + " kb \
+        \n Min Free Heap: " +
+                       String(ESP.getMinFreeHeap() / 1024) + " kb \
+        \n Max Alloc Heap: " +
+                       String(ESP.getMaxAllocHeap() / 1024) + " kb";
+
+#ifdef USE_FILES
+        stats += "\n" + files.getFileSystemInfo();
+#endif
+        NDBG(stats);
+        comm.sendMessage(this, "stats", stats);
     }
     else if (command == "log")
     {

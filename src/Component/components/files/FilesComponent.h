@@ -41,12 +41,16 @@ bool initInternal() override;
 File openFile(String fileName, bool forWriting = false, bool deleteIfExists = true);
 bool deleteFolder(String path);
 void deleteFileIfExists(String path);
+
+void createFolderIfNotExists(String path);
+
 String listDir(const char *dirname, uint8_t levels);
 String getFileSystemInfo();
 
 bool handleCommandInternal(const String &command, var *data, int numData) override;
 
 fs::FS &getFS() const { return *_fs; }
+
 
 private:
 //================================================================================

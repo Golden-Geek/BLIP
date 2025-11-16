@@ -12,7 +12,8 @@ DeclareComponentSingleton(Settings, "settings", )
 
 DeclareIntParam(propID, 0);
 DeclareStringParam(deviceName, DEVICE_TYPE);
-DeclareStringParam(deviceType, DEVICE_TYPE);
+DeclareStringParam(deviceType, DEVICE_TYPE); //read-only
+DeclareStringParam(firmwareVersion, BLIP_VERSION); // read-only
 
 #ifdef USE_POWER
 DeclareIntParam(wakeUpButton, POWER_WAKEUP_BUTTON);
@@ -36,7 +37,6 @@ HandleSetParamInternalStart
     CheckTrigger(saveSettings);
     CheckTrigger(clearSettings);
     CheckAndSetParam(deviceName);
-    CheckAndSetParam(deviceType);
     CheckAndSetParam(propID);
     #ifdef USE_POWER
     CheckAndSetParam(wakeUpButton);
@@ -46,7 +46,6 @@ HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
     FillSettingsParam(deviceName);
-    FillSettingsParam(deviceType);
     FillSettingsParam(propID);
     #ifdef USE_POWER
     FillSettingsParam(wakeUpButton);
@@ -60,6 +59,7 @@ FillSettingsInternalEnd
     FillOSCQueryIntParam(propID);
     FillOSCQueryStringParam(deviceName);
     FillOSCQueryStringParamReadOnly(deviceType);
+    FillOSCQueryStringParamReadOnly(firmwareVersion);
     #ifdef USE_POWER
     FillOSCQueryIntParam(wakeUpButton);
     FillOSCQueryBoolParam(wakeUpState);

@@ -13,6 +13,10 @@ OSCComponent osc;
 ESPNowComponent espNow;
 #endif
 
+#ifdef USE_SERVER
+WebServerComponent server;
+#endif
+
 void setupInternal(JsonObject o) override;
 
 void onChildComponentEvent(const ComponentEvent &e) override;
