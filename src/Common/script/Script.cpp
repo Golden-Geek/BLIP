@@ -255,7 +255,7 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "printString", "v(ii)", &m3_printString);
     m3_LinkRawFunction(module, arduino, "sendEvent", "v(i)", &m3_sendEvent);
     m3_LinkRawFunction(module, arduino, "sendParamFeedback", "v(if)", &m3_sendParamFeedback);
-    m3_LinkRawFunction(module, arduino, "getDeviceID", "i()", &m3_getDeviceID);
+    m3_LinkRawFunction(module, arduino, "getPropID", "i()", &m3_getPropID);
 
 #ifdef USE_LEDSTRIP
     m3_LinkRawFunction(module, arduino, "clearLeds", "v()", &m3_clearLeds);

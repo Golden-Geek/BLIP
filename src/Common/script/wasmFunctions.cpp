@@ -77,7 +77,7 @@ m3ApiRawFunction(m3_sendParamFeedback)
     m3ApiSuccess();
 }
 
-m3ApiRawFunction(m3_getDeviceID)
+m3ApiRawFunction(m3_getPropID)
 {
     m3ApiReturnType(uint32_t);
     uint32_t deviceId = SettingsComponent::instance->propID;

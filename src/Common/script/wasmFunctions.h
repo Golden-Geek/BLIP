@@ -14,7 +14,7 @@ m3ApiRawFunction(m3_arduino_delay);
 m3ApiRawFunction(m3_printFloat);
 m3ApiRawFunction(m3_printInt);
 m3ApiRawFunction(m3_printString);
-m3ApiRawFunction(m3_getDeviceID);
+m3ApiRawFunction(m3_getPropID);
 m3ApiRawFunction(m3_sendEvent);
 m3ApiRawFunction(m3_sendParamFeedback);
 
