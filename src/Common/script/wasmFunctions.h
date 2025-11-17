@@ -19,6 +19,7 @@ m3ApiRawFunction(m3_sendEvent);
 m3ApiRawFunction(m3_sendParamFeedback);
 
 #ifdef USE_LEDSTRIP
+m3ApiRawFunction(m3_getLedCount);
 m3ApiRawFunction(m3_clearLeds);
 m3ApiRawFunction(m3_dimLeds);
 m3ApiRawFunction(m3_fillLeds);

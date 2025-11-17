@@ -85,6 +85,13 @@ m3ApiRawFunction(m3_getPropID)
 }
 
 #ifdef USE_LEDSTRIP
+m3ApiRawFunction(m3_getLedCount)
+{
+    m3ApiReturnType(uint32_t);
+    uint32_t ledCount = RootComponent::instance->strips.items[0]->count;
+    m3ApiReturn(ledCount);
+}
+
 m3ApiRawFunction(m3_clearLeds)
 {
     // RootComponent::instance->strips.items[0]->bakeLayer(LedManager::Mode::Stream);

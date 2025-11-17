@@ -258,6 +258,7 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "getPropID", "i()", &m3_getPropID);
 
 #ifdef USE_LEDSTRIP
+    m3_LinkRawFunction(module, arduino, "getLedCount", "i()", &m3_getLedCount);
     m3_LinkRawFunction(module, arduino, "clearLeds", "v()", &m3_clearLeds);
     m3_LinkRawFunction(module, arduino, "dimLeds", "v(f)", &m3_dimLeds);
     m3_LinkRawFunction(module, arduino, "fillLeds", "v(i)", &m3_fillLeds);
