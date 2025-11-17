@@ -373,7 +373,6 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
 
 bool RootComponent::handleCommandInternal(const String &command, var *data, int numData)
 {
-    NDBG("Root handling command: " + command+ " is stats ? "+String(command.compareTo("stats")));
     if (command == "shutdown")
         shutdown();
     else if (command == "restart")
@@ -383,7 +382,8 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
         uint32_t freeHeap = ESP.getFreeHeap();
         uint32_t heapSize = ESP.getHeapSize();
 
-        String stats = DeviceName + ", ID " + String(DeviceID) + " : \
+        String stats = DeviceName + " - ID " + String(settings.propID) + " : \
+        \n "+ DeviceType + ",Version " + settings.firmwareVersion + " \
         \nHeap Size: " +
                        String(heapSize / 1024) + " kb, Free Heap: " + String(freeHeap / 1024) + " kb \
         \n Min Free Heap: " +
