@@ -58,6 +58,7 @@ public:
 
     // play control
     void load(String path, bool force = false);
+    void unload();
     void play(float atTime = 0);
     void seek(float t, bool doSendEvent = true);
     void pause();

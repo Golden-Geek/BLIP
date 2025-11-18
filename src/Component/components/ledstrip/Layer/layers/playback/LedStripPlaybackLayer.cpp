@@ -326,6 +326,18 @@ void LedStripPlaybackLayer::load(String path, bool force)
 #endif
 }
 
+void LedStripPlaybackLayer::unload()
+{
+    stop();
+    if (curFile)
+    {
+        curFile.close();
+        NDBG("File " + curFilename + " unloaded");
+    }
+    curFilename = "";
+    showBlackFrame();
+}
+
 void LedStripPlaybackLayer::play(float atTime)
 {
     if (!curFile) return;
@@ -434,8 +446,7 @@ void LedStripPlaybackLayer::onEnabledChanged()
     LedStripLayer::onEnabledChanged();
     if (!enabled)
     {
-        stop();
-        showBlackFrame();
+        unload();
     }
     else
     {
@@ -463,7 +474,7 @@ bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *da
 
     if (checkCommand(command, "load", numData, 1))
     {
-        load(data[0].stringValue());
+        load(data[0].stringValue(), numData > 1 ? (bool)data[1].boolValue() : false);
         return true;
     }
 
@@ -534,6 +545,10 @@ bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *da
     if (checkCommand(command, "seek", numData, 1))
     {
         timeToSeek = data[0].floatValue();
+        return true;
+    }if (checkCommand(command, "unload", numData, 0))
+    {
+        unload();
         return true;
     }
 
