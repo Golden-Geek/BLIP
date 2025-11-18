@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
   <script src="osc-mini.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <style>
     :root {
@@ -143,6 +142,38 @@
       justify-content: space-between;
     }
 
+    .device-meta {
+      flex: 1;
+      min-width: 260px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+
+    .meta-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      font-feature-settings: "tnum" 1, "lnum" 1;
+    }
+
     .btn-group {
       display: flex;
       flex-wrap: wrap;
@@ -259,14 +290,14 @@
     }
 
     .file-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr);
-      gap: 10px;
-      align-items: center;
+      width: 100%;
+      display: flex;
+      align-items: stretch;
     }
 
     .file-label {
       display: inline-flex;
+      width: 100%;
       align-items: center;
       gap: 8px;
       padding: 10px 12px;
@@ -530,25 +561,6 @@
       margin-bottom: 12px;
     }
 
-    .firmware-download {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 8px;
-      align-items: center;
-    }
-
-    .firmware-download select {
-      flex: 1;
-      min-width: 160px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(75, 85, 99, 0.9);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-main);
-      font-size: 0.85rem;
-    }
-
     .btn-download {
       padding: 8px 16px;
       border-radius: var(--radius-lg);
@@ -574,27 +586,96 @@
       border-color: rgba(75, 85, 99, 0.9);
     }
 
-    .firmware-download .btn-download {
-      flex: 0;
-    }
-
-    .firmware-auto {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 12px;
-      align-items: center;
-    }
-
-    .firmware-auto .btn-download {
-      flex: 1;
+    .btn-download.wide {
+      width: 100%;
       justify-content: center;
     }
 
-    .download-status {
-      font-size: 0.75rem;
-      color: var(--text-soft);
+    .firmware-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
       margin-bottom: 14px;
+    }
+
+    .firmware-action {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+
+    .action-title {
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: 0.06em;
+    }
+
+    .action-tag {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: var(--text-soft);
+    }
+
+    .action-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .firmware-action select {
+      flex: 1;
+      min-width: 130px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+
+    .firmware-action .btn-download {
+      flex: 0;
+      white-space: nowrap;
+    }
+
+    .action-status {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      min-height: 1.2em;
+    }
+
+    .upload-actions {
+      margin-top: 6px;
+    }
+
+    .firmware-action .progress-wrapper {
+      margin-top: 6px;
+    }
+
+    .firmware-action .footer-row {
+      margin-top: 10px;
+    }
+
+    .hint-row.compact {
+      margin-top: 6px;
     }
 
     @keyframes spin {
@@ -977,9 +1058,29 @@
             <button type="button" class="btn btn-danger" onclick="sendCommand('/shutdown');">
               Shutdown
             </button>
-            <button type="button" class="btn" onclick="sendCommand('/settings/testMode');">
-              Test Mode
-            </button>
+          </div>
+
+          <div class="device-meta" aria-live="polite">
+            <div class="meta-item">
+              <span class="meta-label">IP</span>
+              <span class="meta-value" id="deviceMetaIp">—</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Device ID</span>
+              <span class="meta-value" id="deviceMetaId">—</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Name</span>
+              <span class="meta-value" id="deviceMetaName">—</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Type</span>
+              <span class="meta-value" id="deviceMetaType">—</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Prop ID</span>
+              <span class="meta-value" id="deviceMetaProp">—</span>
+            </div>
           </div>
 
           <div class="toggle-wrap">
@@ -1010,56 +1111,80 @@
           <div class="status-pill" id="firmwareStatusPill">Checking…</div>
         </div>
         <div class="status-helper" id="firmwareStatusMessage">Checking firmware status…</div>
-        <div class="firmware-download">
-          <select id="firmwareVersionSelect" disabled>
-            <option>Loading versions…</option>
-          </select>
-          <button class="btn-download" id="downloadFirmwareBtn" disabled>Download .zip</button>
-        </div>
-        <div class="download-status" id="downloadFirmwareStatus">Firmware download link activates once the device is matched to a catalog entry.</div>
-        <div class="firmware-auto">
-          <button class="btn-download" id="autoUpdateBtn" disabled>Download &amp; Install Latest</button>
-        </div>
-        <div class="download-status" id="autoUpdateStatus">Auto-update will enable when a newer firmware is available.</div>
-
-        <div class="file-row">
-          <label class="file-label" for="firmware">
-            <span class="icon">📁</span>
-            <span>
-              <span class="text-strong">Choose firmware</span>
-              <span style="display:block;font-size:0.75rem;color:var(--text-soft);">
-                ESP32 <code>.bin</code> built with your current partition table
-              </span>
-            </span>
-          </label>
-          <input type="file" id="firmware" accept=".bin" />
-        </div>
-        <div class="file-meta" id="fileMeta">
-          <span class="file-pill muted">No file selected</span>
-        </div>
-
-        <div class="progress-wrapper">
-          <div class="progress-bar" aria-hidden="true">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="progress-text">
-            <span id="progressLabel">Waiting for upload…</span>
-            <span class="value" id="progressValue">0%</span>
-          </div>
-
-          <div class="footer-row">
-            <div class="status" id="statusText">
-              <strong>Status:</strong> idle
+        <div class="firmware-actions">
+          <div class="firmware-action">
+            <div class="action-heading">
+              <span class="action-title">Manual package</span>
+              <span class="action-tag">.zip download</span>
             </div>
-            <button class="btn-upload" id="uploadBtn" disabled>
-              <span id="uploadBtnLabel">Upload firmware</span>
-              <span id="uploadSpinner" class="spinner" style="display:none;"></span>
-            </button>
+            <div class="action-controls">
+              <select id="firmwareVersionSelect" disabled>
+                <option>Loading versions…</option>
+              </select>
+              <button class="btn-download" id="downloadFirmwareBtn" disabled>Download .zip</button>
+            </div>
+            <div class="action-status" id="downloadFirmwareStatus">Firmware download link activates once the device is matched to a catalog entry.</div>
+          </div>
+          <div class="firmware-action">
+            <div class="action-heading">
+              <span class="action-title">One-click OTA</span>
+              <span class="action-tag">Download &amp; install</span>
+            </div>
+            <button class="btn-download wide" id="autoUpdateBtn" disabled>Download &amp; Install Latest</button>
+            <div class="action-status" id="autoUpdateStatus">Auto-update will enable when a newer firmware is available.</div>
+          </div>
+        </div>
+
+        <div class="firmware-actions upload-actions">
+          <div class="firmware-action">
+            <div class="action-heading">
+              <span class="action-title">Local firmware</span>
+              <span class="action-tag">.bin upload</span>
+            </div>
+            <div class="file-row">
+              <label class="file-label" for="firmware">
+                <span class="icon">📁</span>
+                <span>
+                  <span class="text-strong">Choose firmware</span>
+                  <span style="display:block;font-size:0.75rem;color:var(--text-soft);">
+                    ESP32 <code>.bin</code> built with your current partition table
+                  </span>
+                </span>
+              </label>
+              <input type="file" id="firmware" accept=".bin" />
+            </div>
+            <div class="file-meta" id="fileMeta">
+              <span class="file-pill muted">No file selected</span>
+            </div>
           </div>
 
-          <div class="hint-row">
-            <span class="hint-pill">Tip</span>
-            <span>Device will reboot automatically after a successful OTA flash.</span>
+          <div class="firmware-action">
+            <div class="action-heading">
+              <span class="action-title">Upload progress</span>
+              <span class="action-tag">Device OTA</span>
+            </div>
+            <div class="progress-wrapper">
+              <div class="progress-bar" aria-hidden="true">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+              <div class="progress-text">
+                <span id="progressLabel">Waiting for upload…</span>
+                <span class="value" id="progressValue">0%</span>
+              </div>
+            </div>
+            <div class="footer-row">
+              <div class="status" id="statusText">
+                <strong>Status:</strong> idle
+              </div>
+              <button class="btn-upload" id="uploadBtn" disabled>
+                <span id="uploadBtnLabel">Upload firmware</span>
+                <span id="uploadSpinner" class="spinner" style="display:none;"></span>
+              </button>
+            </div>
+            <div class="hint-row compact">
+              <span class="hint-pill">Tip</span>
+              <span>Device will reboot automatically after a successful OTA flash.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1112,7 +1237,7 @@
     const searchParams = new URLSearchParams(window.location.search);
     const urlIp = searchParams.get("ip");
     const local = window.location.hostname.startsWith("1") || window.location.hostname.includes(".local");
-    const ip = urlIp || (local ? window.location.hostname : "192.168.1.115");
+    const ip = urlIp || (local ? window.location.hostname : "192.168.1.193");
     let data = {};
     let oscWS;
     let connectAttempts = 0;
@@ -1128,6 +1253,9 @@
     let uploadInProgress = false;
     let autoUpdateInProgress = false;
     let uploadFirmwareBlob = null;
+    let settingsDeviceType = null;
+    let settingsDeviceName = null;
+    let settingsPropId = null;
 
     const firmwareEls = {
       current: document.getElementById("currentFirmwareVersion"),
@@ -1146,6 +1274,16 @@
       button: document.getElementById("autoUpdateBtn"),
       status: document.getElementById("autoUpdateStatus"),
     };
+
+    const deviceMetaEls = {
+      ip: document.getElementById("deviceMetaIp"),
+      id: document.getElementById("deviceMetaId"),
+      name: document.getElementById("deviceMetaName"),
+      type: document.getElementById("deviceMetaType"),
+      prop: document.getElementById("deviceMetaProp"),
+    };
+
+    updateDeviceMetaDisplay();
 
     if (firmwareDownloadEls.button) {
       firmwareDownloadEls.button.addEventListener("click", handleFirmwareDownload);
@@ -1169,6 +1307,102 @@
       setAutoUpdateAvailability(null, "Matching device with firmware catalog…");
       fetchDeviceHostInfo();
       fetchFirmwareCatalog();
+    }
+
+    function getCatalogDeviceType() {
+      if (deviceInfo && deviceInfo.DEVICE_TYPE) {
+        return deviceInfo.DEVICE_TYPE;
+      }
+      if (settingsDeviceType) {
+        return settingsDeviceType;
+      }
+      return null;
+    }
+
+    function updateDeviceMetaDisplay() {
+      if (deviceMetaEls.ip) {
+        deviceMetaEls.ip.textContent = ip || "—";
+      }
+
+      if (deviceMetaEls.id) {
+        deviceMetaEls.id.textContent = (deviceInfo && deviceInfo.DEVICE_ID) || "—";
+      }
+
+      if (deviceMetaEls.name) {
+        const nameValue = (deviceInfo && deviceInfo.NAME) || settingsDeviceName || "—";
+        deviceMetaEls.name.textContent = nameValue;
+      }
+
+      if (deviceMetaEls.type) {
+        deviceMetaEls.type.textContent = getCatalogDeviceType() || "—";
+      }
+
+      if (deviceMetaEls.prop) {
+        const propValue = settingsPropId ?? (deviceInfo && deviceInfo.PROP_ID);
+        deviceMetaEls.prop.textContent =
+          propValue === null || propValue === undefined || propValue === ""
+            ? "—"
+            : propValue;
+      }
+    }
+
+    function findParameterByPath(node, fullPath) {
+      if (!node || !node.CONTENTS) return null;
+
+      for (const key in node.CONTENTS) {
+        const item = node.CONTENTS[key];
+        if (!item) continue;
+
+        if (item.FULL_PATH === fullPath) {
+          return item;
+        }
+
+        if (item.CONTENTS) {
+          const nested = findParameterByPath(item, fullPath);
+          if (nested) {
+            return nested;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function getSettingValue(structureRoot, path) {
+      const param = findParameterByPath(structureRoot, path);
+      if (!param) return null;
+      const valueArray = Array.isArray(param.VALUE) ? param.VALUE : [param.VALUE];
+      return valueArray && valueArray.length ? valueArray[0] : null;
+    }
+
+    function syncSettingsMetadata(structureRoot) {
+      if (!structureRoot) return;
+
+      let deviceTypeChanged = false;
+      const typeFromSettings = getSettingValue(structureRoot, "/settings/deviceType");
+      if (typeFromSettings && typeFromSettings !== settingsDeviceType) {
+        settingsDeviceType = typeFromSettings;
+        if (deviceInfo && !deviceInfo.DEVICE_TYPE) {
+          deviceInfo.DEVICE_TYPE = typeFromSettings;
+        }
+        deviceTypeChanged = true;
+      }
+
+      const propValue = getSettingValue(structureRoot, "/settings/propID");
+      if (propValue !== null && propValue !== undefined) {
+        settingsPropId = propValue;
+      }
+
+      const deviceNameValue = getSettingValue(structureRoot, "/settings/deviceName");
+      if (deviceNameValue) {
+        settingsDeviceName = deviceNameValue;
+      }
+
+      updateDeviceMetaDisplay();
+
+      if (deviceTypeChanged && deviceInfo) {
+        evaluateFirmwareVersions();
+      }
     }
 
     function updateFirmwareStatusUI({ current, latest, state, message }) {
@@ -1219,8 +1453,13 @@
         })
         .then((info) => {
           deviceInfo = info || {};
-          const detectedMsg = deviceInfo.NAME
-            ? "Detected " + deviceInfo.NAME + ". Checking online catalog…"
+          if (deviceInfo.DEVICE_TYPE) {
+            settingsDeviceType = deviceInfo.DEVICE_TYPE;
+          }
+          updateDeviceMetaDisplay();
+          const detectedType = getCatalogDeviceType();
+          const detectedMsg = detectedType
+            ? "Detected " + detectedType + ". Checking online catalog…"
             : "Checking online catalog…";
           updateFirmwareStatusUI({ current: deviceInfo.VERSION || "—", message: detectedMsg });
           evaluateFirmwareVersions();
@@ -1257,6 +1496,8 @@
 
     function evaluateFirmwareVersions() {
       if (!deviceInfo) {
+        updateFirmwareStatusUI({ state: "checking", message: "Waiting for device info…" });
+        setDownloadStatus("Waiting for device info to load…");
         return;
       }
 
@@ -1270,7 +1511,15 @@
         return;
       }
 
-      const match = findCatalogEntry(deviceInfo.NAME);
+      const catalogDeviceType = getCatalogDeviceType();
+      if (!catalogDeviceType) {
+        updateFirmwareStatusUI({ state: "checking", message: "Waiting for device type information…" });
+        setDownloadStatus("Waiting for device type info before enabling downloads.");
+        setAutoUpdateAvailability(null, "Waiting for device type info before enabling downloads.");
+        return;
+      }
+
+      const match = findCatalogEntry(catalogDeviceType);
       const catalogEntry = match ? match.entry : null;
       if (!catalogEntry || !Array.isArray(catalogEntry.versions) || catalogEntry.versions.length === 0) {
         updateFirmwareStatusUI({ latest: "—", state: "error", message: "Device not found in firmware catalog." });
@@ -1297,7 +1546,7 @@
         setDownloadStatus("Device already runs the latest firmware.");
         setAutoUpdateAvailability(null, "Device already up to date; auto-update disabled.");
       } else {
-        const readableName = catalogEntry.name || deviceInfo.NAME || "device";
+        const readableName = catalogEntry.name || catalogDeviceType || "device";
         updateFirmwareStatusUI({
           state: "warn",
           message: "Update available: install version " + latestVersion + " for " + readableName + ".",
@@ -1310,6 +1559,9 @@
     function findCatalogEntry(deviceName) {
       if (!firmwareCatalog) return null;
       const normalizedDevice = normalizeName(deviceName);
+      if (!normalizedDevice) {
+        return null;
+      }
       let match = null;
       Object.keys(firmwareCatalog).some((key) => {
         const entry = firmwareCatalog[key];
@@ -1542,6 +1794,7 @@
         .then((response) => response.json())
         .then((_data) => {
           data = _data;
+          syncSettingsMetadata(data);
           console.log("Config:", data);
           buildStructure();
           initWebSocket();

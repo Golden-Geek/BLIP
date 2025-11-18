@@ -48,6 +48,8 @@ bool WebServerComponent::initInternal()
 
             o["NAME"] = DeviceName;
             o["VERSION"] = BLIP_VERSION;
+            o["DEVICE_TYPE"] = DeviceType;
+            o["DEVICE_ID"] = DeviceID;
             o["OSC_PORT"] = OSC_LOCAL_PORT;
             o["OSC_TRANSPORT"] = "UDP";
 
