@@ -8,7 +8,7 @@ void OSCComponent::setupInternal(JsonObject o)
     mdnsIsInit = false;
 
     AddStringParamConfig(remoteHost);
-    AddStringParamConfig(remotePort);
+    AddIntParamConfig(remotePort);
     AddBoolParamConfig(sendFeedback);
     AddBoolParamConfig(isAlive);
 }
