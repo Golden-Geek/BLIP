@@ -24,6 +24,7 @@ void onChildComponentEvent(const ComponentEvent &e) override;
 void sendParamFeedback(Component *c, void *param, const String &pName, Component::ParamType pType);
 void sendMessage(Component *c, const String &mName, const String &val);
 void sendEventFeedback(const ComponentEvent &e);
+void sendDebug(const String& msg, const String&source = "", const String& type = "info");
 
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");

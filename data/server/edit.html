@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
   <script src="osc-mini.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <style>
     :root {
@@ -461,6 +462,141 @@
       color: #9ca3af;
     }
 
+    .firmware-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.05) 0, rgba(15, 23, 42, 0.9) 65%);
+      margin-bottom: 12px;
+    }
+
+    .firmware-status>div {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .firmware-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+    }
+
+    .firmware-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .status-pill {
+      align-self: center;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .status-pill.ok {
+      border-color: rgba(34, 197, 94, 0.8);
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .status-pill.warn {
+      border-color: rgba(245, 158, 11, 0.8);
+      color: #fcd34d;
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    .status-pill.error {
+      border-color: rgba(239, 68, 68, 0.8);
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.12);
+    }
+
+    .status-helper {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-bottom: 12px;
+    }
+
+    .firmware-download {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .firmware-download select {
+      flex: 1;
+      min-width: 160px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+
+    .btn-download {
+      padding: 8px 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(34, 197, 94, 0.8);
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      color: #022c22;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow:
+        0 0 0 1px rgba(16, 185, 129, 0.95),
+        0 12px 26px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-download:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+      background: rgba(15, 23, 42, 0.6);
+      color: rgba(226, 232, 240, 0.6);
+      border-color: rgba(75, 85, 99, 0.9);
+    }
+
+    .firmware-download .btn-download {
+      flex: 0;
+    }
+
+    .firmware-auto {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .firmware-auto .btn-download {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .download-status {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -598,6 +734,177 @@
 
     .sliderText {
       max-width: 2.8em !important;
+    }
+
+    /* Logger Panel */
+    .logger-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--accent);
+      color: #022c22;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .logger-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(34, 197, 94, 0.6);
+    }
+
+    .logger-toggle svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .logger-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100vh;
+      background: var(--card-bg);
+      border-left: 1px solid var(--border);
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+    }
+
+    .logger-panel.open {
+      right: 0;
+    }
+
+    .logger-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(circle at top left, #111827 0, #020617 50%);
+    }
+
+    .logger-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .logger-close {
+      background: none;
+      border: none;
+      color: var(--text-soft);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .logger-close:hover {
+      background: var(--muted);
+      color: var(--text-main);
+    }
+
+    .logger-close svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .logger-controls {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .logger-controls .btn {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+    }
+
+    .logger-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .log-entry {
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      border-left: 3px solid var(--muted);
+      background: rgba(15, 23, 42, 0.5);
+      word-wrap: break-word;
+    }
+
+    .log-entry.info {
+      border-left-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .log-entry.warning {
+      border-left-color: var(--warning);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .log-entry.error {
+      border-left-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .log-time {
+      color: var(--text-soft);
+      font-size: 0.7rem;
+      margin-right: 6px;
+    }
+
+    .log-source {
+      color: var(--accent);
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    .log-message {
+      color: var(--text-main);
+    }
+
+    .logger-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .logger-content::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    .logger-content::-webkit-scrollbar-thumb {
+      background: var(--muted);
+      border-radius: 4px;
+    }
+
+    .logger-content::-webkit-scrollbar-thumb:hover {
+      background: var(--border);
+    }
+
+    .sliderText {
+      max-width: 2.8em !important;
       vertical-align: bottom;
       margin-left: 10px;
     }
@@ -691,6 +998,30 @@
       <div class="card-inner">
         <div class="section-title">Firmware update</div>
 
+        <div class="firmware-status" id="firmwareStatus">
+          <div>
+            <div class="firmware-label">Device firmware</div>
+            <div class="firmware-value" id="currentFirmwareVersion">—</div>
+          </div>
+          <div>
+            <div class="firmware-label">Latest available</div>
+            <div class="firmware-value" id="latestFirmwareVersion">—</div>
+          </div>
+          <div class="status-pill" id="firmwareStatusPill">Checking…</div>
+        </div>
+        <div class="status-helper" id="firmwareStatusMessage">Checking firmware status…</div>
+        <div class="firmware-download">
+          <select id="firmwareVersionSelect" disabled>
+            <option>Loading versions…</option>
+          </select>
+          <button class="btn-download" id="downloadFirmwareBtn" disabled>Download .zip</button>
+        </div>
+        <div class="download-status" id="downloadFirmwareStatus">Firmware download link activates once the device is matched to a catalog entry.</div>
+        <div class="firmware-auto">
+          <button class="btn-download" id="autoUpdateBtn" disabled>Download &amp; Install Latest</button>
+        </div>
+        <div class="download-status" id="autoUpdateStatus">Auto-update will enable when a newer firmware is available.</div>
+
         <div class="file-row">
           <label class="file-label" for="firmware">
             <span class="icon">📁</span>
@@ -743,20 +1074,465 @@
     </div>
   </div>
 
+  <!-- Logger Toggle Button -->
+  <button class="logger-toggle" id="loggerToggle" title="Toggle Debug Logger">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+  </button>
+
+  <!-- Logger Panel -->
+  <div class="logger-panel" id="loggerPanel">
+    <div class="logger-header">
+      <h3>Debug Logger</h3>
+      <button class="logger-close" id="loggerClose">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="logger-controls">
+      <button class="btn btn-danger" id="clearLogs">Clear</button>
+      <span style="flex: 1; font-size: 0.75rem; color: var(--text-soft);">
+        <span id="logCount">0</span> entries
+      </span>
+    </div>
+    <div class="logger-content" id="loggerContent">
+      <div class="log-entry info">
+        <span class="log-source">System</span>
+        <span class="log-message">Logger ready. Waiting for messages...</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ==============================
     // Connection & configuration
     // ==============================
-    let local = window.location.hostname.startsWith("1") || window.location.hostname.includes(".local");
-    let ip = local ? window.location.hostname : "192.168.1.115";
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlIp = searchParams.get("ip");
+    const local = window.location.hostname.startsWith("1") || window.location.hostname.includes(".local");
+    const ip = urlIp || (local ? window.location.hostname : "192.168.1.115");
     let data = {};
     let oscWS;
+    let connectAttempts = 0;
+
+    const firmwareBaseUrl = "https://www.goldengeek.org/blip/download/firmware/getFirmwares.php";
+    const firmwareListUrl = firmwareBaseUrl + "?list";
+    let firmwareCatalog = null;
+    let deviceInfo = null;
+    let versionCheckStarted = false;
+    let catalogMatchKey = null;
+    let catalogMatchEntry = null;
+    let pendingAutoVersion = null;
+    let uploadInProgress = false;
+    let autoUpdateInProgress = false;
+    let uploadFirmwareBlob = null;
+
+    const firmwareEls = {
+      current: document.getElementById("currentFirmwareVersion"),
+      latest: document.getElementById("latestFirmwareVersion"),
+      pill: document.getElementById("firmwareStatusPill"),
+      message: document.getElementById("firmwareStatusMessage"),
+    };
+
+    const firmwareDownloadEls = {
+      select: document.getElementById("firmwareVersionSelect"),
+      button: document.getElementById("downloadFirmwareBtn"),
+      status: document.getElementById("downloadFirmwareStatus"),
+    };
+
+    const autoUpdateEls = {
+      button: document.getElementById("autoUpdateBtn"),
+      status: document.getElementById("autoUpdateStatus"),
+    };
+
+    if (firmwareDownloadEls.button) {
+      firmwareDownloadEls.button.addEventListener("click", handleFirmwareDownload);
+    }
+
+    if (autoUpdateEls.button) {
+      autoUpdateEls.button.addEventListener("click", handleAutoUpdate);
+    }
+
+    setAutoUpdateAvailability(null, "Auto-update will enable when a newer firmware is available.");
 
     setTimeout(() => {
       connectToServer();
+      startVersionChecks();
     }, 100);
 
+    function startVersionChecks() {
+      if (versionCheckStarted) return;
+      versionCheckStarted = true;
+      setDownloadStatus("Matching device with firmware catalog…");
+      setAutoUpdateAvailability(null, "Matching device with firmware catalog…");
+      fetchDeviceHostInfo();
+      fetchFirmwareCatalog();
+    }
+
+    function updateFirmwareStatusUI({ current, latest, state, message }) {
+      if (current !== undefined && firmwareEls.current) {
+        firmwareEls.current.textContent = current || "—";
+      }
+
+      if (latest !== undefined && firmwareEls.latest) {
+        firmwareEls.latest.textContent = latest || "—";
+      }
+
+      if (state && firmwareEls.pill) {
+        firmwareEls.pill.classList.remove("ok", "warn", "error");
+        let pillText = "";
+        switch (state) {
+          case "ok":
+            firmwareEls.pill.classList.add("ok");
+            pillText = "Up to date";
+            break;
+          case "warn":
+            firmwareEls.pill.classList.add("warn");
+            pillText = "Update available";
+            break;
+          case "error":
+            firmwareEls.pill.classList.add("error");
+            pillText = "Unavailable";
+            break;
+          default:
+            pillText = "Checking…";
+            break;
+        }
+        firmwareEls.pill.textContent = pillText;
+      }
+
+      if (message !== undefined && firmwareEls.message) {
+        firmwareEls.message.textContent = message;
+      }
+    }
+
+    function fetchDeviceHostInfo() {
+      updateFirmwareStatusUI({ state: "checking", message: "Reading firmware version from device…" });
+      fetch("http://" + ip + "/?HOST_INFO=1", { cache: "no-cache" })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("HOST_INFO request failed with status " + response.status);
+          }
+          return response.json();
+        })
+        .then((info) => {
+          deviceInfo = info || {};
+          const detectedMsg = deviceInfo.NAME
+            ? "Detected " + deviceInfo.NAME + ". Checking online catalog…"
+            : "Checking online catalog…";
+          updateFirmwareStatusUI({ current: deviceInfo.VERSION || "—", message: detectedMsg });
+          evaluateFirmwareVersions();
+        })
+        .catch((err) => {
+          console.warn("Failed to get HOST_INFO", err);
+          updateFirmwareStatusUI({ state: "error", message: "Unable to read firmware version from device." });
+          updateDownloadControls(null, null);
+          setDownloadStatus("Unable to read device info; firmware downloads are disabled.");
+          setAutoUpdateAvailability(null, "Unable to read device info; auto-update disabled.");
+        });
+    }
+
+    function fetchFirmwareCatalog() {
+      fetch(firmwareListUrl, { cache: "no-cache" })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Firmware list request failed with status " + response.status);
+          }
+          return response.json();
+        })
+        .then((list) => {
+          firmwareCatalog = list || {};
+          evaluateFirmwareVersions();
+        })
+        .catch((err) => {
+          console.warn("Failed to fetch firmware catalog", err);
+          updateFirmwareStatusUI({ state: "error", message: "Unable to reach firmware download server." });
+          updateDownloadControls(null, null);
+          setDownloadStatus("Firmware download server unreachable.");
+          setAutoUpdateAvailability(null, "Firmware download server unreachable.");
+        });
+    }
+
+    function evaluateFirmwareVersions() {
+      if (!deviceInfo) {
+        return;
+      }
+
+      const currentVersion = deviceInfo.VERSION || "—";
+      updateFirmwareStatusUI({ current: currentVersion });
+
+      if (!firmwareCatalog) {
+        updateFirmwareStatusUI({ state: "checking", message: "Waiting for firmware catalog…" });
+        setDownloadStatus("Waiting for firmware catalog to load…");
+        setAutoUpdateAvailability(null, "Waiting for firmware catalog to load…");
+        return;
+      }
+
+      const match = findCatalogEntry(deviceInfo.NAME);
+      const catalogEntry = match ? match.entry : null;
+      if (!catalogEntry || !Array.isArray(catalogEntry.versions) || catalogEntry.versions.length === 0) {
+        updateFirmwareStatusUI({ latest: "—", state: "error", message: "Device not found in firmware catalog." });
+        updateDownloadControls(null, null);
+        setDownloadStatus("Could not match this device to any downloadable firmware.");
+        setAutoUpdateAvailability(null, "Could not match this device to any downloadable firmware.");
+        return;
+      }
+
+      updateDownloadControls(catalogEntry, match.key);
+
+      const latestVersion = catalogEntry.versions[0];
+      updateFirmwareStatusUI({ latest: latestVersion || "—" });
+
+      if (!deviceInfo.VERSION || !latestVersion) {
+        updateFirmwareStatusUI({ state: "warn", message: "Device firmware version missing or catalog incomplete." });
+        setAutoUpdateAvailability(null, "Device firmware version missing; auto-update disabled.");
+        return;
+      }
+
+      const comparison = compareVersions(deviceInfo.VERSION, latestVersion);
+      if (comparison >= 0) {
+        updateFirmwareStatusUI({ state: "ok", message: "Firmware is up to date." });
+        setDownloadStatus("Device already runs the latest firmware.");
+        setAutoUpdateAvailability(null, "Device already up to date; auto-update disabled.");
+      } else {
+        const readableName = catalogEntry.name || deviceInfo.NAME || "device";
+        updateFirmwareStatusUI({
+          state: "warn",
+          message: "Update available: install version " + latestVersion + " for " + readableName + ".",
+        });
+        setDownloadStatus("Download version " + latestVersion + " to update this device.");
+        setAutoUpdateAvailability(latestVersion, "Auto-update ready for version " + latestVersion + ".");
+      }
+    }
+
+    function findCatalogEntry(deviceName) {
+      if (!firmwareCatalog) return null;
+      const normalizedDevice = normalizeName(deviceName);
+      let match = null;
+      Object.keys(firmwareCatalog).some((key) => {
+        const entry = firmwareCatalog[key];
+        if (
+          normalizeName(key) === normalizedDevice ||
+          normalizeName(entry && entry.name) === normalizedDevice
+        ) {
+          match = { entry, key };
+          return true;
+        }
+        return false;
+      });
+      return match;
+    }
+
+    function normalizeName(value) {
+      if (!value) return "";
+      return value.toString().toLowerCase().replace(/\s+/g, "").trim();
+    }
+
+    function compareVersions(a, b) {
+      const sanitize = (version) =>
+        version
+          .split(/[.-]/)
+          .map((part) => {
+            const parsed = parseInt(part, 10);
+            return Number.isNaN(parsed) ? 0 : parsed;
+          });
+
+      const partsA = sanitize(a || "0");
+      const partsB = sanitize(b || "0");
+      const maxLen = Math.max(partsA.length, partsB.length);
+
+      for (let i = 0; i < maxLen; i++) {
+        const diff = (partsA[i] || 0) - (partsB[i] || 0);
+        if (diff !== 0) {
+          return diff;
+        }
+      }
+      return 0;
+    }
+
+    function updateDownloadControls(entry, key) {
+      catalogMatchEntry = entry || null;
+      catalogMatchKey = key || null;
+
+      if (!firmwareDownloadEls.select || !firmwareDownloadEls.button) {
+        return;
+      }
+
+      firmwareDownloadEls.select.innerHTML = "";
+      firmwareDownloadEls.select.disabled = true;
+      firmwareDownloadEls.button.disabled = true;
+
+      if (!entry || !Array.isArray(entry.versions) || entry.versions.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = entry ? "No versions available" : "Unavailable";
+        firmwareDownloadEls.select.appendChild(option);
+        setDownloadStatus(
+          entry
+            ? "This device currently has no downloadable firmware packages."
+            : "Waiting for firmware catalog match before enabling downloads."
+        );
+        return;
+      }
+
+      entry.versions.forEach((version) => {
+        const option = document.createElement("option");
+        option.value = version;
+        option.textContent = version;
+        firmwareDownloadEls.select.appendChild(option);
+      });
+
+      if (!key) {
+        setDownloadStatus("Matched device but missing catalog key; downloads unavailable.");
+        setAutoUpdateAvailability(null, "Matched device but missing catalog key; auto-update unavailable.");
+        return;
+      }
+
+      firmwareDownloadEls.select.disabled = false;
+      firmwareDownloadEls.button.disabled = false;
+      setDownloadStatus("Select a version and click download to grab the firmware .zip.");
+    }
+
+    function setDownloadStatus(message) {
+      if (firmwareDownloadEls.status) {
+        firmwareDownloadEls.status.textContent = message;
+      }
+    }
+
+    function setAutoUpdateStatus(message) {
+      if (autoUpdateEls.status) {
+        autoUpdateEls.status.textContent = message;
+      }
+    }
+
+    function refreshAutoUpdateButtonState() {
+      if (!autoUpdateEls.button) return;
+      if (autoUpdateInProgress || uploadInProgress) {
+        autoUpdateEls.button.disabled = true;
+      } else {
+        autoUpdateEls.button.disabled = !pendingAutoVersion;
+      }
+
+      if (pendingAutoVersion) {
+        autoUpdateEls.button.textContent = "Download & Install " + pendingAutoVersion;
+      } else {
+        autoUpdateEls.button.textContent = "Download & Install Latest";
+      }
+    }
+
+    function setAutoUpdateAvailability(version, message) {
+      pendingAutoVersion = version || null;
+      if (message) {
+        setAutoUpdateStatus(message);
+      }
+      refreshAutoUpdateButtonState();
+    }
+
+    function handleFirmwareDownload() {
+      if (!catalogMatchKey || !catalogMatchEntry) {
+        setDownloadStatus("Device has not been matched to a firmware catalog entry yet.");
+        return;
+      }
+
+      if (!firmwareDownloadEls.select) {
+        return;
+      }
+
+      const selectedVersion = firmwareDownloadEls.select.value;
+      if (!selectedVersion) {
+        setDownloadStatus("Select a firmware version first.");
+        return;
+      }
+
+      const downloadUrl =
+        firmwareBaseUrl +
+        "?device=" +
+        encodeURIComponent(catalogMatchKey) +
+        "&version=" +
+        encodeURIComponent(selectedVersion);
+
+      setDownloadStatus("Opening download for version " + selectedVersion + "…");
+      window.open(downloadUrl, "_blank");
+      setTimeout(() => {
+        setDownloadStatus("If nothing downloaded, enable pop-ups and try again.");
+      }, 1200);
+    }
+
+    async function handleAutoUpdate() {
+      if (autoUpdateInProgress || uploadInProgress) {
+        setAutoUpdateStatus("Firmware transfer already in progress.");
+        return;
+      }
+
+      if (!catalogMatchKey || !catalogMatchEntry) {
+        setAutoUpdateStatus("Device has not been matched to a firmware catalog entry yet.");
+        return;
+      }
+
+      if (typeof JSZip === "undefined") {
+        setAutoUpdateStatus("JSZip library failed to load; auto-update unavailable.");
+        return;
+      }
+
+      const selectedVersion =
+        (firmwareDownloadEls.select && firmwareDownloadEls.select.value) || pendingAutoVersion;
+
+      if (!selectedVersion) {
+        setAutoUpdateStatus("Select a firmware version first.");
+        return;
+      }
+
+      const downloadUrl =
+        firmwareBaseUrl +
+        "?device=" +
+        encodeURIComponent(catalogMatchKey) +
+        "&version=" +
+        encodeURIComponent(selectedVersion);
+
+      try {
+        autoUpdateInProgress = true;
+        refreshAutoUpdateButtonState();
+        setAutoUpdateStatus("Downloading firmware version " + selectedVersion + "…");
+
+        const response = await fetch(downloadUrl, { cache: "no-cache" });
+        if (!response.ok) {
+          throw new Error("Download failed (" + response.status + ")");
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const binFiles = zip.file(/\.bin$/i) || [];
+        const firmwareEntry =
+          binFiles.find((file) => /firmware\.bin$/i.test(file.name)) || binFiles[0];
+
+        if (!firmwareEntry) {
+          throw new Error("Downloaded package does not contain a firmware .bin file.");
+        }
+
+        setAutoUpdateStatus("Preparing firmware image…");
+        const firmwareBlob = await firmwareEntry.async("blob");
+
+        if (typeof uploadFirmwareBlob !== "function") {
+          throw new Error("Uploader is not ready yet. Please retry in a moment.");
+        }
+
+        setAutoUpdateStatus("Uploading firmware to device…");
+        await uploadFirmwareBlob(firmwareBlob, firmwareEntry.name || "firmware.bin", true);
+        setAutoUpdateStatus("Auto update uploaded. Device should reboot shortly.");
+      } catch (err) {
+        console.error("Auto update failed", err);
+        setAutoUpdateStatus("Auto update failed: " + err.message);
+      } finally {
+        autoUpdateInProgress = false;
+        refreshAutoUpdateButtonState();
+      }
+    }
+
     function connectToServer() {
+      connectAttempts += 1;
+      const isReconnect = connectAttempts > 1;
       const editorContainer = document.getElementById("editor");
       editorContainer.textContent = "Connecting to server: " + ip + "…";
 
@@ -769,6 +1545,10 @@
           console.log("Config:", data);
           buildStructure();
           initWebSocket();
+          if (isReconnect) {
+            updateFirmwareStatusUI({ state: "checking", message: "Reconnected. Refreshing firmware status…" });
+            fetchDeviceHostInfo();
+          }
         })
         .catch((err) => {
           console.error("Error fetching config:", err);
@@ -797,7 +1577,20 @@
       });
 
       oscWS.addEventListener("message", function (event) {
-        // Expect binary OSC data, decode with osc-mini:
+        // Check if it's a text message (JSON for logs)
+        if (typeof event.data === 'string') {
+          try {
+            const jsonMsg = JSON.parse(event.data);
+            if (jsonMsg.COMMAND === 'LOG') {
+              handleLogMessage(jsonMsg.DATA);
+            }
+          } catch (e) {
+            // Not JSON, ignore
+          }
+          return;
+        }
+
+        // Otherwise, expect binary OSC data, decode with osc-mini:
         const oscMsg = OscMini.unpack(event.data);
 
         const pid = oscMsg.address.substring(1).replace(/\//g, "-");
@@ -1120,6 +1913,66 @@
       .addEventListener("change", updateShowConfig);
 
     // ==============================
+    // Logger Panel
+    // ==============================
+    let logCount = 0;
+    const maxLogs = 500; // Limit to prevent memory issues
+
+    function handleLogMessage(data) {
+      const loggerContent = document.getElementById("loggerContent");
+      const logEntry = document.createElement("div");
+      logEntry.classList.add("log-entry", data.type || "info");
+
+      const timestamp = new Date().toLocaleTimeString();
+      logEntry.innerHTML = 
+        '<span class="log-time">' + timestamp + '</span>' +
+        '<span class="log-source">[' + (data.source || "Unknown") + ']</span>' +
+        '<span class="log-message">' + (data.message || "") + '</span>';
+
+      loggerContent.appendChild(logEntry);
+      logCount++;
+      document.getElementById("logCount").textContent = logCount;
+
+      // Auto-scroll to bottom
+      loggerContent.scrollTop = loggerContent.scrollHeight;
+
+      // Limit log entries
+      if (logCount > maxLogs) {
+        const firstLog = loggerContent.querySelector(".log-entry:not(:first-child)");
+        if (firstLog) {
+          firstLog.remove();
+          logCount--;
+        }
+      }
+    }
+
+    function toggleLogger() {
+      const panel = document.getElementById("loggerPanel");
+      const isOpen = panel.classList.contains("open");
+
+      if (isOpen) {
+        panel.classList.remove("open");
+        // Disable sendDebugLogs
+        sendParameterValue("/comm/server/sendDebugLogs", "i", 0);
+      } else {
+        panel.classList.add("open");
+        // Enable sendDebugLogs
+        sendParameterValue("/comm/server/sendDebugLogs", "i", 1);
+      }
+    }
+
+    function clearLogs() {
+      const loggerContent = document.getElementById("loggerContent");
+      loggerContent.innerHTML = '<div class="log-entry info"><span class="log-source">System</span><span class="log-message">Logs cleared.</span></div>';
+      logCount = 1;
+      document.getElementById("logCount").textContent = logCount;
+    }
+
+    document.getElementById("loggerToggle").addEventListener("click", toggleLogger);
+    document.getElementById("loggerClose").addEventListener("click", toggleLogger);
+    document.getElementById("clearLogs").addEventListener("click", clearLogs);
+
+    // ==============================
     // OTA upload logic (no jQuery)
     // ==============================
     (function setupOtaUploader() {
@@ -1132,6 +1985,7 @@
       const progressLabel = document.getElementById("progressLabel");
       const progressValue = document.getElementById("progressValue");
       const statusText = document.getElementById("statusText");
+      const defaultUploadLabel = uploadBtnLabel.textContent;
 
       let selectedFile = null;
 
@@ -1161,6 +2015,10 @@
         if (label) progressLabel.textContent = label;
       }
 
+      function refreshUploadButtonState() {
+        uploadBtn.disabled = uploadInProgress || !selectedFile;
+      }
+
       fileInput.addEventListener("change", () => {
         const file = fileInput.files[0];
         selectedFile = file || null;
@@ -1168,9 +2026,9 @@
         if (!selectedFile) {
           fileMeta.innerHTML =
             '<span class="file-pill muted">No file selected</span>';
-          uploadBtn.disabled = true;
           setStatus("", "idle");
           setProgress(0, "Waiting for upload…");
+          refreshUploadButtonState();
           return;
         }
 
@@ -1192,82 +2050,111 @@
             ? "Large file — make sure it matches your partition size."
             : "Ready to upload."
         );
-        uploadBtn.disabled = false;
         setProgress(0, "Ready.");
+        refreshUploadButtonState();
       });
 
-      uploadBtn.addEventListener("click", () => {
-        if (!selectedFile) return;
+      async function handleManualUpload() {
+        if (!selectedFile || uploadInProgress) return;
+        try {
+          await performFirmwareUpload(selectedFile, selectedFile.name, false);
+        } catch (err) {
+          console.warn("Manual upload failed", err);
+        }
+      }
 
-        uploadBtn.disabled = true;
-        uploadSpinner.style.display = "inline-block";
-        uploadBtnLabel.textContent = "Uploading…";
+      uploadBtn.addEventListener("click", handleManualUpload);
 
-        setStatus("", "Uploading firmware… do not power off.");
-        setProgress(2, "Starting upload…");
-
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "http://" + ip + "/uploadFile", true);
-
-        // IMPORTANT: do NOT set Content-Type manually here.
-        // The browser will set the multipart/form-data boundary.
-
-
-        xhr.upload.onprogress = function (evt) {
-          if (evt.lengthComputable) {
-            const percent = (evt.loaded / evt.total) * 100;
-            setProgress(percent, "Uploading…");
-          } else {
-            setProgress(20, "Uploading…");
-          }
-        };
-
-        xhr.onload = function () {
-          const ok = xhr.status >= 200 && xhr.status < 300;
-          if (ok) {
-            setProgress(100, "Upload complete. Rebooting…");
-            setStatus(
-              "ok",
-              "Upload successful — device should reboot into the new firmware."
-            );
-          } else {
-            setProgress(0, "Upload failed.");
-            setStatus(
-              "error",
-              "Upload failed with status " + xhr.status + "."
-            );
+      function performFirmwareUpload(fileBlob, filename, fromAuto) {
+        return new Promise((resolve, reject) => {
+          if (!fileBlob) {
+            reject(new Error("No firmware selected."));
+            return;
           }
 
-          uploadSpinner.style.display = "none";
-          uploadBtnLabel.textContent = ok ? "Uploaded" : "Upload failed";
-          if (!ok) {
-            uploadBtn.disabled = false; // allow retry
-          }
-        };
+          const finalFilename = "firmware.bin";
 
-        xhr.onerror = function () {
-          setProgress(0, "Network error.");
-          setStatus("error", "Network error during upload.");
-          uploadSpinner.style.display = "none";
-          uploadBtnLabel.textContent = "Upload firmware";
-          uploadBtn.disabled = false;
-        };
+          uploadInProgress = true;
+          uploadSpinner.style.display = "inline-block";
+          uploadBtnLabel.textContent = fromAuto ? "Auto updating…" : "Uploading…";
+          setStatus(
+            "",
+            fromAuto
+              ? "Auto update in progress… do not power off."
+              : "Uploading firmware… do not power off."
+          );
+          setProgress(fromAuto ? 5 : 2, fromAuto ? "Uploading auto update…" : "Starting upload…");
+          refreshUploadButtonState();
+          refreshAutoUpdateButtonState();
 
-        // ---- This is the JUCE-compatible part ----
-        const formData = new FormData();
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "http://" + ip + "/uploadFile", true);
 
-        // If you want to mirror mime type "text/plain" from JUCE:
-        const fileForJuiceStyle = new File(
-          [selectedFile],
-          selectedFile.name,
-          { type: "text/plain" }
-        );
+          xhr.upload.onprogress = function (evt) {
+            if (evt.lengthComputable) {
+              const percent = (evt.loaded / evt.total) * 100;
+              setProgress(percent, fromAuto ? "Auto uploading…" : "Uploading…");
+            } else {
+              setProgress(20, fromAuto ? "Auto uploading…" : "Uploading…");
+            }
+          };
 
-        // Field name must be exactly the same as in JUCE: "uploadData"
-        formData.append("uploadData", fileForJuiceStyle, selectedFile.name);
+          xhr.onload = function () {
+            const ok = xhr.status >= 200 && xhr.status < 300;
+            uploadInProgress = false;
+            uploadSpinner.style.display = "none";
+            refreshUploadButtonState();
+            refreshAutoUpdateButtonState();
 
-        xhr.send(formData);
-      });
+            if (ok) {
+              setProgress(100, "Upload complete. Rebooting…");
+              setStatus(
+                "ok",
+                fromAuto
+                  ? "Auto update uploaded — device should reboot shortly."
+                  : "Upload successful — device should reboot into the new firmware."
+              );
+              if (fromAuto) {
+                uploadBtnLabel.textContent = defaultUploadLabel;
+              } else {
+                uploadBtnLabel.textContent = "Uploaded";
+              }
+              resolve();
+            } else {
+              setProgress(0, "Upload failed.");
+              setStatus("error", "Upload failed with status " + xhr.status + ".");
+              uploadBtnLabel.textContent = fromAuto ? defaultUploadLabel : "Upload failed";
+              reject(new Error("Upload failed with status " + xhr.status));
+            }
+          };
+
+          xhr.onerror = function () {
+            uploadInProgress = false;
+            uploadSpinner.style.display = "none";
+            setProgress(0, "Network error.");
+            setStatus("error", "Network error during upload.");
+            uploadBtnLabel.textContent = fromAuto ? defaultUploadLabel : "Upload firmware";
+            refreshUploadButtonState();
+            refreshAutoUpdateButtonState();
+            reject(new Error("Network error during upload."));
+          };
+
+          const formData = new FormData();
+          const fileForJuiceStyle = new File(
+            [fileBlob],
+            finalFilename,
+            { type: "text/plain" }
+          );
+
+          // Field name must match the JUCE uploader handler; do not override Content-Type headers manually.
+          formData.append("uploadData", fileForJuiceStyle, finalFilename);
+          xhr.send(formData);
+        });
+      }
+
+      uploadFirmwareBlob = function (blob, filename, fromAuto = false) {
+        return performFirmwareUpload(blob, filename, fromAuto);
+      };
     })();
   </script>
 </body>

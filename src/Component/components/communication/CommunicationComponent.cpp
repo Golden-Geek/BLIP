@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "CommunicationComponent.h"
 
 ImplementSingleton(CommunicationComponent);
 
@@ -224,5 +225,19 @@ void CommunicationComponent::sendMessage(Component *c, const String &mName, cons
     String espnowAddress = c->getFullPath(false, false, true);
     espNow.sendMessage(-1, espnowAddress, mName, data, 1);
 #endif
+#endif
+}
+
+void CommunicationComponent::sendDebug(const String &msg, const String &source, const String &type)
+{
+#ifdef USE_SERIAL
+    serial.send("[" + source + "] " + msg);
+#endif
+
+#ifdef USE_SERVER
+    if (WebServerComponent::instance->sendDebugLogs)
+    {
+        WebServerComponent::instance->sendDebugLog(msg, source, type);
+    }
 #endif
 }

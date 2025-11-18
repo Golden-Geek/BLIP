@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "WebServerComponent.h"
 
 ImplementSingleton(WebServerComponent);
 
@@ -10,6 +11,7 @@ void WebServerComponent::setupInternal(JsonObject o)
     }
 
     AddBoolParamConfig(sendFeedback);
+    AddBoolParamConfig(sendDebugLogs);
 }
 
 bool WebServerComponent::initInternal()
@@ -77,8 +79,7 @@ bool WebServerComponent::initInternal()
         { 
             AsyncWebServerResponse *response = request->beginResponse(200);
             response->addHeader("Access-Control-Allow-Origin", "*");
-            request->send(response);
-     },
+            request->send(response); },
         std::bind(&WebServerComponent::handleFileUpload,
                   this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 
@@ -189,7 +190,6 @@ void WebServerComponent::closeServer()
 
 void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-    NDBG("Server File upload Client:" + request->client()->remoteIP().toString() + " " + String(request->url()) + "Filename: " + filename + ", Index: " + String(index) + ", Length: " + String(len) + ", Final: " + String(final));
 
 #ifdef USE_FILES
 
@@ -235,15 +235,18 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         FilesComponent::instance->createFolderIfNotExists(destFolder);
         String dest = destFolder + "/" + filename;
 
-        DBG("Upload Start: " + String(dest));
+        NDBG("File Upload start from" + request->client()->remoteIP().toString() + ", at : " + String(request->url()) + "; Filename: " + filename +", Length: " + String(len/1024)+" kb");
+
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
 
         // Add a disconnect handler to clean up if the client aborts
         request->onDisconnect([this, request]()
                               {
-            for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++) {
-                if (uploadingFiles[i].request == request) {
-                    DBG("Upload client disconnected. Cleaning up file.");
+            for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
+            {
+                if (uploadingFiles[i].request == request)
+                {
+                    NDBG("Upload client disconnected. Cleaning up file.");
                     uploadingFiles[i].file.close();
                     uploadingFiles[i].request = nullptr; // Free the slot
                     break;
@@ -264,7 +267,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 
             if (final)
             {
-                DBG("Upload Complete: " + String(uploadingFiles[i].file.name()) + ", size: " + String(index + len));
+                NDBG("Upload Complete: " + String(uploadingFiles[i].file.name()) + ", size: " + String(index + len));
                 uploadingFiles[i].file.close();
                 uploadingFiles[i].request = nullptr; // Free the slot
             }
@@ -277,8 +280,6 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 #ifdef USE_OTA
 void WebServerComponent::handleOTAUpload(AsyncWebServerRequest *request, size_t index, uint8_t *data, size_t len, bool final)
 {
-    NDBG("OTA Upload Handler");
-
     if (index == 0)
     {
         NDBG("OTA Update Start");
@@ -351,7 +352,6 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
 void WebServerComponent::parseTextMessage(String msg)
 {
     DBG("Text message: " + msg);
-
 }
 
 void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
@@ -403,6 +403,23 @@ void WebServerComponent::sendParamFeedback(String path, String pName, var *data,
 #endif
 }
 
+void WebServerComponent::sendDebugLog(const String &msg, String source, String type)
+{
+    if (!sendDebugLogs)
+        return;
+
+        /* message is like this : 
+            {"COMMAND":"LOG", 
+            "DATA": {
+            "type":"info",
+            "source":"ComponentName",
+            "message":"This is a debug log message"
+            }
+        */
+
+        ws.textAll("{\"COMMAND\":\"LOG\",\"DATA\":{\"type\":\"" + type + "\",\"source\":\"" + source + "\",\"message\":\"" + msg + "\"}}");
+}
+
 void WebServerComponent::sendBye(String type)
 {
 #ifdef USE_OSC
@@ -417,3 +434,4 @@ void WebServerComponent::sendBye(String type)
     ws.binaryAll(wsPrint.data, wsPrint.index);
 #endif
 }
+

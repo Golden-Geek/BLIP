@@ -23,6 +23,7 @@ public:
 };
 
 DeclareBoolParam(sendFeedback, true);
+DeclareBoolParam(sendDebugLogs, false);
 
 WSPrint wsPrint;
 
@@ -67,6 +68,7 @@ void parseBinaryMessage(uint8_t *data, size_t len);
 
 void sendParamFeedback(Component *c, String pName, var *data, int numData);
 void sendParamFeedback(String path, String pName, var *data, int numData);
+void sendDebugLog(const String &msg, String source = "", String type = "info");
 void sendBye(String type);
 
 DeclareComponentEventTypes(UploadStart, Uploading, UploadDone, UploadCanceled);
@@ -74,14 +76,17 @@ DeclareComponentEventNames("UploadStart", "Uploading", "UploadDone", "UploadCanc
 
 HandleSetParamInternalStart
     CheckAndSetParam(sendFeedback);
+    CheckAndSetParam(sendDebugLogs);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
     FillSettingsParam(sendFeedback);
+    FillSettingsParam(sendDebugLogs);
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
     FillOSCQueryBoolParam(sendFeedback);
+    FillOSCQueryBoolParam(sendDebugLogs);
 FillOSCQueryInternalEnd;
 
 EndDeclareComponent

@@ -4,8 +4,8 @@
 
 // #define DBG(t)
 // #define NDBG(t)
-#define DBG(text) HWSerialComponent::instance->send(text)
-#define NDBG(text) HWSerialComponent::instance->send("[" + name + "] " + text)
+#define DBG(text) CommunicationComponent::instance->sendDebug(text)
+#define NDBG(text) CommunicationComponent::instance->sendDebug(text, name)
 
 #define DeviceID SettingsComponent::instance->getDeviceID()
 #define DeviceType SettingsComponent::instance->deviceType
@@ -78,7 +78,6 @@
 
 #define DeclareComponentManagerDefaultMax(Type, MType, mName, itemName) DeclareComponentManagerWithMax(Type, MType, mName, itemName, 8)
 
-
 #define DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, DefaultCount) \
     DeclareComponentSingleton(Type##Manager, #mName, )                                     \
         DeclareIntParam(count, DefaultCount);                                              \
@@ -105,7 +104,6 @@
         FillOSCQueryIntParam(count);                                                       \
     FillOSCQueryInternalEnd
 
-    
 #define DeclareComponentManager(Type, MType, mName, itemName, MaxCount) \
     DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, 1)
 
