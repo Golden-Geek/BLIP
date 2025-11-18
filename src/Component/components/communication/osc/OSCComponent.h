@@ -10,6 +10,7 @@ DeclareComponentSingleton(OSC, "osc", )
 bool udpIsInit;
 bool mdnsIsInit;
 DeclareStringParam(remoteHost, "");
+DeclareIntParam(remotePort, OSC_REMOTE_PORT);
 DeclareBoolParam(isAlive, "");
 DeclareBoolParam(sendFeedback, false);
 
@@ -41,16 +42,19 @@ DeclareComponentEventNames("MessageReceived");
 
     HandleSetParamInternalStart
         CheckAndSetParam(remoteHost);
+        CheckAndSetParam(remotePort);
         CheckAndSetParam(sendFeedback);
     HandleSetParamInternalEnd;
 
     FillSettingsInternalStart
         FillSettingsParam(remoteHost);
+        FillSettingsParam(remotePort);
         FillSettingsParam(sendFeedback);
     FillSettingsInternalEnd;
 
     FillOSCQueryInternalStart
         FillOSCQueryStringParam(remoteHost);
+    FillOSCQueryIntParam(remotePort);
     FillOSCQueryBoolParam(sendFeedback);
     FillOSCQueryBoolParamReadOnly(isAlive);
     FillOSCQueryInternalEnd

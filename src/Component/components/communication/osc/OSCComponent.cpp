@@ -8,6 +8,7 @@ void OSCComponent::setupInternal(JsonObject o)
     mdnsIsInit = false;
 
     AddStringParamConfig(remoteHost);
+    AddStringParamConfig(remotePort);
     AddBoolParamConfig(sendFeedback);
     AddBoolParamConfig(isAlive);
 }
@@ -184,7 +185,7 @@ void OSCComponent::sendMessage(OSCMessage &msg)
 
     char addr[32];
     msg.getAddress(addr);
-    udp.beginPacket((char *)remoteHost.c_str(), OSC_REMOTE_PORT);
+    udp.beginPacket((char *)remoteHost.c_str(), remotePort);
     msg.send(udp);
     udp.endPacket();
     msg.empty();
