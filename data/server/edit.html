@@ -711,18 +711,68 @@
     }
 
     .component {
+      --level-depth: 0;
+      --level-accent: rgba(148, 163, 184, 0.35);
       width: auto;
       margin: 2px 0;
-      padding: 6px 8px 8px;
+      margin-left: calc(var(--level-depth) * 8px);
+      padding: 8px 12px 10px;
+      padding-left: calc(16px + var(--level-depth) * 6px);
       background-color: rgba(15, 23, 42, 0.9);
       border-radius: 12px;
       border: 1px solid rgba(55, 65, 81, 0.9);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
       position: relative;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .component::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 999px;
+      background: var(--level-accent);
+      opacity: calc(0.25 + (var(--level-depth) * 0.08));
+      pointer-events: none;
+    }
+
+    .component.level0::before {
+      display: none;
+    }
+
+    .component.level1 {
+      --level-depth: 1;
+      --level-accent: rgba(59, 130, 246, 0.55);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(15, 23, 42, 0.92));
+    }
+
+    .component.level2 {
+      --level-depth: 2;
+      --level-accent: rgba(34, 197, 94, 0.55);
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(12, 18, 35, 0.94));
+    }
+
+    .component.level3 {
+      --level-depth: 3;
+      --level-accent: rgba(249, 115, 22, 0.55);
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(10, 15, 30, 0.95));
+    }
+
+    .component.level4,
+    .component.level5,
+    .component.level6 {
+      --level-depth: 4;
+      --level-accent: rgba(236, 72, 153, 0.5);
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(8, 12, 26, 0.95));
     }
 
     .component.level0 {
       margin: 8px 0;
+      margin-left: 0;
+      padding-left: 18px;
       background: radial-gradient(circle at top left, #0f172a, #020617 60%);
     }
 
