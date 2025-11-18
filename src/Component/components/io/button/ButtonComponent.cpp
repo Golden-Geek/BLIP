@@ -48,6 +48,11 @@ void ButtonComponent::updateInternal()
         {
             SetParam(veryLongPress, true);
         }
+    }else{
+        if(wasPressedAtBoot && !releasedAfterBootPress) {
+            releasedAfterBootPress = true;
+            NDBG("Button was released after boot press");
+        }
     }
 
     if (millis() > timeAtPress + MULTIPRESS_TIME)

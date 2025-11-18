@@ -36,6 +36,7 @@ public:
 
     long timeAtPress = 0;
     bool wasPressedAtBoot = false;
+    bool releasedAfterBootPress = false;
 
     DeclareBoolParam(canShutDown, BUTTON_DEFAULT_SHUTDOWN);
     DeclareIntParam(multiPressCount, 0);
