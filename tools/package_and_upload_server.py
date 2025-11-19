@@ -172,6 +172,10 @@ def main() -> None:
         action="store_true",
         help="Do not generate or upload the manifest JSON",
     )
+    parser.add_argument(
+        "--version-label",
+        help="Override the version string used for archive naming and manifest output",
+    )
 
     args = parser.parse_args()
     edit_html = Path(args.edit_html)
@@ -183,6 +187,11 @@ def main() -> None:
     except Exception as exc:
         print(f"Error reading version: {exc}", file=sys.stderr)
         sys.exit(1)
+
+    override = (args.version_label or "").strip()
+    if override:
+        print(f"Using overridden version label: {override}")
+        version = override
 
     try:
         archive = build_zip(compressed_dir, version, output_dir)

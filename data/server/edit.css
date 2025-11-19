@@ -266,6 +266,21 @@ h1.title {
     flex: 1;
 }
 
+.bleeding-edge-panel {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.bleeding-edge-panel .bleeding-edge-text {
+    flex: 1;
+    min-width: 180px;
+}
+
 .meta-item {
     display: flex;
     flex-direction: column;

@@ -52,6 +52,7 @@ const deviceMetaEls = {
 
 const SERVER_MANIFEST_URL = "https://www.goldengeek.org/blip/download/server/latest.php";
 const SERVER_DOWNLOAD_BASE = "https://www.goldengeek.org/blip/download/server/servers/";
+const SERVER_BLEEDING_MANIFEST_URL = "https://www.goldengeek.org/blip/download/server/bleeding-edge.json";
 
 const serverVersionEls = {
     card: document.getElementById("serverVersionCard"),
@@ -63,10 +64,18 @@ const serverVersionEls = {
     uploadStatus: document.getElementById("serverUploadStatus"),
 };
 
+const bleedingEdgeEls = {
+    panel: document.getElementById("bleedingEdgePanel"),
+    status: document.getElementById("bleedingEdgeStatus"),
+    action: document.getElementById("bleedingEdgeAction"),
+};
+
 let localServerVersion = null;
 let latestServerManifest = null;
 let serverVersionFetchPromise = null;
 let serverUploadInProgress = false;
+let bleedingEdgeManifest = null;
+let bleedingEdgeDownloadUrl = null;
 
 const firmwarePanelEls = {
     card: document.getElementById("firmwareCard"),
@@ -82,6 +91,7 @@ if (firmwarePanelEls.card) {
 
 updateDeviceMetaDisplay();
 initServerVersionPanel();
+initBleedingEdgePanel();
 initFirmwarePanelToggle();
 
 if (firmwareDownloadEls.button) {
@@ -136,6 +146,25 @@ function initServerVersionPanel() {
     }
 
     fetchServerManifestVersion().catch(() => {});
+}
+
+function initBleedingEdgePanel() {
+    if (!bleedingEdgeEls.panel) {
+        return;
+    }
+
+    setBleedingEdgeStatus("Checking master branch dashboard build…", true);
+
+    if (bleedingEdgeEls.action) {
+        bleedingEdgeEls.action.disabled = true;
+        bleedingEdgeEls.action.addEventListener("click", () => {
+            if (bleedingEdgeDownloadUrl) {
+                window.open(bleedingEdgeDownloadUrl, "_blank");
+            }
+        });
+    }
+
+    fetchBleedingEdgeManifest().catch(() => {});
 }
 
 function readLocalServerVersionComment() {
@@ -203,6 +232,69 @@ function fetchServerManifestVersion() {
         });
 
     return serverVersionFetchPromise;
+}
+
+function setBleedingEdgeStatus(message, disableAction) {
+    if (!bleedingEdgeEls.panel) {
+        return;
+    }
+    if (bleedingEdgeEls.status) {
+        bleedingEdgeEls.status.textContent = message || "";
+    }
+    if (bleedingEdgeEls.action) {
+        if (typeof disableAction === "boolean") {
+            bleedingEdgeEls.action.disabled = disableAction;
+        } else if (bleedingEdgeDownloadUrl) {
+            bleedingEdgeEls.action.disabled = false;
+        }
+    }
+}
+
+function fetchBleedingEdgeManifest() {
+    if (!bleedingEdgeEls.panel) {
+        return Promise.resolve(null);
+    }
+
+    return fetch(SERVER_BLEEDING_MANIFEST_URL, { cache: "no-store" })
+        .then((resp) => {
+            if (!resp.ok) {
+                throw new Error("Bleeding edge manifest request failed with status " + resp.status);
+            }
+            return resp.json();
+        })
+        .then((manifest) => {
+            bleedingEdgeManifest = manifest || {};
+            updateBleedingEdgeUI(bleedingEdgeManifest);
+            return bleedingEdgeManifest;
+        })
+        .catch((err) => {
+            console.warn("Failed to fetch bleeding edge dashboard manifest", err);
+            setBleedingEdgeStatus("Unable to load bleeding edge bundle.", true);
+            throw err;
+        });
+}
+
+function updateBleedingEdgeUI(manifest) {
+    if (!bleedingEdgeEls.panel) {
+        return;
+    }
+
+    const downloadUrl = getServerBundleDownloadUrl(manifest);
+    bleedingEdgeDownloadUrl = downloadUrl;
+
+    let status = "Latest master build ready.";
+    if (manifest && manifest.generatedAt) {
+        try {
+            const timestamp = new Date(manifest.generatedAt);
+            status = `Latest master build • ${timestamp.toLocaleString()}`;
+        } catch (err) {
+            console.warn("Failed to parse bleeding edge timestamp", err);
+        }
+    } else if (manifest && manifest.version) {
+        status = `Latest master build (${manifest.version})`;
+    }
+
+    setBleedingEdgeStatus(status, !downloadUrl);
 }
 
 function updateServerVersionUIState(remoteVersion) {
