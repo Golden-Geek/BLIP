@@ -115,7 +115,7 @@ void Script::load(const String &path)
         }
         else
         {
-            DBG("[script] !Error parsing metadata json");
+            DBG("[script] !Error parsing metadata json : " + String(error.c_str()));
         }
     }
     else
