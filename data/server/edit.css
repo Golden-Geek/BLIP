@@ -1069,35 +1069,71 @@ p.title {
 }
 
 
-.parameter input[type="checkbox"],
 .parameter input[type="range"] {
     accent-color: var(--accent);
     width: auto;
 }
 
 .parameter input[type="checkbox"] {
-    transition: box-shadow 0.15s ease, outline 0.15s ease;
-    border-radius: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    border: 1.5px solid rgba(148, 163, 184, 0.7);
+    border-radius: 5px;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.parameter input[type="checkbox"]::after {
+    content: "";
+    width: 0.28rem;
+    height: 0.55rem;
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    transform: rotate(45deg);
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+    opacity: 0;
 }
 
 .parameter input[type="checkbox"]:focus-visible {
-    outline: 2px solid rgba(34, 197, 94, 0.4);
-    outline-offset: 1px;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+.parameter input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.parameter input[type="checkbox"]:checked::after {
+    border-color: #041b11;
+    opacity: 1;
 }
 
 .parameter input[type="checkbox"]:disabled {
-    accent-color: var(--readonly-accent);
-    opacity: 1;
-    outline: 1px solid rgba(125, 211, 252, 0.45);
-    outline-offset: 1px;
-    box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.08);
+    cursor: not-allowed;
+    border-color: rgba(125, 211, 252, 0.7);
+    background: rgba(125, 211, 252, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.2);
 }
 
 .parameter input[type="checkbox"]:disabled:checked {
+    background: var(--readonly-accent);
+    border-color: rgba(125, 211, 252, 0.9);
     box-shadow:
-        0 0 0 2px rgba(125, 211, 252, 0.18),
-        0 0 10px rgba(125, 211, 252, 0.35);
-    background-color: rgba(125, 211, 252, 0.18);
+        inset 0 0 0 1px rgba(15, 23, 42, 0.25),
+        0 0 8px rgba(125, 211, 252, 0.35);
+}
+
+.parameter input[type="checkbox"]:disabled:checked::after {
+    border-color: rgba(6, 11, 19, 0.85);
+    opacity: 1;
 }
 
 .parameter input:disabled:not([type="checkbox"]) {
