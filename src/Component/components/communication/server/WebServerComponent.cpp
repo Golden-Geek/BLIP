@@ -88,69 +88,125 @@ bool WebServerComponent::initInternal()
     server.onNotFound([](AsyncWebServerRequest *request)
                       {
 
-                        
         if(!FilesComponent::instance->isInit) {
             request->send(500, "text/plain", "Filesystem not initialized");
             return;
         }
-        File f = FilesComponent::instance->openFile(request->url(), false, false);
-        if(!f || f.isDirectory()) {
 
-                        //if doesnt exist, try to find in /server folder, and add html if no extension
-            String path = request->url();
+        auto openRegularFile = [](const String &path) -> File {
+            File candidate = FilesComponent::instance->openFile(path, false, false);
+            if(!candidate) {
+                return File();
+            }
+            if(candidate.isDirectory()) {
+                candidate.close();
+                return File();
+            }
+            return candidate;
+        };
+
+        String resolvedPath = request->url();
+        String lastTriedPath = resolvedPath;
+        File f = openRegularFile(resolvedPath);
+
+        if(!f) {
+            String path = resolvedPath;
             if(!path.startsWith("/server/")) {
                 path = String("/server") + (path.startsWith("/")?"":"/") + path;
-                f = FilesComponent::instance->openFile(path, false, false);
-                if(!f || f.isDirectory()) {
-                    if(!path.endsWith(".html") && !path.endsWith(".htm") && !path.endsWith(".css") && !path.endsWith(".js")) {
-                        path += ".html";
-                        f = FilesComponent::instance->openFile(path, false, false);
-
-                        if(!f || f.isDirectory()) {
-                            request->send(404, "text/plain", "File not found : " + request->url()+" (also tried "+path+")");
-                            return;
-                        }
+                lastTriedPath = path;
+                f = openRegularFile(path);
+                if(f) {
+                    resolvedPath = path;
+                } else if(!path.endsWith(".html") && !path.endsWith(".htm") && !path.endsWith(".css") && !path.endsWith(".js")) {
+                    path += ".html";
+                    lastTriedPath = path;
+                    f = openRegularFile(path);
+                    if(f) {
+                        resolvedPath = path;
                     }
                 }
             }
         }
 
-        DBG("Serving file: " + String(f.name()) + " size: " + String(f.size()));
+        const auto clientAcceptsGzip = [&]() {
+            if(!request->hasHeader("Accept-Encoding")) {
+                return false;
+            }
+            String header = request->header("Accept-Encoding");
+            header.toLowerCase();
+            return header.indexOf("gzip") >= 0;
+        };
 
-        String contentType = "application/octet-stream";
-        String fileName = String(f.name());
-        if (fileName.endsWith(".html") || fileName.endsWith(".htm"))
-        {
-            contentType = "text/html";
+        String logicalPath = f ? resolvedPath : lastTriedPath;
+        bool usingCompressed = false;
+        if(clientAcceptsGzip() && logicalPath.length() > 0) {
+            auto tryGzipPath = [&](const String &candidate) -> File {
+                return openRegularFile(candidate);
+            };
+
+            String sameDirGz = logicalPath + ".gz";
+            File gzFile = tryGzipPath(sameDirGz);
+
+            if(!gzFile && logicalPath.startsWith("/server/")) {
+                const size_t serverPrefixLen = 7; // length of "/server"
+                String relative = logicalPath.substring(serverPrefixLen);
+                String altPath = String("/server-compressed") + relative + ".gz";
+                gzFile = tryGzipPath(altPath);
+            }
+
+            if(gzFile) {
+                if(f) {
+                    f.close();
+                }
+                f = gzFile;
+                usingCompressed = true;
+            }
         }
-        else if (fileName.endsWith(".css"))
-        {
-            contentType = "text/css";
+
+        if(!f) {
+            request->send(404, "text/plain", "File not found : " + request->url()+" (also tried "+lastTriedPath+")");
+            return;
         }
-        else if (fileName.endsWith(".js"))
-        {
-            contentType = "application/javascript";
-        }
-        else if (fileName.endsWith(".json"))
-        {
-            contentType = "application/json";
-        }
-        else if (fileName.endsWith(".svg"))
-        {
-            contentType = "image/svg+xml";
-        }
-        else if (fileName.endsWith(".png"))
-        {
-            contentType = "image/png";
-        }
-        else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg"))
-        {
-            contentType = "image/jpeg";
-        }
-        else if (fileName.endsWith(".ico"))
-        {
-            contentType = "image/x-icon";
-        }
+
+        auto determineContentType = [](const String &name) {
+            if (name.endsWith(".html") || name.endsWith(".htm"))
+            {
+                return String("text/html");
+            }
+            if (name.endsWith(".css"))
+            {
+                return String("text/css");
+            }
+            if (name.endsWith(".js"))
+            {
+                return String("application/javascript");
+            }
+            if (name.endsWith(".json"))
+            {
+                return String("application/json");
+            }
+            if (name.endsWith(".svg"))
+            {
+                return String("image/svg+xml");
+            }
+            if (name.endsWith(".png"))
+            {
+                return String("image/png");
+            }
+            if (name.endsWith(".jpg") || name.endsWith(".jpeg"))
+            {
+                return String("image/jpeg");
+            }
+            if (name.endsWith(".ico"))
+            {
+                return String("image/x-icon");
+            }
+            return String("application/octet-stream");
+        };
+
+        String contentType = determineContentType(logicalPath.length() > 0 ? logicalPath : resolvedPath);
+
+        DBG("Serving file: " + String(f.name()) + " size: " + String(f.size()) + (usingCompressed ? " (gzip)" : ""));
 
         AsyncWebServerResponse *response = request->beginChunkedResponse(contentType, [f](uint8_t *buffer, size_t maxLen, size_t index) mutable {
 
@@ -160,6 +216,11 @@ bool WebServerComponent::initInternal()
             }
             return len;
         });
+
+        if(usingCompressed) {
+            response->addHeader("Content-Encoding", "gzip");
+        }
+
         DBG("Serving file chunk");
         request->send(response); });
 
