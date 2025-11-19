@@ -1010,8 +1010,12 @@ function evaluateFirmwareVersions() {
 
     const match = findCatalogEntry(catalogDeviceType);
     const catalogEntry = match ? match.entry : null;
-    if (!catalogEntry || !Array.isArray(catalogEntry.versions) || catalogEntry.versions.length === 0) {
-        updateFirmwareStatusUI({ latest: "—", state: "error", message: "Device not found in firmware catalog." });
+    const stableVersions = catalogEntry && Array.isArray(catalogEntry.versions)
+        ? catalogEntry.versions.filter((version) => !isBleedingEdgeVersion(version))
+        : [];
+
+    if (!catalogEntry || stableVersions.length === 0) {
+        updateFirmwareStatusUI({ latest: "—", state: "error", message: "No release firmware found for this device." });
         updateDownloadControls(null, null);
         setDownloadStatus("Could not match this device to any downloadable firmware.");
         setAutoUpdateAvailability(null, "Could not match this device to any downloadable firmware.");
@@ -1020,10 +1024,10 @@ function evaluateFirmwareVersions() {
     }
 
     const matchKey = match ? match.key : null;
-    updateDownloadControls(catalogEntry, matchKey);
+    updateDownloadControls({ ...catalogEntry, versions: stableVersions }, matchKey);
     updateFirmwareBleedingPanelMatch(matchKey, catalogEntry);
 
-    const latestVersion = catalogEntry.versions[0];
+    const latestVersion = stableVersions[0];
     updateFirmwareStatusUI({ latest: latestVersion || "—" });
 
     if (!deviceInfo.VERSION || !latestVersion) {
@@ -1109,7 +1113,11 @@ function updateDownloadControls(entry, key) {
     firmwareDownloadEls.select.disabled = true;
     firmwareDownloadEls.button.disabled = true;
 
-    if (!entry || !Array.isArray(entry.versions) || entry.versions.length === 0) {
+    const versions = entry && Array.isArray(entry.versions)
+        ? entry.versions.filter((version) => !isBleedingEdgeVersion(version))
+        : [];
+
+    if (versions.length === 0) {
         const option = document.createElement("option");
         option.value = "";
         option.textContent = entry ? "No versions available" : "Unavailable";
@@ -1122,7 +1130,7 @@ function updateDownloadControls(entry, key) {
         return;
     }
 
-    entry.versions.forEach((version) => {
+    versions.forEach((version) => {
         const option = document.createElement("option");
         option.value = version;
         option.textContent = version;
