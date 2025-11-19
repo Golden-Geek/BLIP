@@ -78,8 +78,6 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&strips);
 #endif
 
-
-
 #ifdef USE_WIFI
     AddOwnedComponent(&wifi);
 #endif
@@ -311,9 +309,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
     {
         ButtonComponent *bc = (ButtonComponent *)comp;
         // DBG("Root param value changed " + bc->name+" > "+String(param == &bc->veryLongPress) + " / " + String(bc->veryLongPress)+" can sd : "+String(bc->canShutDown)+" / "+String(buttons.items[0]->canShutDown));
-        if (param == &bc->veryLongPress && bc->veryLongPress && bc->canShutDown
-        && (!bc->wasPressedAtBoot || bc->releasedAfterBootPress)
-    )
+        if (param == &bc->veryLongPress && bc->veryLongPress && bc->canShutDown && (!bc->wasPressedAtBoot || bc->releasedAfterBootPress))
         {
             NDBG("Shutdown from button");
             shutdown();
@@ -384,19 +380,19 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
         uint32_t freeHeap = ESP.getFreeHeap();
         uint32_t heapSize = ESP.getHeapSize();
 
-        String stats = DeviceName + " - ID " + String(settings.propID) + " : \
-        \n "+ DeviceType + ",Version " + settings.firmwareVersion + " \
-        \nHeap Size: " +
-                       String(heapSize / 1024) + " kb, Free Heap: " + String(freeHeap / 1024) + " kb \
-        \n Min Free Heap: " +
-                       String(ESP.getMinFreeHeap() / 1024) + " kb \
-        \n Max Alloc Heap: " +
-                       String(ESP.getMaxAllocHeap() / 1024) + " kb";
+        String stats = DeviceName +
+                       "\nID " + String(settings.propID) +
+                       "\n " + DeviceType +
+                       "\nVersion " + settings.firmwareVersion +
+                       "\n \"DeviceID\": " + settings.getDeviceID() +
+                       "\nHeap Size: " + String(heapSize / 1024) + " kb, Free Heap: " + String(freeHeap / 1024) + " kb  (" + (freeHeap * 100 / heapSize) + "%)" +
+                       "\n Min Free Heap: " + String(ESP.getMinFreeHeap() / 1024) + " kb " +
+                       "\n Max Alloc Heap: " + String(ESP.getMaxAllocHeap() / 1024) + " kb";
 
 #ifdef USE_FILES
         stats += "\n" + files.getFileSystemInfo();
 #endif
-        NDBG(stats);
+
         comm.sendMessage(this, "stats", stats);
     }
     else if (command == "log")
