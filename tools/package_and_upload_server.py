@@ -3,6 +3,7 @@ import hashlib
 import json
 import mimetypes
 import re
+import shutil
 import sys
 import uuid
 import zipfile
@@ -168,6 +169,16 @@ def main() -> None:
         help="Filename to use for the uploaded JSON manifest",
     )
     parser.add_argument(
+        "--alias-manifest",
+        action="append",
+        default=[],
+        metavar="NAME",
+        help=(
+            "Additional manifest filename(s) that should mirror the generated manifest. "
+            "Repeat the flag to specify multiple aliases."
+        ),
+    )
+    parser.add_argument(
         "--skip-manifest",
         action="store_true",
         help="Do not generate or upload the manifest JSON",
@@ -203,6 +214,7 @@ def main() -> None:
 
     archive_download_url = resolve_download_url(args.public_url_base, archive.name)
     manifest_path = None
+    alias_manifest_paths = []
 
     if not args.skip_manifest:
         manifest_path = output_dir / args.manifest_name
@@ -212,6 +224,19 @@ def main() -> None:
         except Exception as exc:
             print(f"Error writing manifest: {exc}", file=sys.stderr)
             sys.exit(1)
+
+        for alias_name in args.alias_manifest:
+            alias_name = alias_name.strip()
+            if not alias_name or alias_name == args.manifest_name:
+                continue
+            alias_path = output_dir / alias_name
+            try:
+                shutil.copyfile(manifest_path, alias_path)
+                alias_manifest_paths.append(alias_path)
+                print(f"Wrote manifest alias: {alias_path}")
+            except Exception as exc:
+                print(f"Error writing manifest alias '{alias_name}': {exc}", file=sys.stderr)
+                sys.exit(1)
 
     if args.skip_upload:
         print("--skip-upload enabled; skipping upload step.")
@@ -223,9 +248,13 @@ def main() -> None:
         print(response)
 
         if manifest_path and not args.skip_manifest:
-            manifest_response = upload_archive(manifest_path, version, args.upload_url)
-            print("Manifest upload completed. Server response:")
-            print(manifest_response)
+            manifest_files = [manifest_path] + alias_manifest_paths
+            for manifest_file in manifest_files:
+                manifest_response = upload_archive(manifest_file, version, args.upload_url)
+                print(
+                    f"Manifest upload completed for {manifest_file.name}. Server response:"
+                )
+                print(manifest_response)
     except Exception as exc:
         print(f"Upload failed: {exc}", file=sys.stderr)
         if isinstance(exc, request.HTTPError):
