@@ -56,6 +56,9 @@ jobs:
       - name: Minify firstrun helper
         run: python tools/minify_firstrun.py
 
+      - name: Export dashboard assets
+        run: python tools/export_dashboard_assets.py
+
       - name: Package and upload dashboard bundle
         env:
           SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
@@ -64,6 +67,8 @@ jobs:
           args=()
           if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
             args+=(--upload-url "$SERVER_UPLOAD_URL")
+          else
+            args+=(--skip-upload)
           fi
           python tools/package_and_upload_server.py "${args[@]}"
 
