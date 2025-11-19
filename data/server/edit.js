@@ -8,6 +8,7 @@ const ip = urlIp || (local ? window.location.hostname : "192.168.1.193");
 let data = {};
 let oscWS;
 let connectAttempts = 0;
+let forcedDisconnectMessage = null;
 
 const firmwareBaseUrl = "https://www.goldengeek.org/blip/download/firmware/getFirmwares.php";
 const firmwareListUrl = firmwareBaseUrl + "?list";
@@ -1301,7 +1302,9 @@ function initWebSocket() {
 
     oscWS.addEventListener("close", function () {
         console.log("WebSocket closed, reconnecting…");
-        setConnectionStatus("offline", "Connection lost — reconnecting…");
+        const message = forcedDisconnectMessage || "Connection lost — reconnecting…";
+        forcedDisconnectMessage = null;
+        setConnectionStatus("offline", message);
         setTimeout(connectToServer, 800);
     });
 
@@ -1327,6 +1330,11 @@ function initWebSocket() {
         // Otherwise, expect binary OSC data, decode with osc-mini:
         const oscMsg = OscMini.unpack(event.data);
 
+        if (oscMsg.address === "/bye") {
+            handleDeviceByeMessage(oscMsg);
+            return;
+        }
+
         const pid = oscMsg.address.substring(1).replace(/\//g, "-");
         const p = document.getElementById(pid);
         const val =
@@ -1336,6 +1344,38 @@ function initWebSocket() {
             processParameterFeedback(p, val);
         }
     });
+}
+
+function handleDeviceByeMessage(oscMsg) {
+    const reason =
+        oscMsg.args && oscMsg.args.length > 0 && typeof oscMsg.args[0].value === "string"
+            ? oscMsg.args[0].value
+            : "unknown";
+
+    const reasonMessages = {
+        restart: "Device restarting — reconnecting soon…",
+        shutdown: "Device shutting down — connection closed.",
+        standby: "Device entering standby — connection closed.",
+    };
+
+    const message = reasonMessages[reason] || "Device closed the connection.";
+
+    forcedDisconnectMessage = message;
+    setConnectionStatus("offline", message);
+
+    const editorContainer = document.getElementById("editor");
+    if (editorContainer) {
+        editorContainer.textContent = message;
+    }
+
+    if (oscWS && (oscWS.readyState === WebSocket.OPEN || oscWS.readyState === WebSocket.CONNECTING)) {
+        try {
+            // Force the socket closed so the reconnect logic can kick in immediately.
+            oscWS.close(4000, "Device requested /bye");
+        } catch (err) {
+            console.warn("Failed to close WebSocket after /bye", err);
+        }
+    }
 }
 
 // ==============================
