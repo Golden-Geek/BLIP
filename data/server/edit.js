@@ -50,7 +50,39 @@ const deviceMetaEls = {
     prop: document.getElementById("deviceMetaProp"),
 };
 
+const SERVER_MANIFEST_URL = "https://www.goldengeek.org/blip/download/server/latest.php";
+const SERVER_DOWNLOAD_BASE = "https://www.goldengeek.org/blip/download/server/servers/";
+
+const serverVersionEls = {
+    card: document.getElementById("serverVersionCard"),
+    local: document.getElementById("serverVersionLocal"),
+    remote: document.getElementById("serverVersionRemote"),
+    status: document.getElementById("serverVersionStatus"),
+    action: document.getElementById("serverVersionAction"),
+    upload: document.getElementById("serverUploadAction"),
+    uploadStatus: document.getElementById("serverUploadStatus"),
+};
+
+let localServerVersion = null;
+let latestServerManifest = null;
+let serverVersionFetchPromise = null;
+let serverUploadInProgress = false;
+
+const firmwarePanelEls = {
+    card: document.getElementById("firmwareCard"),
+    body: document.getElementById("firmwareBody"),
+    toggle: document.getElementById("firmwareToggle"),
+    label: document.getElementById("firmwareToggleLabel"),
+};
+
+let firmwarePanelCollapsed = true;
+if (firmwarePanelEls.card) {
+    firmwarePanelCollapsed = firmwarePanelEls.card.dataset.collapsed !== "false";
+}
+
 updateDeviceMetaDisplay();
+initServerVersionPanel();
+initFirmwarePanelToggle();
 
 if (firmwareDownloadEls.button) {
     firmwareDownloadEls.button.addEventListener("click", handleFirmwareDownload);
@@ -67,6 +99,336 @@ setTimeout(() => {
     startVersionChecks();
 }, 100);
 
+function initServerVersionPanel() {
+    if (!serverVersionEls.card) {
+        return;
+    }
+
+    localServerVersion = readLocalServerVersionComment();
+    if (serverVersionEls.local) {
+        serverVersionEls.local.textContent = localServerVersion || "—";
+    }
+
+    if (serverVersionEls.status) {
+        serverVersionEls.status.textContent = "Checking online dashboard bundle…";
+    }
+
+    if (serverVersionEls.uploadStatus) {
+        serverVersionEls.uploadStatus.textContent = "Upload not started.";
+    }
+
+    if (serverVersionEls.action) {
+        serverVersionEls.action.addEventListener("click", () => {
+            if (!latestServerManifest) return;
+            const directUrl = latestServerManifest.url;
+            const inferredUrl = latestServerManifest.version
+                ? SERVER_DOWNLOAD_BASE + "server-compressed-" + latestServerManifest.version + ".zip"
+                : null;
+            const targetUrl = directUrl || inferredUrl;
+            if (targetUrl) {
+                window.open(targetUrl, "_blank");
+            }
+        });
+    }
+
+    if (serverVersionEls.upload) {
+        serverVersionEls.upload.addEventListener("click", handleServerBundleUpload);
+    }
+
+    fetchServerManifestVersion().catch(() => {});
+}
+
+function readLocalServerVersionComment() {
+    const nodes = document.childNodes || [];
+    for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        if (node && node.nodeType === Node.COMMENT_NODE) {
+            const match = /Version\s+([^\s]+)/i.exec(node.nodeValue || "");
+            if (match && match[1]) {
+                return match[1].trim();
+            }
+        }
+    }
+    return null;
+}
+
+function fetchServerManifestVersion() {
+    if (!serverVersionEls.card) {
+        return Promise.resolve(null);
+    }
+
+    if (serverVersionFetchPromise) {
+        return serverVersionFetchPromise;
+    }
+
+    serverVersionEls.card.dataset.state = "checking";
+    if (serverVersionEls.remote) {
+        serverVersionEls.remote.textContent = "Checking…";
+    }
+
+    serverVersionFetchPromise = fetch(SERVER_MANIFEST_URL, { cache: "no-store" })
+        .then((resp) => {
+            if (!resp.ok) {
+                throw new Error("Manifest request failed with status " + resp.status);
+            }
+            return resp.json();
+        })
+        .then((manifest) => {
+            latestServerManifest = manifest || {};
+            const remoteVersion = latestServerManifest.version || "—";
+            if (serverVersionEls.remote) {
+                serverVersionEls.remote.textContent = remoteVersion;
+            }
+            updateServerVersionUIState(remoteVersion);
+            return latestServerManifest;
+        })
+        .catch((err) => {
+            console.warn("Failed to fetch server bundle manifest", err);
+            if (serverVersionEls.status) {
+                serverVersionEls.status.textContent = "Unable to reach the dashboard update server.";
+            }
+            if (serverVersionEls.card) {
+                serverVersionEls.card.dataset.state = "error";
+            }
+            if (serverVersionEls.action) {
+                serverVersionEls.action.disabled = true;
+            }
+            if (serverVersionEls.upload && !serverUploadInProgress) {
+                serverVersionEls.upload.disabled = true;
+            }
+            throw err;
+        })
+        .finally(() => {
+            serverVersionFetchPromise = null;
+        });
+
+    return serverVersionFetchPromise;
+}
+
+function updateServerVersionUIState(remoteVersion) {
+    if (!serverVersionEls.card) {
+        return;
+    }
+
+    const hasRemote = remoteVersion && remoteVersion !== "—";
+    const hasLocal = !!localServerVersion;
+    let state = "checking";
+    let message = "";
+
+    if (!hasRemote) {
+        state = "error";
+        message = "Latest dashboard bundle unavailable.";
+        setServerBundleActionEnabled(false);
+    } else if (!hasLocal) {
+        state = "warn";
+        message = "Local version unknown; download latest build to stay in sync.";
+        setServerBundleActionEnabled(true);
+    } else {
+        const comparison = compareVersions(localServerVersion, remoteVersion);
+        if (comparison >= 0) {
+            state = "ok";
+            message = "Dashboard is up to date.";
+            setServerBundleActionEnabled(true);
+        } else {
+            state = "warn";
+            message = "New dashboard bundle available.";
+            setServerBundleActionEnabled(true);
+        }
+    }
+
+    serverVersionEls.card.dataset.state = state;
+    if (serverVersionEls.status) {
+        serverVersionEls.status.textContent = message;
+    }
+}
+
+function setServerBundleActionEnabled(enabled) {
+    if (serverVersionEls.action) {
+        serverVersionEls.action.disabled = !enabled;
+    }
+    if (serverVersionEls.upload) {
+        serverVersionEls.upload.disabled = !enabled || serverUploadInProgress;
+    }
+}
+
+function setServerUploadStatus(message) {
+    if (serverVersionEls.uploadStatus) {
+        serverVersionEls.uploadStatus.textContent = message || "";
+    }
+}
+
+function setServerUploadButtonState(label, forceDisable) {
+    if (!serverVersionEls.upload) {
+        return;
+    }
+    if (label) {
+        serverVersionEls.upload.textContent = label;
+    }
+    if (typeof forceDisable === "boolean") {
+        serverVersionEls.upload.disabled = forceDisable;
+    }
+}
+
+function hasAvailableServerBundle() {
+    return !!(latestServerManifest && (latestServerManifest.url || latestServerManifest.version));
+}
+
+function getServerBundleDownloadUrl(manifest) {
+    if (!manifest) {
+        return null;
+    }
+    if (manifest.url) {
+        return manifest.url;
+    }
+    if (manifest.version) {
+        return SERVER_DOWNLOAD_BASE + "server-compressed-" + manifest.version + ".zip";
+    }
+    return null;
+}
+
+function resolveServerUploadTarget(entryName) {
+    let normalized = (entryName || "")
+        .replace(/\\\\/g, "/")
+        .replace(/^\.\/+/, "")
+        .replace(/^\/+/, "");
+
+    const parts = normalized.split("/").filter(Boolean);
+    const filename = parts.pop();
+    let folder = parts.length ? parts.join("/") : "";
+
+    if (!filename) {
+        throw new Error("Bundle entry missing filename.");
+    }
+
+    if (!folder) {
+        folder = "server";
+    }
+
+    if (folder.endsWith("/")) {
+        folder = folder.slice(0, -1);
+    }
+
+    if (!folder.startsWith("/")) {
+        folder = "/" + folder;
+    }
+
+    return { folder, filename };
+}
+
+async function uploadServerAsset(blob, filename, folder) {
+    const targetUrl = new URL("http://" + ip + "/uploadFile");
+    if (folder) {
+        targetUrl.searchParams.set("folder", folder);
+    }
+
+    const formData = new FormData();
+    formData.append("uploadData", blob, filename || "file.bin");
+
+    const response = await fetch(targetUrl.toString(), {
+        method: "POST",
+        body: formData,
+    });
+
+    if (!response.ok) {
+        let errorText = "";
+        try {
+            errorText = await response.text();
+        } catch (err) {
+            console.warn("Unable to read upload error response", err);
+        }
+        throw new Error(
+            "Upload failed (" +
+                response.status +
+                ")" +
+                (errorText ? ": " + errorText.trim() : "")
+        );
+    }
+}
+
+async function handleServerBundleUpload() {
+    if (serverUploadInProgress) {
+        setServerUploadStatus("Upload already in progress…");
+        return;
+    }
+
+    if (typeof JSZip === "undefined") {
+        setServerUploadStatus("JSZip failed to load; refresh the page and try again.");
+        return;
+    }
+
+    serverUploadInProgress = true;
+    setServerUploadButtonState("Preparing…", true);
+    setServerBundleActionEnabled(false);
+
+    try {
+        setServerUploadStatus("Fetching latest dashboard manifest…");
+        const manifest = (await fetchServerManifestVersion().catch(() => null)) || latestServerManifest;
+        if (!manifest) {
+            throw new Error("Unable to fetch dashboard manifest.");
+        }
+
+        const downloadUrl = getServerBundleDownloadUrl(manifest);
+        if (!downloadUrl) {
+            throw new Error("Dashboard download URL is missing.");
+        }
+
+        const versionLabel = manifest.version ? " " + manifest.version : "";
+        setServerUploadStatus("Downloading dashboard bundle" + versionLabel + "…");
+        const response = await fetch(downloadUrl, { cache: "no-cache" });
+        if (!response.ok) {
+            throw new Error("Download failed (" + response.status + ")");
+        }
+
+        const zip = await JSZip.loadAsync(await response.arrayBuffer());
+        const entries = Object.keys(zip.files)
+            .map((key) => zip.files[key])
+            .filter((file) => file && !file.dir);
+
+        if (!entries.length) {
+            throw new Error("Downloaded bundle did not contain any files.");
+        }
+
+        let completed = 0;
+        for (const entry of entries) {
+            completed += 1;
+            const progressLabel = `Uploading ${completed}/${entries.length}…`;
+            setServerUploadButtonState(progressLabel, true);
+            setServerUploadStatus(`${progressLabel} (${entry.name})`);
+
+            const blob = await entry.async("blob");
+            const target = resolveServerUploadTarget(entry.name);
+            await uploadServerAsset(blob, target.filename, target.folder);
+        }
+
+        setServerUploadStatus(
+            "Upload complete. Reload this page to serve version " +
+                (manifest.version || localServerVersion || "the latest build") +
+                "."
+        );
+
+        if (manifest.version) {
+            localServerVersion = manifest.version;
+            if (serverVersionEls.local) {
+                serverVersionEls.local.textContent = localServerVersion;
+            }
+            updateServerVersionUIState(manifest.version);
+        }
+    } catch (err) {
+        console.error("Server bundle upload failed", err);
+        setServerUploadStatus("Upload failed: " + (err && err.message ? err.message : err));
+        if (serverVersionEls.card) {
+            serverVersionEls.card.dataset.state = "error";
+        }
+    } finally {
+        serverUploadInProgress = false;
+        setServerUploadButtonState("Upload to device", !hasAvailableServerBundle());
+        setServerBundleActionEnabled(hasAvailableServerBundle());
+        if (hasAvailableServerBundle()) {
+            updateServerVersionUIState(latestServerManifest.version || "—");
+        }
+    }
+}
+
 function startVersionChecks() {
     if (versionCheckStarted) return;
     versionCheckStarted = true;
@@ -74,6 +436,42 @@ function startVersionChecks() {
     setAutoUpdateAvailability(null, "Matching device with firmware catalog…");
     fetchDeviceHostInfo();
     fetchFirmwareCatalog();
+}
+
+function initFirmwarePanelToggle() {
+    if (!firmwarePanelEls.card) {
+        return;
+    }
+    setFirmwarePanelCollapsed(firmwarePanelCollapsed, false);
+    if (firmwarePanelEls.toggle) {
+        firmwarePanelEls.toggle.addEventListener("click", () => {
+            setFirmwarePanelCollapsed(!firmwarePanelCollapsed, true);
+        });
+    }
+}
+
+function setFirmwarePanelCollapsed(collapsed, userInitiated) {
+    if (!firmwarePanelEls.card) {
+        return;
+    }
+    firmwarePanelCollapsed = collapsed;
+    firmwarePanelEls.card.dataset.collapsed = collapsed ? "true" : "false";
+    if (firmwarePanelEls.toggle) {
+        firmwarePanelEls.toggle.setAttribute("aria-expanded", (!collapsed).toString());
+    }
+    if (firmwarePanelEls.label) {
+        firmwarePanelEls.label.textContent = collapsed ? "Show panel" : "Hide panel";
+    }
+    if (userInitiated && !collapsed) {
+        firmwarePanelEls.card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
+
+function ensureFirmwarePanelExpandedForUpdate() {
+    if (!firmwarePanelEls.card || !firmwarePanelCollapsed) {
+        return;
+    }
+    setFirmwarePanelCollapsed(false, false);
 }
 
 function getCatalogDeviceType() {
@@ -320,6 +718,7 @@ function evaluateFirmwareVersions() {
         });
         setDownloadStatus("Download version " + latestVersion + " to update this device.");
         setAutoUpdateAvailability(latestVersion, "Auto-update ready for version " + latestVersion + ".");
+        ensureFirmwarePanelExpandedForUpdate();
     }
 }
 

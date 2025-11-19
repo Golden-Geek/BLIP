@@ -1,3 +1,4 @@
+<!-- Version 1.1.2 -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
   <script src="osc-mini.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <link rel="stylesheet" href="edit.css" />
 </head>
@@ -35,7 +36,7 @@
         </div>
 
         <div class="controls-row">
-          <div class="btn-group">
+          <div class="action-stack">
             <button type="button" class="btn btn-primary" onclick="sendCommand('/settings/save'); restartDevice();">
               Save &amp; Restart
             </button>
@@ -73,6 +74,29 @@
             </div>
           </div>
 
+          <div class="server-version-panel" id="serverVersionCard" aria-live="polite">
+            <div class="server-version-summary">
+              <div>
+                <span class="meta-label">Dashboard build</span>
+                <span class="server-version-value" id="serverVersionLocal">—</span>
+              </div>
+              <div>
+                <span class="meta-label">Latest online</span>
+                <span class="server-version-value" id="serverVersionRemote">Checking…</span>
+              </div>
+            </div>
+            <p class="server-version-status" id="serverVersionStatus">Looking up available dashboard bundle…</p>
+            <div class="server-version-actions">
+              <button class="btn btn-primary btn-compact" id="serverVersionAction" disabled>
+                Download latest build
+              </button>
+              <button class="btn btn-compact" id="serverUploadAction" disabled>
+                Upload to device
+              </button>
+            </div>
+            <p class="server-version-status subtle" id="serverUploadStatus">Upload not started.</p>
+          </div>
+
           <div class="toggle-wrap">
             <span class="toggle-label">Show config</span>
             <label class="toggle">
@@ -85,95 +109,106 @@
     </div>
 
     <!-- OTA firmware uploader -->
-    <div class="card">
+    <div class="card firmware-card" id="firmwareCard" data-collapsed="true">
       <div class="card-inner">
-        <div class="section-title">Firmware update</div>
-
-        <div class="firmware-status" id="firmwareStatus">
-          <div>
-            <div class="firmware-label">Device firmware</div>
-            <div class="firmware-value" id="currentFirmwareVersion">—</div>
-          </div>
-          <div>
-            <div class="firmware-label">Latest available</div>
-            <div class="firmware-value" id="latestFirmwareVersion">—</div>
-          </div>
-          <div class="status-pill" id="firmwareStatusPill">Checking…</div>
-        </div>
-        <div class="status-helper" id="firmwareStatusMessage">Checking firmware status…</div>
-        <div class="firmware-actions">
-          <div class="firmware-action">
-            <div class="action-heading">
-              <span class="action-title">Manual package</span>
-              <span class="action-tag">.zip download</span>
-            </div>
-            <div class="action-controls">
-              <select id="firmwareVersionSelect" disabled>
-                <option>Loading versions…</option>
-              </select>
-              <button class="btn-download" id="downloadFirmwareBtn" disabled>Download .zip</button>
-            </div>
-            <div class="action-status" id="downloadFirmwareStatus">Firmware download link activates once the device is matched to a catalog entry.</div>
-          </div>
-          <div class="firmware-action">
-            <div class="action-heading">
-              <span class="action-title">One-click OTA</span>
-              <span class="action-tag">Download &amp; install</span>
-            </div>
-            <button class="btn-download wide" id="autoUpdateBtn" disabled>Download &amp; Install Latest</button>
-            <div class="action-status" id="autoUpdateStatus">Auto-update will enable when a newer firmware is available.</div>
-          </div>
+        <div class="section-title firmware-title-row">
+          <span>Firmware update</span>
+          <button type="button" class="collapse-toggle" id="firmwareToggle" aria-expanded="false" aria-controls="firmwareBody">
+            <span id="firmwareToggleLabel">Show panel</span>
+            <svg class="collapse-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
         </div>
 
-        <div class="firmware-actions upload-actions">
-          <div class="firmware-action">
-            <div class="action-heading">
-              <span class="action-title">Local firmware</span>
-              <span class="action-tag">.bin upload</span>
+        <div class="firmware-body" id="firmwareBody">
+          <div class="firmware-status" id="firmwareStatus">
+            <div>
+              <div class="firmware-label">Device firmware</div>
+              <div class="firmware-value" id="currentFirmwareVersion">—</div>
             </div>
-            <div class="file-row">
-              <label class="file-label" for="firmware">
-                <span class="icon">📁</span>
-                <span>
-                  <span class="text-strong">Choose firmware</span>
-                  <span style="display:block;font-size:0.75rem;color:var(--text-soft);">
-                    ESP32 <code>.bin</code> built with your current partition table
+            <div>
+              <div class="firmware-label">Latest available</div>
+              <div class="firmware-value" id="latestFirmwareVersion">—</div>
+            </div>
+            <div class="status-pill" id="firmwareStatusPill">Checking…</div>
+          </div>
+          <div class="status-helper" id="firmwareStatusMessage">Checking firmware status…</div>
+          <div class="firmware-actions">
+            <div class="firmware-action">
+              <div class="action-heading">
+                <span class="action-title">Manual package</span>
+                <span class="action-tag">.zip download</span>
+              </div>
+              <div class="action-controls">
+                <select id="firmwareVersionSelect" disabled>
+                  <option>Loading versions…</option>
+                </select>
+                <button class="btn-download" id="downloadFirmwareBtn" disabled>Download .zip</button>
+              </div>
+              <div class="action-status" id="downloadFirmwareStatus">Firmware download link activates once the device is matched to a catalog entry.</div>
+            </div>
+            <div class="firmware-action">
+              <div class="action-heading">
+                <span class="action-title">One-click OTA</span>
+                <span class="action-tag">Download &amp; install</span>
+              </div>
+              <button class="btn-download wide" id="autoUpdateBtn" disabled>Download &amp; Install Latest</button>
+              <div class="action-status" id="autoUpdateStatus">Auto-update will enable when a newer firmware is available.</div>
+            </div>
+          </div>
+
+          <div class="firmware-actions upload-actions">
+            <div class="firmware-action">
+              <div class="action-heading">
+                <span class="action-title">Local firmware</span>
+                <span class="action-tag">.bin upload</span>
+              </div>
+              <div class="file-row">
+                <label class="file-label" for="firmware">
+                  <span class="icon">📁</span>
+                  <span>
+                    <span class="text-strong">Choose firmware</span>
+                    <span style="display:block;font-size:0.75rem;color:var(--text-soft);">
+                      ESP32 <code>.bin</code> built with your current partition table
+                    </span>
                   </span>
-                </span>
-              </label>
-              <input type="file" id="firmware" accept=".bin" />
+                </label>
+                <input type="file" id="firmware" accept=".bin" />
+              </div>
+              <div class="file-meta" id="fileMeta">
+                <span class="file-pill muted">No file selected</span>
+              </div>
             </div>
-            <div class="file-meta" id="fileMeta">
-              <span class="file-pill muted">No file selected</span>
-            </div>
-          </div>
 
-          <div class="firmware-action">
-            <div class="action-heading">
-              <span class="action-title">Upload progress</span>
-              <span class="action-tag">Device OTA</span>
-            </div>
-            <div class="progress-wrapper">
-              <div class="progress-bar" aria-hidden="true">
-                <div class="progress-fill" id="progressFill"></div>
+            <div class="firmware-action">
+              <div class="action-heading">
+                <span class="action-title">Upload progress</span>
+                <span class="action-tag">Device OTA</span>
               </div>
-              <div class="progress-text">
-                <span id="progressLabel">Waiting for upload…</span>
-                <span class="value" id="progressValue">0%</span>
+              <div class="progress-wrapper">
+                <div class="progress-bar" aria-hidden="true">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text">
+                  <span id="progressLabel">Waiting for upload…</span>
+                  <span class="value" id="progressValue">0%</span>
+                </div>
               </div>
-            </div>
-            <div class="footer-row">
-              <div class="status" id="statusText">
-                <strong>Status:</strong> idle
+              <div class="footer-row">
+                <div class="status" id="statusText">
+                  <strong>Status:</strong> idle
+                </div>
+                <button class="btn-upload" id="uploadBtn" disabled>
+                  <span id="uploadBtnLabel">Upload firmware</span>
+                  <span id="uploadSpinner" class="spinner" style="display:none;"></span>
+                </button>
               </div>
-              <button class="btn-upload" id="uploadBtn" disabled>
-                <span id="uploadBtnLabel">Upload firmware</span>
-                <span id="uploadSpinner" class="spinner" style="display:none;"></span>
-              </button>
-            </div>
-            <div class="hint-row compact">
-              <span class="hint-pill">Tip</span>
-              <span>Device will reboot automatically after a successful OTA flash.</span>
+              <div class="hint-row compact">
+                <span class="hint-pill">Tip</span>
+                <span>Device will reboot automatically after a successful OTA flash.</span>
+              </div>
+              <div class="file-meta" id="uploadMessage">No upload in progress.</div>
             </div>
           </div>
         </div>
@@ -192,7 +227,7 @@
   <!-- Logger Toggle Button -->
   <button class="logger-toggle" id="loggerToggle" title="Toggle Debug Logger">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   </button>
 
@@ -202,7 +237,7 @@
       <h3>Debug Logger</h3>
       <button class="logger-close" id="loggerClose">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
@@ -223,7 +258,7 @@
   </div>
 
   <script src="edit.js"></script>
-  
+
 </body>
 
 </html>

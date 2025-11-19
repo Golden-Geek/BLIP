@@ -13,3 +13,5 @@ export/
 data/server-compressed/
 
 data/server-prod/
+
+data/server-files/

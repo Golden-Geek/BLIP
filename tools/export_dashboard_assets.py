@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Tuple
 
 TextMinifier = Callable[[str], str]
+VERSION_REGEX = re.compile(r"<!--\s*Version\s+([^\s]+)\s*-->", re.IGNORECASE)
 
 
 def format_bytes(value: int) -> str:
@@ -201,10 +202,17 @@ def minify_js(js: str) -> str:
 
 
 def minify_html(html: str) -> str:
+    version_prefix = ""
+    match = VERSION_REGEX.search(html)
+    if match:
+        version_prefix = f"<!-- Version {match.group(1)} -->\n"
+
     html = re.sub(r"<!--(?!\s*\[if).*?-->", "", html, flags=re.S)
     html = re.sub(r">\s+<", "><", html)
     html = re.sub(r"\s+", " ", html)
-    return html.strip()
+    minified = html.strip()
+
+    return version_prefix + minified if version_prefix else minified
 
 
 FILES_TO_MINIFY: Dict[str, TextMinifier] = {
