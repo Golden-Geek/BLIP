@@ -4,6 +4,7 @@
     --accent: #22c55e;
     --accent-soft: rgba(34, 197, 94, 0.15);
     --accent-strong: #16a34a;
+    --readonly-accent: #7dd3fc;
     --text-main: #e5e7eb;
     --text-soft: #9ca3af;
     --border: #1f2937;
@@ -1067,17 +1068,39 @@ p.title {
     background: radial-gradient(circle at 0 0, #22c55e33 0, #020617 60%);
 }
 
+
 .parameter input[type="checkbox"],
 .parameter input[type="range"] {
-    accent-color: limegreen;
+    accent-color: var(--accent);
     width: auto;
 }
 
-.parameter input[type="checkbox"]:disabled {
-    accent-color: lightblue;
+.parameter input[type="checkbox"] {
+    transition: box-shadow 0.15s ease, outline 0.15s ease;
+    border-radius: 4px;
 }
 
-.parameter input:disabled {
+.parameter input[type="checkbox"]:focus-visible {
+    outline: 2px solid rgba(34, 197, 94, 0.4);
+    outline-offset: 1px;
+}
+
+.parameter input[type="checkbox"]:disabled {
+    accent-color: var(--readonly-accent);
+    opacity: 1;
+    outline: 1px solid rgba(125, 211, 252, 0.45);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.08);
+}
+
+.parameter input[type="checkbox"]:disabled:checked {
+    box-shadow:
+        0 0 0 2px rgba(125, 211, 252, 0.18),
+        0 0 10px rgba(125, 211, 252, 0.35);
+    background-color: rgba(125, 211, 252, 0.18);
+}
+
+.parameter input:disabled:not([type="checkbox"]) {
     color: lightblue;
     opacity: 0.7;
 }

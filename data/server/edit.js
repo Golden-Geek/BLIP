@@ -104,6 +104,8 @@ if (firmwarePanelEls.card) {
     firmwarePanelCollapsed = firmwarePanelEls.card.dataset.collapsed !== "false";
 }
 
+const baseDocumentTitle = document.title || "BLIP Control Panel";
+
 function isBleedingEdgeVersion(value) {
     return typeof value === "string" && value.toLowerCase() === "bleeding-edge";
 }
@@ -805,6 +807,33 @@ function getCatalogDeviceType() {
     return null;
 }
 
+function updateDocumentTitle() {
+    const nameValue =
+        (deviceInfo && (deviceInfo.NAME || deviceInfo.DEVICE_NAME)) ||
+        settingsDeviceName ||
+        "";
+    const propValueRaw =
+        settingsPropId !== null && settingsPropId !== undefined && settingsPropId !== ""
+            ? settingsPropId
+            : deviceInfo && deviceInfo.PROP_ID;
+    const propValue =
+        propValueRaw === null || propValueRaw === undefined || propValueRaw === ""
+            ? null
+            : propValueRaw;
+
+    const descriptorParts = [];
+    if (nameValue) {
+        descriptorParts.push(nameValue);
+    }
+    if (propValue !== null) {
+        descriptorParts.push("Prop " + propValue);
+    }
+
+    document.title = descriptorParts.length
+        ? baseDocumentTitle + " — " + descriptorParts.join(" • ")
+        : baseDocumentTitle;
+}
+
 function updateDeviceMetaDisplay() {
     if (deviceMetaEls.ip) {
         deviceMetaEls.ip.textContent = ip || "—";
@@ -830,6 +859,8 @@ function updateDeviceMetaDisplay() {
                 ? "—"
                 : propValue;
     }
+
+    updateDocumentTitle();
 }
 
 function findParameterByPath(node, fullPath) {
