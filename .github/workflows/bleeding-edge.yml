@@ -1,4 +1,4 @@
-name: Publish Bleeding Edge Builds
+name: Publish Server Bundles
 
 on:
   push:
@@ -6,8 +6,7 @@ on:
       - main
 
 jobs:
-  dashboard:
-    if: ${{ github.event.head_commit.message && contains(github.event.head_commit.message, 'bleeding') }}
+  server:
     runs-on: ubuntu-latest
     env:
       PIO_CORE_CALLER: gha
@@ -25,42 +24,80 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio requests
 
-      - name: Build bleeding edge firmware
-        env:
-          FIRMWARE_VERSION_LABEL: bleeding-edge
-          FIRMWARE_BUILD_CHANNEL: bleeding-edge
-        run: |
-          set -euo pipefail
-          export FIRMWARE_GENERATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          python tools/build_all.py -j 1 -u
-
-      - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware-bleeding-edge
-          path: export
-
       - name: Minify firstrun helper
         run: python tools/minify_firstrun.py
 
       - name: Export dashboard assets
         run: python tools/export_dashboard_assets.py
 
+      - name: Extract server version from commit message
+        id: server_version
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import sys
+
+          message = (os.environ.get("COMMIT_MESSAGE") or "").strip()
+          lower_message = message.lower()
+          keyword_present = "server-version" in lower_message
+          match = re.search(r"server-version(?:\s*[:=]\s*|\s+)([0-9A-Za-z._-]+)", message, re.IGNORECASE)
+          if match:
+              version = match.group(1)
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+                  fh.write(f"version={version}\n")
+              print(f"Found server version tag: {version}")
+          elif keyword_present:
+              print("::error::Found 'server-version' in commit message but could not parse a version. Use 'server-version <value>' or 'server-version:<value>'.", file=sys.stderr)
+              sys.exit(1)
+          else:
+              print("No server version override requested.")
+          PY
+
       - name: Package bleeding edge dashboard
         env:
           SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
         run: |
           set -euo pipefail
-          args=(--version-label bleeding-edge --manifest-name bleeding-edge.json)
+          declare -a cmd=(python tools/package_and_upload_server.py --version-label bleeding-edge --manifest-name bleeding-edge.json)
           if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
-            args+=(--upload-url "$SERVER_UPLOAD_URL")
+            cmd+=(--upload-url "$SERVER_UPLOAD_URL")
           else
-            args+=(--skip-upload)
+            cmd+=(--skip-upload)
           fi
-          python tools/package_and_upload_server.py "${args[@]}"
+          "${cmd[@]}"
 
-      - name: Upload dashboard artifacts
+      - name: Upload bleeding edge server artifacts
         uses: actions/upload-artifact@v4
         with:
           name: server-bleeding-edge
-          path: export/releases
+          path: |
+            export/releases/bleeding-edge.json
+            export/releases/server-compressed-bleeding-edge.zip
+
+      - name: Package versioned dashboard
+        if: steps.server_version.outputs.version != ''
+        env:
+          SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
+          SERVER_VERSION: ${{ steps.server_version.outputs.version }}
+        run: |
+          set -euo pipefail
+          version="$SERVER_VERSION"
+          declare -a cmd=(python tools/package_and_upload_server.py --version-label "$version" --manifest-name "server-${version}.json")
+          if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
+            cmd+=(--upload-url "$SERVER_UPLOAD_URL")
+          else
+            cmd+=(--skip-upload)
+          fi
+          "${cmd[@]}"
+
+      - name: Upload versioned server artifacts
+        if: steps.server_version.outputs.version != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-${{ steps.server_version.outputs.version }}
+          path: |
+            export/releases/server-${{ steps.server_version.outputs.version }}.json
+            export/releases/server-compressed-${{ steps.server_version.outputs.version }}.zip
