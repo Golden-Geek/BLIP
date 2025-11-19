@@ -11,6 +11,7 @@ let connectAttempts = 0;
 
 const firmwareBaseUrl = "https://www.goldengeek.org/blip/download/firmware/getFirmwares.php";
 const firmwareListUrl = firmwareBaseUrl + "?list";
+const FIRMWARE_BLEEDING_MANIFEST_URL = "https://www.goldengeek.org/blip/download/firmware/bleeding-edge.php";
 let firmwareCatalog = null;
 let deviceInfo = null;
 let versionCheckStarted = false;
@@ -50,6 +51,8 @@ const deviceMetaEls = {
     prop: document.getElementById("deviceMetaProp"),
 };
 
+const connectionBadgeEl = document.getElementById("connectionBadge");
+
 const SERVER_BASE_URL = "https://www.goldengeek.org/blip/download/server/";
 const SERVER_MANIFEST_URL = SERVER_BASE_URL + "latest.php";
 const SERVER_DOWNLOAD_BASE = SERVER_BASE_URL + "servers/";
@@ -71,12 +74,22 @@ const bleedingEdgeEls = {
     action: document.getElementById("bleedingEdgeAction"),
 };
 
+const firmwareBleedingEls = {
+    panel: document.getElementById("firmwareBleedingPanel"),
+    status: document.getElementById("firmwareBleedingStatus"),
+    action: document.getElementById("firmwareBleedingAction"),
+};
+
 let localServerVersion = null;
 let latestServerManifest = null;
 let serverVersionFetchPromise = null;
 let serverUploadInProgress = false;
 let bleedingEdgeManifest = null;
 let bleedingEdgeDownloadUrl = null;
+let firmwareBleedingManifest = null;
+let firmwareBleedingDownloadUrl = null;
+let firmwareBleedingFetchPromise = null;
+let firmwareBleedingPendingKey = null;
 
 const firmwarePanelEls = {
     card: document.getElementById("firmwareCard"),
@@ -90,9 +103,12 @@ if (firmwarePanelEls.card) {
     firmwarePanelCollapsed = firmwarePanelEls.card.dataset.collapsed !== "false";
 }
 
+setConnectionStatus("connecting");
+
 updateDeviceMetaDisplay();
 initServerVersionPanel();
 initBleedingEdgePanel();
+initFirmwareBleedingPanel();
 initFirmwarePanelToggle();
 
 if (firmwareDownloadEls.button) {
@@ -166,6 +182,19 @@ function initBleedingEdgePanel() {
     }
 
     fetchBleedingEdgeManifest().catch(() => { });
+}
+
+function setConnectionStatus(state, message) {
+    if (!connectionBadgeEl) {
+        return;
+    }
+    const labels = {
+        connecting: "Connecting…",
+        online: "Online",
+        offline: "Offline",
+    };
+    connectionBadgeEl.dataset.state = state || "connecting";
+    connectionBadgeEl.textContent = message || labels[state] || labels.connecting;
 }
 
 function readLocalServerVersionComment() {
@@ -296,6 +325,187 @@ function updateBleedingEdgeUI(manifest) {
     }
 
     setBleedingEdgeStatus(status, !downloadUrl);
+}
+
+function initFirmwareBleedingPanel() {
+    if (!firmwareBleedingEls.panel) {
+        return;
+    }
+
+    setFirmwareBleedingStatus(
+        "Waiting for device match before checking bleeding edge firmware.",
+        true
+    );
+
+    if (firmwareBleedingEls.action) {
+        firmwareBleedingEls.action.disabled = true;
+        firmwareBleedingEls.action.addEventListener("click", () => {
+            if (firmwareBleedingDownloadUrl) {
+                window.open(firmwareBleedingDownloadUrl, "_blank");
+            }
+        });
+    }
+
+    fetchFirmwareBleedingManifest().catch(() => { });
+}
+
+function setFirmwareBleedingStatus(message, disableAction) {
+    if (!firmwareBleedingEls.panel) {
+        return;
+    }
+    if (firmwareBleedingEls.status) {
+        firmwareBleedingEls.status.textContent = message || "";
+    }
+    if (firmwareBleedingEls.action) {
+        if (typeof disableAction === "boolean") {
+            firmwareBleedingEls.action.disabled = disableAction;
+        } else {
+            firmwareBleedingEls.action.disabled = !firmwareBleedingDownloadUrl;
+        }
+    }
+}
+
+function fetchFirmwareBleedingManifest() {
+    if (!firmwareBleedingEls.panel) {
+        return Promise.resolve(null);
+    }
+
+    if (firmwareBleedingFetchPromise) {
+        return firmwareBleedingFetchPromise;
+    }
+
+    firmwareBleedingFetchPromise = fetch(FIRMWARE_BLEEDING_MANIFEST_URL, { cache: "no-store" })
+        .then((resp) => {
+            if (!resp.ok) {
+                throw new Error("Bleeding edge firmware manifest request failed with status " + resp.status);
+            }
+            return resp.json();
+        })
+        .then((manifest) => {
+            firmwareBleedingManifest = manifest || {};
+            if (firmwareBleedingPendingKey) {
+                updateFirmwareBleedingPanelMatch(firmwareBleedingPendingKey);
+            }
+            return firmwareBleedingManifest;
+        })
+        .catch((err) => {
+            console.warn("Failed to fetch bleeding edge firmware manifest", err);
+            setFirmwareBleedingStatus("Unable to load bleeding edge firmware info.", true);
+            throw err;
+        })
+        .finally(() => {
+            firmwareBleedingFetchPromise = null;
+        });
+
+    return firmwareBleedingFetchPromise;
+}
+
+function updateFirmwareBleedingPanelMatch(matchKey, catalogEntry) {
+    if (!firmwareBleedingEls.panel) {
+        return;
+    }
+
+    firmwareBleedingPendingKey = matchKey || null;
+    firmwareBleedingDownloadUrl = null;
+
+    if (!matchKey) {
+        setFirmwareBleedingStatus(
+            "Bleeding edge firmware downloads unlock once this device is matched to the catalog.",
+            true
+        );
+        return;
+    }
+
+    if (!firmwareBleedingManifest) {
+        setFirmwareBleedingStatus("Checking bleeding edge firmware for this device…", true);
+        fetchFirmwareBleedingManifest().catch(() => { });
+        return;
+    }
+
+    const entryMatch = findFirmwareBleedingEntry(matchKey);
+    if (!entryMatch) {
+        const readableName = (catalogEntry && (catalogEntry.name || catalogEntry.displayName)) || matchKey;
+        setFirmwareBleedingStatus("No bleeding edge firmware published for " + readableName + " yet.", true);
+        return;
+    }
+
+    const downloadUrl = buildFirmwareBleedingDownloadUrl(entryMatch.key, entryMatch.entry);
+    if (!downloadUrl) {
+        setFirmwareBleedingStatus("Bleeding edge firmware entry missing download URL.", true);
+        return;
+    }
+
+    firmwareBleedingDownloadUrl = downloadUrl;
+
+    let status = entryMatch.entry && entryMatch.entry.version
+        ? "Version " + entryMatch.entry.version + " ready."
+        : "Latest master build ready.";
+    const timestampLabel = formatBleedingTimestamp(entryMatch.entry && entryMatch.entry.generatedAt);
+    if (timestampLabel) {
+        status += " • " + timestampLabel;
+    }
+
+    setFirmwareBleedingStatus(status, false);
+}
+
+function findFirmwareBleedingEntry(deviceKey) {
+    if (!firmwareBleedingManifest) {
+        return null;
+    }
+    const normalizedKey = normalizeName(deviceKey);
+    const collection =
+        (firmwareBleedingManifest.devices && typeof firmwareBleedingManifest.devices === "object")
+            ? firmwareBleedingManifest.devices
+            : firmwareBleedingManifest;
+
+    if (!collection || typeof collection !== "object") {
+        return null;
+    }
+
+    let match = null;
+    Object.keys(collection).some((key) => {
+        const entry = collection[key];
+        const entryKey = entry && (entry.key || entry.device || entry.name);
+        if (normalizeName(key) === normalizedKey || normalizeName(entryKey) === normalizedKey) {
+            match = { key, entry };
+            return true;
+        }
+        return false;
+    });
+    return match;
+}
+
+function buildFirmwareBleedingDownloadUrl(deviceKey, entry) {
+    if (entry && entry.url) {
+        return entry.url;
+    }
+    if (!deviceKey) {
+        return null;
+    }
+    const version = (entry && entry.version) || "bleeding-edge";
+    return (
+        firmwareBaseUrl +
+        "?device=" +
+        encodeURIComponent(deviceKey) +
+        "&version=" +
+        encodeURIComponent(version)
+    );
+}
+
+function formatBleedingTimestamp(value) {
+    if (!value) {
+        return null;
+    }
+    try {
+        const timestamp = new Date(value);
+        if (Number.isNaN(timestamp.getTime())) {
+            return null;
+        }
+        return timestamp.toLocaleString();
+    } catch (err) {
+        console.warn("Failed to parse firmware bleeding edge timestamp", err);
+        return null;
+    }
 }
 
 function updateServerVersionUIState(remoteVersion) {
@@ -756,6 +966,7 @@ function evaluateFirmwareVersions() {
     if (!deviceInfo) {
         updateFirmwareStatusUI({ state: "checking", message: "Waiting for device info…" });
         setDownloadStatus("Waiting for device info to load…");
+        updateFirmwareBleedingPanelMatch(null, null);
         return;
     }
 
@@ -766,6 +977,7 @@ function evaluateFirmwareVersions() {
         updateFirmwareStatusUI({ state: "checking", message: "Waiting for firmware catalog…" });
         setDownloadStatus("Waiting for firmware catalog to load…");
         setAutoUpdateAvailability(null, "Waiting for firmware catalog to load…");
+        updateFirmwareBleedingPanelMatch(null, null);
         return;
     }
 
@@ -774,6 +986,7 @@ function evaluateFirmwareVersions() {
         updateFirmwareStatusUI({ state: "checking", message: "Waiting for device type information…" });
         setDownloadStatus("Waiting for device type info before enabling downloads.");
         setAutoUpdateAvailability(null, "Waiting for device type info before enabling downloads.");
+        updateFirmwareBleedingPanelMatch(null, null);
         return;
     }
 
@@ -784,10 +997,13 @@ function evaluateFirmwareVersions() {
         updateDownloadControls(null, null);
         setDownloadStatus("Could not match this device to any downloadable firmware.");
         setAutoUpdateAvailability(null, "Could not match this device to any downloadable firmware.");
+        updateFirmwareBleedingPanelMatch(null, null);
         return;
     }
 
-    updateDownloadControls(catalogEntry, match.key);
+    const matchKey = match ? match.key : null;
+    updateDownloadControls(catalogEntry, matchKey);
+    updateFirmwareBleedingPanelMatch(matchKey, catalogEntry);
 
     const latestVersion = catalogEntry.versions[0];
     updateFirmwareStatusUI({ latest: latestVersion || "—" });
@@ -1046,6 +1262,7 @@ function connectToServer() {
     const isReconnect = connectAttempts > 1;
     const editorContainer = document.getElementById("editor");
     editorContainer.textContent = "Connecting to server: " + ip + "…";
+    setConnectionStatus("connecting", isReconnect ? "Reconnecting…" : null);
 
     const showConfig = true;
 
@@ -1057,6 +1274,7 @@ function connectToServer() {
             console.log("Config:", data);
             buildStructure();
             initWebSocket();
+            setConnectionStatus("online");
             if (isReconnect) {
                 updateFirmwareStatusUI({ state: "checking", message: "Reconnected. Refreshing firmware status…" });
                 fetchDeviceHostInfo();
@@ -1066,6 +1284,7 @@ function connectToServer() {
             console.error("Error fetching config:", err);
             editorContainer.textContent =
                 "Error connecting to server. Retrying…";
+            setConnectionStatus("offline", "Offline — retrying…");
             setTimeout(connectToServer, 1500);
         });
 }
@@ -1077,15 +1296,18 @@ function initWebSocket() {
 
     oscWS.addEventListener("open", function () {
         console.log("WebSocket opened");
+        setConnectionStatus("online");
     });
 
     oscWS.addEventListener("close", function () {
         console.log("WebSocket closed, reconnecting…");
+        setConnectionStatus("offline", "Connection lost — reconnecting…");
         setTimeout(connectToServer, 800);
     });
 
     oscWS.addEventListener("error", function (error) {
         console.log("WebSocket Error", error);
+        setConnectionStatus("offline", "Connection error");
     });
 
     oscWS.addEventListener("message", function (event) {

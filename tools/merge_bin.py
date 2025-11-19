@@ -2,6 +2,7 @@ from SCons.Script import Import
 import os
 import shutil
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 Import("env")
@@ -88,10 +89,14 @@ def merge_bin(source, target, env):
     print(f"[Merge] Created: {merged_firmware}")
 
     # Write manifest.json
+    version_override = os.environ.get("FIRMWARE_VERSION_LABEL")
+    build_channel = os.environ.get("FIRMWARE_BUILD_CHANNEL")
+    manifest_version = version_override or blip_version
+
     manifest = {
         "name": device_type,
         "category": device_category,
-        "version": blip_version,
+        "version": manifest_version,
         "chip": chip,
         "vids": vids,
         "pids": pids,
@@ -107,6 +112,19 @@ def merge_bin(source, target, env):
             "flash_size": env.get("FLASH_SIZE", "4MB")
         }
     }
+
+    generated_at = os.environ.get("FIRMWARE_GENERATED_AT")
+    if not generated_at:
+        generated_at = datetime.now(timezone.utc).isoformat()
+    manifest["generatedAt"] = generated_at
+
+    git_commit = os.environ.get("GITHUB_SHA")
+    if git_commit:
+        manifest["commit"] = git_commit
+
+    if build_channel:
+        manifest["channel"] = build_channel
+
     manifest_path = build_dir / "manifest.json"
     with manifest_path.open("w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)

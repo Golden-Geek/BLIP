@@ -19,20 +19,33 @@
     <div class="card">
       <div class="card-inner">
         <div class="header-row">
-          <div class="chip" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="4" width="16" height="16" rx="3" stroke="rgba(148,163,184,0.75)" stroke-width="1.4" />
-              <rect x="8" y="8" width="8" height="8" rx="1.6" stroke="#22c55e" stroke-width="1.4" />
-              <circle cx="12" cy="12" r="1.4" fill="#22c55e" />
-            </svg>
+          <div class="header-main">
+            <div class="chip" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="4" width="16" height="16" rx="3" stroke="rgba(148,163,184,0.75)" stroke-width="1.4" />
+                <rect x="8" y="8" width="8" height="8" rx="1.6" stroke="#22c55e" stroke-width="1.4" />
+                <circle cx="12" cy="12" r="1.4" fill="#22c55e" />
+              </svg>
+            </div>
+            <div class="title-block">
+              <h1 class="title">BLIP Control Panel</h1>
+              <p class="subtitle">
+                Live settings, OSC control and firmware updates — without touching your stored config.
+              </p>
+            </div>
           </div>
-          <div class="title-block">
-            <h1 class="title">BLIP Control Panel</h1>
-            <p class="subtitle">
-              Live settings, OSC control and firmware updates — without touching your stored config.
-            </p>
+          <div class="header-toolbar">
+            <div class="toggle-wrap toggle-top">
+              <span class="toggle-label">Show config</span>
+              <label class="toggle">
+                <input id="showConfig" type="checkbox" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="badge connection-badge" id="connectionBadge" data-state="connecting">
+              Connecting…
+            </div>
           </div>
-          <div class="badge">Online</div>
         </div>
 
         <div class="controls-row">
@@ -85,7 +98,10 @@
                 <span class="server-version-value" id="serverVersionRemote">Checking…</span>
               </div>
             </div>
-            <p class="server-version-status" id="serverVersionStatus">Looking up available dashboard bundle…</p>
+            <div class="server-version-status-row">
+              <p class="server-version-status" id="serverVersionStatus">Looking up available dashboard bundle…</p>
+              <p class="server-version-status subtle" id="serverUploadStatus">Upload not started.</p>
+            </div>
             <div class="server-version-actions">
               <button class="btn btn-primary btn-compact" id="serverVersionAction" disabled>
                 Download latest build
@@ -94,7 +110,6 @@
                 Upload to device
               </button>
             </div>
-            <p class="server-version-status subtle" id="serverUploadStatus">Upload not started.</p>
             <div class="bleeding-edge-panel" id="bleedingEdgePanel">
               <div class="bleeding-edge-text">
                 <span class="meta-label">Bleeding edge build</span>
@@ -106,13 +121,6 @@
             </div>
           </div>
 
-          <div class="toggle-wrap">
-            <span class="toggle-label">Show config</span>
-            <label class="toggle">
-              <input id="showConfig" type="checkbox" checked />
-              <span class="slider"></span>
-            </label>
-          </div>
         </div>
       </div>
     </div>
@@ -143,6 +151,17 @@
             <div class="status-pill" id="firmwareStatusPill">Checking…</div>
           </div>
           <div class="status-helper" id="firmwareStatusMessage">Checking firmware status…</div>
+          <div class="bleeding-edge-panel firmware-bleeding-panel" id="firmwareBleedingPanel">
+            <div class="bleeding-edge-text">
+              <span class="meta-label">Bleeding edge firmware</span>
+              <p class="server-version-status subtle" id="firmwareBleedingStatus">
+                Waiting for device match before checking bleeding edge builds…
+              </p>
+            </div>
+            <button class="btn btn-compact" id="firmwareBleedingAction" disabled>
+              Download bleeding edge
+            </button>
+          </div>
           <div class="firmware-actions">
             <div class="firmware-action">
               <div class="action-heading">
