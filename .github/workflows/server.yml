@@ -30,30 +30,40 @@ jobs:
       - name: Export dashboard assets
         run: python tools/export_dashboard_assets.py
 
-      - name: Extract server version from commit message
-        id: server_version
+      - name: Check for server-version trigger
+        id: server_version_flag
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           python - <<'PY'
           import os
+
+          message = (os.environ.get("COMMIT_MESSAGE") or "").lower()
+          triggered = "server-version" in message
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"triggered={'true' if triggered else 'false'}\n")
+          print("server-version trigger detected" if triggered else "No server-version trigger present")
+          PY
+
+      - name: Read server version from edit.html
+        if: steps.server_version_flag.outputs.triggered == 'true'
+        id: server_version
+        run: |
+          python - <<'PY'
+          from pathlib import Path
           import re
           import sys
 
-          message = (os.environ.get("COMMIT_MESSAGE") or "").strip()
-          lower_message = message.lower()
-          keyword_present = "server-version" in lower_message
-          match = re.search(r"server-version(?:\s*[:=]\s*|\s+)([0-9A-Za-z._-]+)", message, re.IGNORECASE)
-          if match:
-              version = match.group(1)
-              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-                  fh.write(f"version={version}\n")
-              print(f"Found server version tag: {version}")
-          elif keyword_present:
-              print("::error::Found 'server-version' in commit message but could not parse a version. Use 'server-version <value>' or 'server-version:<value>'.", file=sys.stderr)
+          edit_html = Path("data/server/edit.html")
+          text = edit_html.read_text(encoding="utf-8")
+          match = re.search(r"<!--\s*Version\s+([^\s]+)\s*-->", text, re.IGNORECASE)
+          if not match:
+              print("::error::Could not find Version comment in data/server/edit.html", file=sys.stderr)
               sys.exit(1)
-          else:
-              print("No server version override requested.")
+          version = match.group(1)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\n")
+          print(f"Extracted server version {version} from edit.html")
           PY
 
       - name: Package bleeding edge dashboard
@@ -78,7 +88,7 @@ jobs:
             export/releases/server-compressed-bleeding-edge.zip
 
       - name: Package versioned dashboard
-        if: steps.server_version.outputs.version != ''
+        if: steps.server_version_flag.outputs.triggered == 'true'
         env:
           SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
           SERVER_VERSION: ${{ steps.server_version.outputs.version }}
@@ -94,7 +104,7 @@ jobs:
           "${cmd[@]}"
 
       - name: Upload versioned server artifacts
-        if: steps.server_version.outputs.version != ''
+        if: steps.server_version_flag.outputs.triggered == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: server-${{ steps.server_version.outputs.version }}
