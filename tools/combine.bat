@@ -1,1 +1,0 @@
-python "C:/Users/bkupe/.platformio/packages/tool-esptoolpy/esptool.py" --chip esp32c6 merge_bin -o firmware.bin 0x0000 D:/Projects/Dev/BLIP/.pio/build/creatorball/partitions.bin 0xe000 C:/Users/bkupe/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 D:/Projects/Dev/BLIP/.pio/build/creatorball/firmware.bin

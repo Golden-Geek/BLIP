@@ -117,7 +117,42 @@ bool WebServerComponent::initInternal()
 
         DBG("Serving file: " + String(f.name()) + " size: " + String(f.size()));
 
-        AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", [f](uint8_t *buffer, size_t maxLen, size_t index) mutable {
+        String contentType = "application/octet-stream";
+        String fileName = String(f.name());
+        if (fileName.endsWith(".html") || fileName.endsWith(".htm"))
+        {
+            contentType = "text/html";
+        }
+        else if (fileName.endsWith(".css"))
+        {
+            contentType = "text/css";
+        }
+        else if (fileName.endsWith(".js"))
+        {
+            contentType = "application/javascript";
+        }
+        else if (fileName.endsWith(".json"))
+        {
+            contentType = "application/json";
+        }
+        else if (fileName.endsWith(".svg"))
+        {
+            contentType = "image/svg+xml";
+        }
+        else if (fileName.endsWith(".png"))
+        {
+            contentType = "image/png";
+        }
+        else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg"))
+        {
+            contentType = "image/jpeg";
+        }
+        else if (fileName.endsWith(".ico"))
+        {
+            contentType = "image/x-icon";
+        }
+
+        AsyncWebServerResponse *response = request->beginChunkedResponse(contentType, [f](uint8_t *buffer, size_t maxLen, size_t index) mutable {
 
             size_t len = f.read(buffer, maxLen);
             if(len == 0) {
@@ -237,7 +272,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         FilesComponent::instance->createFolderIfNotExists(destFolder);
         String dest = destFolder + "/" + filename;
 
-        NDBG("File Upload start from" + request->client()->remoteIP().toString() + ", at : " + String(request->url()) + "; Filename: " + filename +", Length: " + String(len/1024)+" kb");
+        NDBG("File Upload start from" + request->client()->remoteIP().toString() + ", at : " + String(request->url()) + "; Filename: " + filename + ", Length: " + String(len / 1024) + " kb");
 
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
 
@@ -410,16 +445,20 @@ void WebServerComponent::sendDebugLog(const String &msg, String source, String t
     if (!sendDebugLogs)
         return;
 
-        /* message is like this : 
-            {"COMMAND":"LOG", 
-            "DATA": {
-            "type":"info",
-            "source":"ComponentName",
-            "message":"This is a debug log message"
-            }
-        */
-
-        ws.textAll("{\"COMMAND\":\"LOG\",\"DATA\":{\"type\":\"" + type + "\",\"source\":\"" + source + "\",\"message\":\"" + msg + "\"}}");
+    /* message is like this :
+        {"COMMAND":"LOG",
+        "DATA": {
+        "type":"info",
+        "source":"ComponentName",
+        "message":"This is a debug log message"
+        }
+    */
+    String sanitizedMsg = msg;
+    //escape newlines and backslashes and quotes for JSON
+    sanitizedMsg.replace("\\", "\\\\");
+    sanitizedMsg.replace("\n", "\\n");
+    sanitizedMsg.replace("\"", "\\\"");
+    ws.textAll("{\"COMMAND\":\"LOG\",\"DATA\":{\"type\":\"" + type + "\",\"source\":\"" + source + "\",\"message\":\"" + sanitizedMsg + "\"}}");
 }
 
 void WebServerComponent::sendBye(String type)
@@ -436,4 +475,3 @@ void WebServerComponent::sendBye(String type)
     ws.binaryAll(wsPrint.data, wsPrint.index);
 #endif
 }
-
