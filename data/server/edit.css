@@ -920,9 +920,7 @@ h1.title {
 
 #editor {
     margin-top: 6px;
-    max-height: calc(100vh - 260px);
-    overflow-y: auto;
-    padding-right: 4px;
+    width: 100%;
 }
 
 #editor::-webkit-scrollbar {
@@ -936,6 +934,27 @@ h1.title {
 #editor::-webkit-scrollbar-thumb {
     background: rgba(55, 65, 81, 0.9);
     border-radius: 999px;
+}
+
+.component-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.component-toggle-slot {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+}
+
+.component-toggle-slot:empty {
+    display: none;
+}
+
+.component-toggle-slot .parameter {
+    margin: 0;
 }
 
 .component {
@@ -1011,8 +1030,8 @@ h1.title {
 
 .component.level0>.components {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-    grid-gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    grid-gap: 0.75rem;
     margin: 4px 0 0;
     padding: 2px;
 }
@@ -1152,6 +1171,73 @@ p.title {
 
 .sliderText {
     max-width: 2.8em !important;
+}
+
+.parameter-enabled-toggle {
+    margin: 0;
+}
+
+label.component-toggle 
+{
+    min-width: 0;
+}
+
+
+
+.component-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.component-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.component-toggle-track {
+    position: relative;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    border: 1px solid rgba(75, 85, 99, 0.6);
+    background: rgba(15, 23, 42, 0.72);
+    transition: background 0.15s ease, border-color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 3px;
+}
+
+.component-toggle-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(148, 148, 149, 0.94);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    transform: translateX(0);
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.component-toggle input[type="checkbox"] {
+    display:none;
+}
+.component-toggle input:checked + .component-toggle-track {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.5);
+}
+
+.component-toggle input:checked + .component-toggle-track .component-toggle-thumb {
+    background: #ecfdf5;
+    transform: translateX(12px);
 }
 
 /* Logger Panel */

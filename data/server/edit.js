@@ -1443,17 +1443,32 @@ function buildStructure() {
     generateEditor(data, editorContainer, 0);
 }
 
+function isEnabledParameter(item) {
+    return (
+        typeof item.DESCRIPTION === "string" &&
+        item.DESCRIPTION.trim().toLowerCase() === "enabled"
+    );
+}
+
 async function generateEditor(node, parentElement, level) {
     const containerDiv = parentElement.appendChild(
         createContainerEditor(node, node.DESCRIPTION, level)
     );
+    const paramsContainer = containerDiv.querySelector(".parameters");
+    const toggleSlot = containerDiv.querySelector(".component-toggle-slot");
 
     for (const key in node.CONTENTS) {
         const item = node.CONTENTS[key];
 
         if (item.TYPE) {
-            const paramsContainer = containerDiv.querySelector(".parameters");
-            paramsContainer.appendChild(createParameterEditor(item, level + 1));
+            const paramEl = createParameterEditor(item, level + 1);
+            if (!paramEl) continue;
+
+            if (isEnabledParameter(item) && toggleSlot) {
+                toggleSlot.appendChild(paramEl);
+            } else {
+                paramsContainer.appendChild(paramEl);
+            }
         } else if (item.CONTENTS) {
             const componentsContainer = containerDiv.querySelector(".components");
             generateEditor(item, componentsContainer, level + 1);
@@ -1465,9 +1480,13 @@ function createContainerEditor(item, key, level) {
     const itemDiv = document.createElement("div");
     itemDiv.classList.add("component", "level" + level);
     itemDiv.innerHTML =
-        '<p class="title">' +
+        '<div class="component-header">' +
+        '  <div class="component-toggle-slot"></div>' +
+        '  <p class="title">' +
         key +
-        '</p><div class="parameters"></div><div class="components"></div>';
+        "  </p>" +
+        "</div>" +
+        '<div class="parameters"></div><div class="components"></div>';
     return itemDiv;
 }
 
@@ -1623,19 +1642,34 @@ function createBoolParameterEditor(item, level) {
     const paramDiv = document.createElement("div");
     paramDiv.classList.add("parameter");
     const checked = item.VALUE[0] ? "checked" : "";
-    paramDiv.innerHTML =
-        "<label>" +
-        item.DESCRIPTION +
-        '</label><input type="checkbox" id="' +
-        item.id +
-        '" ' +
-        checked +
-        ' oninput=\'sendParameterValue("' +
-        item.FULL_PATH +
-        '", "i", this.checked)\' />';
+    const isEnabled = isEnabledParameter(item);
 
-    if (item.DESCRIPTION === "enabled") {
-        paramDiv.classList.add("enable-param");
+    if (isEnabled) {
+        paramDiv.classList.add("parameter-enabled-toggle");
+        paramDiv.innerHTML =
+            '<label class="component-toggle" aria-label="' +
+            item.DESCRIPTION +
+            '\">' +
+            '<input type="checkbox" id="' +
+            item.id +
+            '" ' +
+            checked +
+            ' oninput=\'sendParameterValue("' +
+            item.FULL_PATH +
+            '", "i", this.checked)\' />' +
+            '<span class="component-toggle-track"><span class="component-toggle-thumb"></span></span>' +
+            "</label>";
+    } else {
+        paramDiv.innerHTML =
+            "<label>" +
+            item.DESCRIPTION +
+            '</label><input type="checkbox" id="' +
+            item.id +
+            '" ' +
+            checked +
+            ' oninput=\'sendParameterValue("' +
+            item.FULL_PATH +
+            '", "i", this.checked)\' />';
     }
 
     return paramDiv;
