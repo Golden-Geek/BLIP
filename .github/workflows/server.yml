@@ -30,42 +30,6 @@ jobs:
       - name: Export dashboard assets
         run: python tools/export_dashboard_assets.py
 
-      - name: Check for server-version trigger
-        id: server_version_flag
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          python - <<'PY'
-          import os
-
-          message = (os.environ.get("COMMIT_MESSAGE") or "").lower()
-          triggered = "server-version" in message
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"triggered={'true' if triggered else 'false'}\n")
-          print("server-version trigger detected" if triggered else "No server-version trigger present")
-          PY
-
-      - name: Read server version from edit.html
-        if: steps.server_version_flag.outputs.triggered == 'true'
-        id: server_version
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          import sys
-
-          edit_html = Path("data/server/edit.html")
-          text = edit_html.read_text(encoding="utf-8")
-          match = re.search(r"<!--\s*Version\s+([^\s]+)\s*-->", text, re.IGNORECASE)
-          if not match:
-              print("::error::Could not find Version comment in data/server/edit.html", file=sys.stderr)
-              sys.exit(1)
-          version = match.group(1)
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"version={version}\n")
-          print(f"Extracted server version {version} from edit.html")
-          PY
-
       - name: Package bleeding edge dashboard
         env:
           SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
@@ -88,14 +52,14 @@ jobs:
             export/releases/server-compressed-bleeding-edge.zip
 
       - name: Package versioned dashboard
-        if: steps.server_version_flag.outputs.triggered == 'true'
+        if: contains(github.event.head_commit.message, 'server-version')
         env:
           SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
-          SERVER_VERSION: ${{ steps.server_version.outputs.version }}
         run: |
           set -euo pipefail
-          version="$SERVER_VERSION"
-          declare -a cmd=(python tools/package_and_upload_server.py --version-label "$version" --manifest-name "server-${version}.json")
+          rm -rf export/releases/versioned
+          mkdir -p export/releases/versioned
+          declare -a cmd=(python tools/package_and_upload_server.py --output-dir export/releases/versioned --manifest-name server.json)
           if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
             cmd+=(--upload-url "$SERVER_UPLOAD_URL")
           else
@@ -104,10 +68,8 @@ jobs:
           "${cmd[@]}"
 
       - name: Upload versioned server artifacts
-        if: steps.server_version_flag.outputs.triggered == 'true'
+        if: contains(github.event.head_commit.message, 'server-version')
         uses: actions/upload-artifact@v4
         with:
-          name: server-${{ steps.server_version.outputs.version }}
-          path: |
-            export/releases/server-${{ steps.server_version.outputs.version }}.json
-            export/releases/server-compressed-${{ steps.server_version.outputs.version }}.zip
+          name: server-versioned
+          path: export/releases/versioned
