@@ -1,0 +1,103 @@
+name: Build and Publish BLIP
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*.[0-9]*.[0-9]*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      PIO_CORE_CALLER: gha
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO and tooling deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio requests
+
+      - name: Validate tag matches BLIP_VERSION
+        id: version
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import re
+          import sys
+
+          tag = os.environ["GITHUB_REF_NAME"]
+          text = pathlib.Path("configs/blip.ini").read_text(encoding="utf-8")
+          match = re.search(r'BLIP_VERSION="\\"([^\"]+)\\""', text)
+          if not match:
+              print("::error::Could not find BLIP_VERSION in configs/blip.ini")
+              sys.exit(1)
+          version = match.group(1)
+          normalized_tag = tag[1:] if tag.startswith('v') else tag
+          base_match = re.match(r'(\d+\.\d+\.\d+)', normalized_tag)
+          base_from_tag = base_match.group(1) if base_match else normalized_tag
+          if normalized_tag != version and base_from_tag != version:
+              print(f"::error::Tag {tag} does not match BLIP_VERSION {version}")
+              sys.exit(1)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\n")
+              fh.write(f"release_tag={normalized_tag}\n")
+          print(f"Tag {tag} (base {base_from_tag}) matches BLIP_VERSION {version}")
+          PY
+
+      - name: Minify firstrun helper
+        run: python tools/minify_firstrun.py
+
+      - name: Package and upload dashboard bundle
+        env:
+          SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
+            args+=(--upload-url "$SERVER_UPLOAD_URL")
+          fi
+          python tools/package_and_upload_server.py "${args[@]}"
+
+      - name: Build and upload firmware for all environments
+        run: python tools/build_all.py -u
+
+      - name: Check firmware export directory
+        id: firmware_export
+        run: |
+          if [ -d export ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check server release directory
+        id: server_export
+        run: |
+          if [ -d export/releases ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload firmware artifacts
+        if: steps.firmware_export.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ steps.version.outputs.release_tag }}
+          path: export
+
+      - name: Upload server artifacts
+        if: steps.server_export.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-${{ steps.version.outputs.release_tag }}
+          path: export/releases
