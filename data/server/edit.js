@@ -50,9 +50,10 @@ const deviceMetaEls = {
     prop: document.getElementById("deviceMetaProp"),
 };
 
-const SERVER_MANIFEST_URL = "https://www.goldengeek.org/blip/download/server/latest.php";
-const SERVER_DOWNLOAD_BASE = "https://www.goldengeek.org/blip/download/server/servers/";
-const SERVER_BLEEDING_MANIFEST_URL = "https://www.goldengeek.org/blip/download/server/bleeding-edge.json";
+const SERVER_BASE_URL = "https://www.goldengeek.org/blip/download/server/";
+const SERVER_MANIFEST_URL = SERVER_BASE_URL + "latest.php";
+const SERVER_DOWNLOAD_BASE = SERVER_BASE_URL + "servers/";
+const SERVER_BLEEDING_MANIFEST_URL = SERVER_BASE_URL + "servers/bleeding-edge.json";
 
 const serverVersionEls = {
     card: document.getElementById("serverVersionCard"),
@@ -145,7 +146,7 @@ function initServerVersionPanel() {
         serverVersionEls.upload.addEventListener("click", handleServerBundleUpload);
     }
 
-    fetchServerManifestVersion().catch(() => {});
+    fetchServerManifestVersion().catch(() => { });
 }
 
 function initBleedingEdgePanel() {
@@ -164,7 +165,7 @@ function initBleedingEdgePanel() {
         });
     }
 
-    fetchBleedingEdgeManifest().catch(() => {});
+    fetchBleedingEdgeManifest().catch(() => { });
 }
 
 function readLocalServerVersionComment() {
@@ -430,9 +431,9 @@ async function uploadServerAsset(blob, filename, folder) {
         }
         throw new Error(
             "Upload failed (" +
-                response.status +
-                ")" +
-                (errorText ? ": " + errorText.trim() : "")
+            response.status +
+            ")" +
+            (errorText ? ": " + errorText.trim() : "")
         );
     }
 }
@@ -494,8 +495,8 @@ async function handleServerBundleUpload() {
 
         setServerUploadStatus(
             "Upload complete. Reload this page to serve version " +
-                (manifest.version || localServerVersion || "the latest build") +
-                "."
+            (manifest.version || localServerVersion || "the latest build") +
+            "."
         );
 
         if (manifest.version) {
