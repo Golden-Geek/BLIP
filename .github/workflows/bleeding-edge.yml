@@ -7,6 +7,7 @@ on:
 
 jobs:
   dashboard:
+    if: ${{ github.event.head_commit.message && contains(github.event.head_commit.message, 'bleeding') }}
     runs-on: ubuntu-latest
     env:
       PIO_CORE_CALLER: gha
