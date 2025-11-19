@@ -1,5 +1,63 @@
 #include "UnityIncludes.h"
 #include "WebServerComponent.h"
+#include "FirstrunPage.h"
+
+namespace
+{
+    bool pathLooksLikeEditAsset(const String &path)
+    {
+        if (path.length() == 0)
+        {
+            return false;
+        }
+
+        String lower = path;
+        lower.toLowerCase();
+        return lower.endsWith("/edit") || lower.endsWith("/edit.html") || lower.endsWith("/edit.html.gz") || lower.endsWith("edit");
+    }
+
+    String urlEncode(const String &value)
+    {
+        String encoded;
+        encoded.reserve(value.length() * 3);
+        const char *hex = "0123456789ABCDEF";
+        for (size_t i = 0; i < value.length(); ++i)
+        {
+            const char c = value[i];
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~')
+            {
+                encoded += c;
+            }
+            else
+            {
+                const uint8_t byte = static_cast<uint8_t>(c);
+                encoded += '%';
+                encoded += hex[(byte >> 4) & 0x0F];
+                encoded += hex[byte & 0x0F];
+            }
+        }
+        return encoded;
+    }
+
+    void redirectToFirstRunPage(AsyncWebServerRequest *request)
+    {
+        String deviceIP = WifiComponent::instance ? WifiComponent::instance->getIP() : String("[noip]");
+        if (deviceIP == "[noip]")
+        {
+            request->send(500, "text/plain", "Device IP unavailable; cannot bootstrap dashboard.");
+            return;
+        }
+
+        while (deviceIP.endsWith("/"))
+        {
+            deviceIP.remove(deviceIP.length() - 1);
+        }
+
+        String deviceBase = "http://" + deviceIP;
+        String destination = String("/firstrun?device=") + urlEncode(deviceBase);
+        request->redirect(destination);
+    }
+}
 
 ImplementSingleton(WebServerComponent);
 
@@ -76,6 +134,14 @@ bool WebServerComponent::initInternal()
 
 #ifdef USE_FILES
     NDBG("Setting up local files to serve");
+    server.on("/firstrun", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                  AsyncWebServerResponse *response = request->beginResponse(200, "text/html", BlipServerPages::FIRSTRUN_PAGE_GZ, BlipServerPages::FIRSTRUN_PAGE_GZ_LEN);
+                  response->addHeader("Cache-Control", "no-store");
+                  response->addHeader("Content-Encoding", "gzip");
+                  request->send(response);
+              });
+
     server.on(
         "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
         { 
@@ -109,6 +175,8 @@ bool WebServerComponent::initInternal()
         String lastTriedPath = resolvedPath;
         File f = openRegularFile(resolvedPath);
 
+        bool firstRunRedirectCandidate = pathLooksLikeEditAsset(resolvedPath);
+
         if(!f) {
             String path = resolvedPath;
             if(!path.startsWith("/server/")) {
@@ -126,6 +194,7 @@ bool WebServerComponent::initInternal()
                     }
                 }
             }
+            firstRunRedirectCandidate = firstRunRedirectCandidate || pathLooksLikeEditAsset(lastTriedPath);
         }
 
         const auto clientAcceptsGzip = [&]() {
@@ -164,6 +233,10 @@ bool WebServerComponent::initInternal()
         }
 
         if(!f) {
+            if(firstRunRedirectCandidate) {
+                redirectToFirstRunPage(request);
+                return;
+            }
             request->send(404, "text/plain", "File not found : " + request->url()+" (also tried "+lastTriedPath+")");
             return;
         }
