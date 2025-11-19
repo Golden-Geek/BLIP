@@ -104,6 +104,23 @@ if (firmwarePanelEls.card) {
     firmwarePanelCollapsed = firmwarePanelEls.card.dataset.collapsed !== "false";
 }
 
+function isBleedingEdgeVersion(value) {
+    return typeof value === "string" && value.toLowerCase() === "bleeding-edge";
+}
+
+function coerceReleaseManifest(manifest) {
+    if (!manifest || typeof manifest !== "object") {
+        return null;
+    }
+    if (isBleedingEdgeVersion(manifest.version)) {
+        return null;
+    }
+    if (!manifest.url && !manifest.version) {
+        return null;
+    }
+    return manifest;
+}
+
 setConnectionStatus("connecting");
 
 updateDeviceMetaDisplay();
@@ -234,10 +251,10 @@ function fetchServerManifestVersion() {
             return resp.json();
         })
         .then((manifest) => {
-            latestServerManifest = manifest || {};
-            const remoteVersion = latestServerManifest.version || "—";
+            latestServerManifest = coerceReleaseManifest(manifest);
+            const remoteVersion = latestServerManifest && latestServerManifest.version ? latestServerManifest.version : null;
             if (serverVersionEls.remote) {
-                serverVersionEls.remote.textContent = remoteVersion;
+                serverVersionEls.remote.textContent = remoteVersion || "—";
             }
             updateServerVersionUIState(remoteVersion);
             return latestServerManifest;

@@ -35,7 +35,7 @@ jobs:
           SERVER_UPLOAD_URL: ${{ secrets.BLIP_SERVER_UPLOAD_URL }}
         run: |
           set -euo pipefail
-          declare -a cmd=(python tools/package_and_upload_server.py --version-label bleeding-edge --manifest-name bleeding-edge.json --alias-manifest latest.json)
+          declare -a cmd=(python tools/package_and_upload_server.py --version-label bleeding-edge --manifest-name bleeding-edge.json)
           if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
             cmd+=(--upload-url "$SERVER_UPLOAD_URL")
           else
@@ -49,7 +49,6 @@ jobs:
           name: server-bleeding-edge
           path: |
             export/releases/bleeding-edge.json
-            export/releases/latest.json
             export/releases/server-compressed-bleeding-edge.zip
 
       - name: Package versioned dashboard
@@ -60,7 +59,7 @@ jobs:
           set -euo pipefail
           rm -rf export/releases/versioned
           mkdir -p export/releases/versioned
-          declare -a cmd=(python tools/package_and_upload_server.py --output-dir export/releases/versioned --manifest-name server.json)
+          declare -a cmd=(python tools/package_and_upload_server.py --output-dir export/releases/versioned --manifest-name server.json --alias-manifest ../latest.json)
           if [ -n "${SERVER_UPLOAD_URL:-}" ]; then
             cmd+=(--upload-url "$SERVER_UPLOAD_URL")
           else
@@ -73,4 +72,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: server-versioned
-          path: export/releases/versioned
+          path: |
+            export/releases/versioned
+            export/releases/latest.json
