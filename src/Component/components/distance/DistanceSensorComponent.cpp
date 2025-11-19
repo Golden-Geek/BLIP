@@ -14,8 +14,14 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 
     AddIntParamConfig(updateRate);
     AddIntParamConfig(distanceMax);
+    AddIntParamConfig(debounceFrame);
     AddFloatParam(value);
     AddIntParamConfig(sendRate);
+
+    for(int i = 0; i < DEBOUNCE_MAX_FRAMES; i++)
+    {
+        debounceBuffer[i] = 1.0f;
+    }
 }
 
 bool DistanceSensorComponent::initInternal()
@@ -189,6 +195,7 @@ void DistanceSensorComponent::updateVL53L0X()
         return;
     }
 
+    
     float distance = (float)range / 10.0f; // Convert mm to cm
 
     // NDBG("Distance: " +String(distance)+ " cm");
@@ -196,7 +203,22 @@ void DistanceSensorComponent::updateVL53L0X()
     if (distance > distanceMax)
         distance = distanceMax; // Cap to max range
 
-    SetParam(value, distance / distanceMax);
+    float val =distance / distanceMax;
+
+    // Debounce logic
+    int frames = min(debounceFrame, DEBOUNCE_MAX_FRAMES);
+    
+    debounceBuffer[debounceIndex] = val;
+    debounceIndex = (debounceIndex + 1) % debounceFrame;
+
+    float maxVal = 0.0f;
+    for (int i = 0; i < frames; i++)    
+    {
+        if (debounceBuffer[i] > maxVal)
+            maxVal = debounceBuffer[i];
+    }
+    
+    SetParam(value, maxVal);
 }
 #endif
 

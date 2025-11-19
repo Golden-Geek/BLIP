@@ -17,10 +17,13 @@
 #define DISTANCE_DEFAULT_ECHO_PIN -1
 #endif
 
+
 #define TRIG_PULSE_DURATION 10 // 10 microseconds
 #elif defined(DISTANCE_SENSOR_VL53L0X)
 #include <VL53L0X_mod.h>
 #endif
+
+#define DEBOUNCE_MAX_FRAMES 20
 
 DeclareComponent(DistanceSensor, "distance", )
 
@@ -31,10 +34,14 @@ DeclareIntParam(echoPin, DISTANCE_DEFAULT_ECHO_PIN);
     DeclareBoolParam(isConnected, false);
 #endif
 
-DeclareIntParam(updateRate, 20); // in Hz
+float debounceBuffer[ DEBOUNCE_MAX_FRAMES ] = {0};
+int debounceIndex = 0;
+
+DeclareIntParam(updateRate, 50); // in Hz
+DeclareIntParam(debounceFrame, 6);
 DeclareIntParam(distanceMax, 100);
-DeclareFloatParam(value, 0);
-DeclareIntParam(sendRate, 0); // in Hz, 0 = send every update, -1 = never
+DeclareFloatParam(value, 1.0f); // Normalized 0.0 - 1.0
+DeclareIntParam(sendRate, 10); // in Hz, 0 = send every update, -1 = never
 
 #ifdef DISTANCE_SENSOR_HCSR04
 // Variables for the state machine
@@ -102,6 +109,7 @@ FillSettingsInternalStart
 FillSettingsParam(echoPin);
 #endif
 FillSettingsParam(updateRate);
+FillSettingsParam(debounceFrame);
 FillSettingsParam(distanceMax);
 FillSettingsParam(sendRate);
 FillSettingsInternalEnd
@@ -114,6 +122,7 @@ FillOSCQueryIntParam(echoPin);
         FillOSCQueryBoolParamReadOnly(isConnected);
 #endif
 FillOSCQueryIntParam(updateRate);
+FillOSCQueryIntParam(debounceFrame);
 FillOSCQueryIntParam(distanceMax);
 FillOSCQueryRangeParamReadOnly(value, 0, 1);
 FillOSCQueryIntParam(sendRate);
