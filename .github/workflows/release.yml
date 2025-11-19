@@ -73,7 +73,7 @@ jobs:
           python tools/package_and_upload_server.py "${args[@]}"
 
       - name: Build and upload firmware for all environments
-        run: python tools/build_all.py -u
+        run: python tools/build_all.py -j 1 -u
 
       - name: Check firmware export directory
         id: firmware_export

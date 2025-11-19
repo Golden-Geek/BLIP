@@ -25,9 +25,7 @@ DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerActualDerive
     DeclareBoolParam(pairingMode, false);
 DeclareBoolParam(longRange, false);
 
-#ifdef USE_ETHERNET
 DeclareIntParam(channel, 1);
-#endif
 
 #ifdef ESPNOW_BRIDGE
 DeclareBoolParam(broadcastMode, true);
@@ -47,8 +45,6 @@ uint8_t numConnectedDevices = 0;
 
 #else
 
-DeclareIntParam(nodeID, -1);
-DeclareIntParam(channel, 1);
 DeclareBoolParam(autoPairing, true);
 DeclareBoolParam(pairOnAnyData, true);
 DeclareBoolParam(sendFeedback, false);
@@ -134,10 +130,9 @@ HandleSetParamInternalStart
     CheckAndSetParam(pairingMode);
 CheckAndSetParam(longRange);
 
-#ifdef ESPNOW_BRIDGE
-#ifdef USE_ETHERNET
 CheckAndSetParam(channel);
-#endif
+
+#ifdef ESPNOW_BRIDGE
 CheckAndSetParam(broadcastMode);
 CheckAndSetParam(broadcastStartID);
 CheckAndSetParam(broadcastEndID);
@@ -156,7 +151,6 @@ for(int i=0; i<ESPNOW_MAX_DEVICES; i++)
     CheckAndSetParam(remoteMacs[i]);
 }
 #else
-CheckAndSetParam(channel);
 CheckAndSetParam(autoPairing);
 CheckAndSetParam(pairOnAnyData);
 CheckAndSetParam(sendFeedback);
@@ -165,10 +159,9 @@ HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
     FillSettingsParam(longRange);
-#ifdef ESPNOW_BRIDGE
-#ifdef USE_ETHERNET
 FillSettingsParam(channel);
-#endif
+
+#ifdef ESPNOW_BRIDGE
 FillSettingsParam(broadcastMode);
 FillSettingsParam(broadcastStartID);
 FillSettingsParam(broadcastEndID);
@@ -183,7 +176,6 @@ for(int i=0; i<ESPNOW_MAX_DEVICES; i++)
     FillSettingsParam(remoteMacs[i]);
 }
 #else
-FillSettingsParam(channel);
 FillSettingsParam(autoPairing);
 FillSettingsParam(pairOnAnyData);
 FillSettingsParam(sendFeedback);
@@ -193,13 +185,9 @@ FillSettingsInternalEnd;
 FillOSCQueryInternalStart
     FillOSCQueryBoolParam(pairingMode);
 FillOSCQueryBoolParam(longRange);
+FillOSCQueryIntParam(channel);
 #ifdef ESPNOW_BRIDGE
 FillOSCQueryBoolParam(wakeUpMode);
-#ifdef USE_ETHERNET
-FillOSCQueryIntParam(channel);
-#else
-FillOSCQueryIntParamReadOnly(channel);
-#endif
 FillOSCQueryBoolParam(broadcastMode);
 FillOSCQueryIntParam(broadcastStartID);
 FillOSCQueryIntParam(broadcastEndID);
@@ -212,7 +200,6 @@ FillOSCQueryTrigger(clearDevices);
 FillOSCQueryBoolParam(routeAll);
 FillOSCQueryBoolParam(acceptCommands);
 #else
-FillOSCQueryIntParam(channel);
 FillOSCQueryBoolParam(autoPairing);
 FillOSCQueryBoolParam(pairOnAnyData);
 FillOSCQueryBoolParam(sendFeedback);

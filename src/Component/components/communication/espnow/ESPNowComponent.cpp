@@ -8,8 +8,9 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(pairingMode);
     AddBoolParamConfig(longRange);
 
-#ifdef ESPNOW_BRIDGE
     AddIntParamConfig(channel);
+    
+#ifdef ESPNOW_BRIDGE
     AddBoolParamConfig(broadcastMode);
     AddIntParamConfig(broadcastStartID);
     AddIntParamConfig(broadcastEndID);
@@ -28,7 +29,6 @@ void ESPNowComponent::setupInternal(JsonObject o)
     }
 
 #else
-    AddIntParamConfig(channel);
     AddBoolParamConfig(autoPairing);
     AddBoolParamConfig(pairOnAnyData);
     AddBoolParamConfig(sendFeedback);

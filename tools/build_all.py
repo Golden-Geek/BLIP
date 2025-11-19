@@ -113,7 +113,7 @@ def upload_exports(auto_upload=False):
 
 
 # Main parallel build logic
-def main(selected_envs, auto_upload=False):
+def main(selected_envs, auto_upload=False, max_jobs=None):
     # If user requested upload-only, skip builds and upload existing exports
     if "--upload-only" in sys.argv:
         print("📤 Upload-only mode: uploading exported builds and exiting.")
@@ -129,7 +129,8 @@ def main(selected_envs, auto_upload=False):
         print(f"✅ Available environments: {', '.join(all_envs)}")
         sys.exit(1)
 
-    max_jobs = os.cpu_count() or 4
+    if not max_jobs or max_jobs < 1:
+        max_jobs = os.cpu_count() or 4
     results = {"success": [], "failed": []}
 
     # Remove export folder if it exists before building
@@ -143,7 +144,7 @@ def main(selected_envs, auto_upload=False):
         shutil.rmtree(pio_build_dir)
 
 
-    print(f"🚀 Starting parallel build for environments: {', '.join(envs)}")
+    print(f"🚀 Starting builds for environments: {', '.join(envs)} (max jobs: {max_jobs})")
     with ThreadPoolExecutor(max_workers=max_jobs) as executor:
         futures = {executor.submit(build_env, env, results): env for env in envs}
         for future in as_completed(futures):
@@ -174,6 +175,12 @@ if __name__ == "__main__":
     parser.add_argument("environments", nargs="*", help="Specific environments to build")
     parser.add_argument("-u", "--upload", action="store_true", help="Auto upload after successful builds")
     parser.add_argument("--upload-only", action="store_true", help="Upload exported builds without building")
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        help="Maximum concurrent PlatformIO builds (default: CPU count)",
+    )
     args = parser.parse_args()
 
-    main(args.environments, auto_upload=args.upload)
+    main(args.environments, auto_upload=args.upload, max_jobs=args.jobs)
