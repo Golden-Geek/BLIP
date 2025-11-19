@@ -53,7 +53,7 @@ const deviceMetaEls = {
 const SERVER_BASE_URL = "https://www.goldengeek.org/blip/download/server/";
 const SERVER_MANIFEST_URL = SERVER_BASE_URL + "latest.php";
 const SERVER_DOWNLOAD_BASE = SERVER_BASE_URL + "servers/";
-const SERVER_BLEEDING_MANIFEST_URL = SERVER_BASE_URL + "servers/bleeding-edge.json";
+const SERVER_BLEEDING_MANIFEST_URL = SERVER_BASE_URL + "latest.php?file=bleeding-edge.json";
 
 const serverVersionEls = {
     card: document.getElementById("serverVersionCard"),
