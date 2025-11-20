@@ -431,7 +431,9 @@ void Component::setParam(void *param, var *value, int numData)
 
     if (numData == 0 && t != Trigger)
     {
-        NDBG("Expecting at least 1 parameter");
+        //Send current value feedback
+        SendParamFeedback(param);
+        // NDBG("Expecting at least 1 parameter");
         return;
     }
 
