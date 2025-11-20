@@ -122,7 +122,7 @@ CheckAndSetParam(channel);
 CheckAndSetParam(manualIP);
 CheckAndSetParam(manualGateway);
 CheckAndSetParam(channelScanMode);
-CheckAndSetParam(txPower);
+CheckAndSetEnumParam(txPower, txPowerLevelNames, 4);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
