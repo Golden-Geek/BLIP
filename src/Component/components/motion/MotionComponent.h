@@ -136,6 +136,7 @@ GetEnumStringStart
 GetEnumStringParam(throwState, throwStateOptions, 6);
 GetEnumStringEnd;
 
+
 HandleSetParamInternalStart
     CheckAndSetEnumParam(sendLevel, sendLevelOptions, 3);
 CheckAndSetParam(orientationSendRate);
@@ -154,6 +155,10 @@ CheckAndSetParam(singleThreshold);
 CheckAndSetParam(angleOffset);
 CheckAndSetParam(xOnCalibration);
 HandleSetParamInternalEnd;
+
+CheckFeedbackParamInternalStart;
+CheckAndSendParamFeedback(connected);
+CheckFeedbackParamInternalEnd;
 
 FillSettingsInternalStart
     FillSettingsParam(sendLevel);
