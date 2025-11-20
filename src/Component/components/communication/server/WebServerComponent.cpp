@@ -432,13 +432,22 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         {
             if (len > 0 && uploadingFiles[i].file)
             {
-                uploadingFiles[i].file.write(data, len);
+                size_t written = uploadingFiles[i].file.write(data, len);
+                if (written == 0) {
+                    NDBG("Upload Aborted: Write error");
+                    uploadingFiles[i].request->client()->close();
+                }
+
+#ifdef FILES_TYPE_FLASH
+                delayMicroseconds(500); 
+#endif
                 yield();
             }
 
             if (final)
             {
                 NDBG("Upload Complete: " + String(uploadingFiles[i].file.name()) + ", size: " + String(index + len));
+                uploadingFiles[i].file.flush();
                 uploadingFiles[i].file.close();
                 uploadingFiles[i].request = nullptr; // Free the slot
             }
