@@ -36,7 +36,7 @@ body {
 
 .shell {
     width: 100%;
-    max-width: 1120px;
+    max-width: 1360px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -920,9 +920,7 @@ h1.title {
 
 #editor {
     margin-top: 6px;
-    max-height: calc(100vh - 260px);
-    overflow-y: auto;
-    padding-right: 4px;
+    width: 100%;
 }
 
 #editor::-webkit-scrollbar {
@@ -936,6 +934,27 @@ h1.title {
 #editor::-webkit-scrollbar-thumb {
     background: rgba(55, 65, 81, 0.9);
     border-radius: 999px;
+}
+
+.component-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.component-toggle-slot {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+}
+
+.component-toggle-slot:empty {
+    display: none;
+}
+
+.component-toggle-slot .parameter {
+    margin: 0;
 }
 
 .component {
@@ -1011,8 +1030,8 @@ h1.title {
 
 .component.level0>.components {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-    grid-gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    grid-gap: 0.75rem;
     margin: 4px 0 0;
     padding: 2px;
 }
@@ -1069,35 +1088,71 @@ p.title {
 }
 
 
-.parameter input[type="checkbox"],
 .parameter input[type="range"] {
     accent-color: var(--accent);
     width: auto;
 }
 
 .parameter input[type="checkbox"] {
-    transition: box-shadow 0.15s ease, outline 0.15s ease;
-    border-radius: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    border: 1.5px solid rgba(148, 163, 184, 0.7);
+    border-radius: 5px;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.parameter input[type="checkbox"]::after {
+    content: "";
+    width: 0.28rem;
+    height: 0.55rem;
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    transform: rotate(45deg);
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+    opacity: 0;
 }
 
 .parameter input[type="checkbox"]:focus-visible {
-    outline: 2px solid rgba(34, 197, 94, 0.4);
-    outline-offset: 1px;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+.parameter input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.parameter input[type="checkbox"]:checked::after {
+    border-color: #041b11;
+    opacity: 1;
 }
 
 .parameter input[type="checkbox"]:disabled {
-    accent-color: var(--readonly-accent);
-    opacity: 1;
-    outline: 1px solid rgba(125, 211, 252, 0.45);
-    outline-offset: 1px;
-    box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.08);
+    cursor: not-allowed;
+    border-color: rgba(125, 211, 252, 0.7);
+    background: rgba(125, 211, 252, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.2);
 }
 
 .parameter input[type="checkbox"]:disabled:checked {
+    background: var(--readonly-accent);
+    border-color: rgba(125, 211, 252, 0.9);
     box-shadow:
-        0 0 0 2px rgba(125, 211, 252, 0.18),
-        0 0 10px rgba(125, 211, 252, 0.35);
-    background-color: rgba(125, 211, 252, 0.18);
+        inset 0 0 0 1px rgba(15, 23, 42, 0.25),
+        0 0 8px rgba(125, 211, 252, 0.35);
+}
+
+.parameter input[type="checkbox"]:disabled:checked::after {
+    border-color: rgba(6, 11, 19, 0.85);
+    opacity: 1;
 }
 
 .parameter input:disabled:not([type="checkbox"]) {
@@ -1116,6 +1171,73 @@ p.title {
 
 .sliderText {
     max-width: 2.8em !important;
+}
+
+.parameter-enabled-toggle {
+    margin: 0;
+}
+
+label.component-toggle 
+{
+    min-width: 0;
+}
+
+
+
+.component-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.component-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.component-toggle-track {
+    position: relative;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    border: 1px solid rgba(75, 85, 99, 0.6);
+    background: rgba(15, 23, 42, 0.72);
+    transition: background 0.15s ease, border-color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 3px;
+}
+
+.component-toggle-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(148, 148, 149, 0.94);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    transform: translateX(0);
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.component-toggle input[type="checkbox"] {
+    display:none;
+}
+.component-toggle input:checked + .component-toggle-track {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.5);
+}
+
+.component-toggle input:checked + .component-toggle-track .component-toggle-thumb {
+    background: #ecfdf5;
+    transform: translateX(12px);
 }
 
 /* Logger Panel */
