@@ -259,7 +259,6 @@
             }                                                             \
             else                                                          \
                 newData[0] = data[0].intValue();                          \
-            DBG(String("Set enum param to ") + newData[0].stringValue()); \
             setParam((void *)&param, newData, 1);                         \
             return true;                                                  \
         }                                                                 \
