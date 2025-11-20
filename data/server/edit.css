@@ -1044,6 +1044,11 @@ p.title {
     text-align: left;
 }
 
+.component.level0 > .parameters {
+    display: inline-flex;
+    gap: 10px;
+}
+
 .parameters {
     margin-top: 2px;
 }
