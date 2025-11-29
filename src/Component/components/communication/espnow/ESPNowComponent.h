@@ -24,6 +24,7 @@
 DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerActualDerive, ESPNOW_DEFAULT_ENABLED)
     DeclareBoolParam(pairingMode, false);
 DeclareBoolParam(longRange, false);
+DeclareBoolParam(optimalRange, false);
 
 DeclareIntParam(channel, 1);
 
@@ -104,7 +105,6 @@ void processMessage(const uint8_t *incomingData, int len);
 void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 #endif
 
-
 void setupBroadcast();
 void sendPairingRequest();
 void sendPing();
@@ -119,7 +119,6 @@ void sendPairingResponse(const uint8_t *bridgeMac);
 
 void setupLongRange(const uint8_t *deviceMac);
 
-
 void paramValueChangedInternal(void *param) override;
 bool handleCommandInternal(const String &command, var *data, int numData) override;
 
@@ -129,8 +128,9 @@ DeclareComponentEventNames("MessageReceived");
 HandleSetParamInternalStart
     CheckAndSetParam(pairingMode);
 CheckAndSetParam(longRange);
-
+CheckAndSetParam(optimalRange);
 CheckAndSetParam(channel);
+
 
 #ifdef ESPNOW_BRIDGE
 CheckAndSetParam(broadcastMode);
@@ -146,7 +146,7 @@ CheckTrigger(clearDevices);
 CheckAndSetParam(routeAll);
 CheckAndSetParam(acceptCommands);
 
-for(int i=0; i<ESPNOW_MAX_DEVICES; i++)
+for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
 {
     CheckAndSetParam(remoteMacs[i]);
 }
@@ -159,6 +159,7 @@ HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
     FillSettingsParam(longRange);
+FillSettingsParam(optimalRange);
 FillSettingsParam(channel);
 
 #ifdef ESPNOW_BRIDGE
@@ -171,7 +172,7 @@ FillSettingsParam(testLedCount);
 FillSettingsParam(streamTestRate);
 FillSettingsParam(routeAll);
 FillSettingsParam(acceptCommands);
-for(int i=0; i<ESPNOW_MAX_DEVICES; i++)
+for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
 {
     FillSettingsParam(remoteMacs[i]);
 }
@@ -185,6 +186,7 @@ FillSettingsInternalEnd;
 FillOSCQueryInternalStart
     FillOSCQueryBoolParam(pairingMode);
 FillOSCQueryBoolParam(longRange);
+FillOSCQueryBoolParam(optimalRange);
 FillOSCQueryIntParam(channel);
 #ifdef ESPNOW_BRIDGE
 FillOSCQueryBoolParam(wakeUpMode);

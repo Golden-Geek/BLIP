@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "WifiComponent.h"
 
 ImplementSingleton(WifiComponent)
 
@@ -21,6 +22,7 @@ ImplementSingleton(WifiComponent)
     AddStringParamConfig(manualGateway);
     AddBoolParamConfig(channelScanMode);
     AddIntParamConfig(txPower);
+    AddIntParamConfig(wifiProtocol);
     AddFloatParam(signal);
 
 #ifdef WIFI_C6_USE_EXTERNAL_ANTENNA
@@ -178,8 +180,7 @@ void WifiComponent::connect()
     }
 
     NDBG("Setting WiFi mode to " + String(wMode));
-    WiFi.mode(wMode);
-
+    esp_wifi_set_protocol(WIFI_IF_STA, getWifiProtocol());
 #ifdef ESP32
 #endif
 
@@ -226,7 +227,7 @@ void WifiComponent::connect()
             WiFi.setScanMethod(WIFI_FAST_SCAN);
         }
 
-        WiFi.setTxPower((wifi_power_t)txPowerLevels[txPower]);
+        WiFi.setTxPower((wifi_power_t)txPowerLevels[std::clamp(txPower, 0, MAX_POWER_LEVELS - 1)]);
 
         if (manualIP != "" && manualGateway != "" && manualIP != "0.0.0.0" && manualGateway != "0.0.0.0")
         {
@@ -356,4 +357,21 @@ bool WifiComponent::handleCommandInternal(const String &cmd, var *val, int numDa
 int WifiComponent::getChannel() const
 {
     return WiFi.channel();
+}
+
+uint8_t WifiComponent::getWifiProtocol() const
+{
+    switch(wifiProtocol)
+    {
+        case WIFI_11B:
+            return WIFI_PROTOCOL_11B;
+        case WIFI_11BG:
+            return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G;
+        case WIFI_11BGN:
+            return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
+        case WIFI_AX:
+            return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11AX;
+    }
+
+    return WIFI_PROTOCOL_11B;
 }

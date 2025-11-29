@@ -6,6 +6,24 @@
 #define BLUE_MILLIAMP 15
 #define DARK_MILLIAMP 1
 
+
+//NEO PIXEL - FAST LED CONVERSION
+#ifdef LED_USE_FASTLED
+#define NEO_RGB RGB
+#define NEO_RBG RBG
+#define NEO_GRB GRB
+#define NEO_GBR GBR
+#define NEO_BRG BRG
+#else
+#define RGB NEO_RGB
+#define RBG NEO_RBG
+#define GRB NEO_GRB
+#define GBR NEO_GBR
+#define BRG NEO_BRG
+#endif
+
+
+
 #ifndef LED_DEFAULT_CHANNELS
 #define LED_DEFAULT_CHANNELS 3
 #endif

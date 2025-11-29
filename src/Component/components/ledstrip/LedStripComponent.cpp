@@ -27,6 +27,7 @@ void LedStripComponent::setupInternal(JsonObject o)
     AddIntParamConfig(dataPin);
     AddIntParamConfig(enPin);
     AddIntParamConfig(clkPin);
+    AddIntParam(updateRate);
     AddFloatParam(brightness);
     AddBoolParamConfig(invertStrip);
     AddIntParam(multiLedMode);
@@ -132,6 +133,12 @@ void LedStripComponent::setupLeds()
 
 void LedStripComponent::updateInternal()
 {
+    int delta = millis() - lastUpdateTime;
+    if (lastUpdateTime > 0 && updateRate > 0 && delta < (1000 / updateRate))
+        return;
+
+    lastUpdateTime = millis();
+
 #ifdef LED_USE_FASTLED
 #else
     if (dotStarStrip == NULL && neoPixelStrip == NULL)

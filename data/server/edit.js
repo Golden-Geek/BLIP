@@ -1679,16 +1679,23 @@ function createEnumParameterEditor(item, level) {
     const paramDiv = document.createElement("div");
     paramDiv.classList.add("parameter");
     let options = "";
-    for (const key in item.RANGE[0].VALS) {
-        const value = item.RANGE[0].VALS[key];
-        const selected = value === item.VALUE[0] ? "selected" : "";
+    const enumValues = item.RANGE[0].VALS || {};
+    const currentValue = Array.isArray(item.VALUE) ? item.VALUE[0] : item.VALUE;
+    for (const key in enumValues) {
+        if (!Object.prototype.hasOwnProperty.call(enumValues, key)) {
+            continue;
+        }
+        const label = enumValues[key];
+        const numericKey = Number(key);
+        const selected =
+            currentValue === label || Number(currentValue) === numericKey ? "selected" : "";
         options +=
             '<option value="' +
-            value +
+            numericKey +
             '" ' +
             selected +
             ">" +
-            value +
+            label +
             "</option>";
     }
     paramDiv.innerHTML =
@@ -1698,7 +1705,7 @@ function createEnumParameterEditor(item, level) {
         item.id +
         '" oninput=\'sendParameterValue("' +
         item.FULL_PATH +
-        '", "s", this.value)\'>' +
+        '", "i", Number(this.value))\'>' +
         options +
         "</select>";
     return paramDiv;

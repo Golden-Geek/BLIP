@@ -7,9 +7,10 @@ void ESPNowComponent::setupInternal(JsonObject o)
 {
     AddBoolParamConfig(pairingMode);
     AddBoolParamConfig(longRange);
+    AddBoolParamConfig(optimalRange);
 
     AddIntParamConfig(channel);
-    
+
 #ifdef ESPNOW_BRIDGE
     AddBoolParamConfig(broadcastMode);
     AddIntParamConfig(broadcastStartID);
@@ -62,6 +63,17 @@ void ESPNowComponent::initESPNow()
 
 #if defined USE_WIFI
 
+    const bool wifiActive = WifiComponent::instance->isUsingWiFi();
+    if (!wifiActive)
+    {
+        // Ensure the WiFi driver is at least started in STA mode before touching ESP-NOW.
+        if (WiFi.getMode() != WIFI_STA)
+        {
+            WiFi.mode(WIFI_STA);
+        }
+        WiFi.setSleep(false);
+    }
+
 #if defined ESPNOW_BRIDGE
 
 #ifdef USE_ETHERNET
@@ -74,13 +86,13 @@ void ESPNowComponent::initESPNow()
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #endif // END ESPNOW_BRIDGE
 
-    if (!WifiComponent::instance->isUsingWiFi())
+    if (!wifiActive)
     {
-        NDBG("WiFi mode to STA");
-        WiFi.mode(WIFI_STA); // Recommended mode.
-        WiFi.setSleep(false);
-        NDBG("Setting TX Power to " + WifiComponent::instance->txPowerLevelNames[WifiComponent::instance->txPower]);
-        WiFi.setTxPower((wifi_power_t)WifiComponent::instance->txPowerLevels[WifiComponent::instance->txPower]);
+        NDBG("WiFi mode to STA with Phy " + WifiComponent::instance->wifiProtocolNames[WifiComponent::instance->wifiProtocol]);
+        esp_wifi_set_protocol(WIFI_IF_STA, WifiComponent::instance->getWifiProtocol());
+        int powerIndex = std::clamp(WifiComponent::instance->txPower, 0, MAX_POWER_LEVELS - 1);
+        NDBG("Setting TX Power to " + WifiComponent::instance->txPowerLevelNames[powerIndex]);
+        WiFi.setTxPower((wifi_power_t)WifiComponent::instance->txPowerLevels[powerIndex]);
     }
     else
     {
@@ -674,6 +686,17 @@ void ESPNowComponent::setupBroadcast()
         info.encrypt = false;
         esp_now_add_peer(&info);
         setupLongRange(broadcastMac);
+
+        if (optimalRange)
+        {
+            NDBG("Setting optimal rate for broadcast peer");
+            esp_now_rate_config_t rate_config = {
+                .phymode = WIFI_PHY_MODE_11B,
+                .rate = WIFI_PHY_RATE_1M_L,
+                .ersu = false,
+                .dcm = false};
+            esp_now_set_peer_rate_config(broadcastMac, &rate_config);
+        }
     }
     else
     {
@@ -827,6 +850,18 @@ void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan, boo
     bridgeInit = true;
 
     setupLongRange(bridgeMac);
+    if (optimalRange)
+    {
+        NDBG("Setting optimal rate for bridge peer");
+        esp_now_rate_config_t rate_config = {
+            .phymode = WIFI_PHY_MODE_11B,
+            .rate = WIFI_PHY_RATE_1M_L,
+            .ersu = false,
+            .dcm = false};
+        esp_now_set_peer_rate_config(bridgeMac, &rate_config);
+
+        NDBG("Optimal rate set for bridge peer");
+    }
 
     SetParam(channel, chan);
     initESPNow();

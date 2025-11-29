@@ -15,6 +15,7 @@
 #define USE_SCRIPTLAYER 0
 #endif
 
+
 #define USE_SYSTEMLAYER 1
 
 class LedStripComponent : public Component
@@ -53,6 +54,7 @@ public:
     DeclareIntParam(clkPin, LED_DEFAULT_CLK_PIN);
     DeclareIntParam(enPin, LED_DEFAULT_EN_PIN);
 
+    DeclareIntParam(updateRate, 60);
     DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
     DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
@@ -111,6 +113,7 @@ public:
 
     bool currentStripPower = false;
     bool doNotUpdate = false;
+    long lastUpdateTime = 0;
 
     void setupInternal(JsonObject o) override;
     bool initInternal() override;
@@ -138,17 +141,18 @@ public:
     // Color functions
     void clearColors();
     void showLeds();
-    static void showLedsAsync(void *);
 
     uint8_t getDitheredBrightness(uint8_t brightness, uint8_t frame);
 
     int ledMap(int index) const;
 
     HandleSetParamInternalStart
+
         CheckAndSetParam(count);
     CheckAndSetParam(dataPin);
     CheckAndSetParam(clkPin);
     CheckAndSetParam(enPin);
+    CheckAndSetParam(updateRate);
     CheckAndSetParam(brightness);
     CheckAndSetParam(invertStrip);
     CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
@@ -161,6 +165,7 @@ public:
     FillSettingsParam(dataPin);
     FillSettingsParam(clkPin);
     FillSettingsParam(enPin);
+    FillSettingsParam(updateRate);
     FillSettingsParam(brightness);
     FillSettingsParam(invertStrip);
     FillSettingsParam(maxPower);
@@ -173,6 +178,7 @@ public:
     FillOSCQueryIntParam(dataPin);
     FillOSCQueryIntParam(clkPin);
     FillOSCQueryIntParam(enPin);
+    FillOSCQueryIntParam(updateRate);
     FillOSCQueryRangeParam(brightness, 0, 2);
     FillOSCQueryBoolParam(invertStrip);
     FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);

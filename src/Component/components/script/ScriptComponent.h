@@ -3,7 +3,10 @@
 DeclareComponentSingleton(Script, "script", )
 
     Script script;
+DeclareIntParam(updateRate, 50); // in Hz
 DeclareStringParam(scriptAtLaunch, "");
+
+long lastUpdateTime = 0;
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -19,14 +22,17 @@ DeclareComponentEventTypes(ScriptEvent, ScriptParamFeedback);
 DeclareComponentEventNames("scriptEvent", "scriptParamFeedback");
 
 HandleSetParamInternalStart
+    CheckAndSetParam(updateRate);
     CheckAndSetParam(scriptAtLaunch);
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
+    FillSettingsParam(updateRate);
     FillSettingsParam(scriptAtLaunch);
 FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
+    FillOSCQueryIntParam(updateRate);
     FillOSCQueryStringParam(scriptAtLaunch);
 FillOSCQueryInternalEnd;
 
