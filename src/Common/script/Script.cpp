@@ -378,7 +378,10 @@ void Script::setScriptParam(String paramName, float value)
     }
 
     if (paramIndex != -1 && setScriptParamFunc != NULL)
+    {
+        DBG("Setting script param " + paramName + " to value " + String(value));
         m3_CallV(setScriptParamFunc, paramIndex, value);
+    }
 }
 
 void Script::triggerFunction(String funcName)
@@ -395,6 +398,7 @@ void Script::triggerFunction(String funcName)
 
     if (funcIndex != -1 && triggerFunctionFunc != NULL)
     {
+        DBG("Triggering script function " + funcName);
         m3_CallV(triggerFunctionFunc, funcIndex);
     }
 }

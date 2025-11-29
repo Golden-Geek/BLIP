@@ -31,6 +31,7 @@ void ScriptComponent::updateInternal()
         return;
 
     lastUpdateTime = millis();
+
     script.update();
 }
 

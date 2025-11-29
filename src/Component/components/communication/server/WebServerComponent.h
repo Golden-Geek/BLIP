@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_CONCURRENT_UPLOADS 5
+#define MAX_CONCURRENT_UPLOADS 2
 
 static AsyncWebServer server = AsyncWebServer(80);
 static AsyncWebSocket ws("/");

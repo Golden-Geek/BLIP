@@ -1,7 +1,7 @@
 #pragma once
 
 #define TRAIL_MAX 20
-#define IMU_NATIVE_STACK_SIZE (16 * 1024)
+#define IMU_NATIVE_STACK_SIZE (4 * 1024)
 
 DeclareComponent(Motion, "motion", )
 
