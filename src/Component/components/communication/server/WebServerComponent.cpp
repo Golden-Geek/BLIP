@@ -1,5 +1,6 @@
 #include "UnityIncludes.h"
 #include "WebServerComponent.h"
+
 #include "FirstrunPage.h"
 
 namespace
@@ -139,8 +140,7 @@ bool WebServerComponent::initInternal()
                   AsyncWebServerResponse *response = request->beginResponse(200, "text/html", BlipServerPages::FIRSTRUN_PAGE_GZ, BlipServerPages::FIRSTRUN_PAGE_GZ_LEN);
                   response->addHeader("Cache-Control", "no-store");
                   response->addHeader("Content-Encoding", "gzip");
-                  request->send(response);
-              });
+                  request->send(response); });
 
     server.on(
         "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
@@ -159,37 +159,35 @@ bool WebServerComponent::initInternal()
             return;
         }
 
-        auto openRegularFile = [](const String &path) -> File {
+        auto isRegularFile = [](const String &path) -> bool {
             File candidate = FilesComponent::instance->openFile(path, false, false);
             if(!candidate) {
-                return File();
+                return false;
             }
-            if(candidate.isDirectory()) {
-                candidate.close();
-                return File();
-            }
-            return candidate;
+            const bool ok = !candidate.isDirectory();
+            candidate.close();
+            return ok;
         };
 
         String resolvedPath = request->url();
         String lastTriedPath = resolvedPath;
-        File f = openRegularFile(resolvedPath);
+        bool found = isRegularFile(resolvedPath);
 
         bool firstRunRedirectCandidate = pathLooksLikeEditAsset(resolvedPath);
 
-        if(!f) {
+        if(!found) {
             String path = resolvedPath;
             if(!path.startsWith("/server/")) {
                 path = String("/server") + (path.startsWith("/")?"":"/") + path;
                 lastTriedPath = path;
-                f = openRegularFile(path);
-                if(f) {
+                found = isRegularFile(path);
+                if(found) {
                     resolvedPath = path;
                 } else if(!path.endsWith(".html") && !path.endsWith(".htm") && !path.endsWith(".css") && !path.endsWith(".js")) {
                     path += ".html";
                     lastTriedPath = path;
-                    f = openRegularFile(path);
-                    if(f) {
+                    found = isRegularFile(path);
+                    if(found) {
                         resolvedPath = path;
                     }
                 }
@@ -206,33 +204,30 @@ bool WebServerComponent::initInternal()
             return header.indexOf("gzip") >= 0;
         };
 
-        String logicalPath = f ? resolvedPath : lastTriedPath;
+        const String logicalPath = found ? resolvedPath : lastTriedPath;
+        String pathToServe = found ? resolvedPath : logicalPath;
         bool usingCompressed = false;
+
+        // Try serving gzip even if the plain file doesn't exist (some deployments only ship *.gz).
         if(clientAcceptsGzip() && logicalPath.length() > 0) {
-            auto tryGzipPath = [&](const String &candidate) -> File {
-                return openRegularFile(candidate);
-            };
-
-            String sameDirGz = logicalPath + ".gz";
-            File gzFile = tryGzipPath(sameDirGz);
-
-            if(!gzFile && logicalPath.startsWith("/server/")) {
-                const size_t serverPrefixLen = 7; // length of "/server"
-                String relative = logicalPath.substring(serverPrefixLen);
-                String altPath = String("/server-compressed") + relative + ".gz";
-                gzFile = tryGzipPath(altPath);
-            }
-
-            if(gzFile) {
-                if(f) {
-                    f.close();
-                }
-                f = gzFile;
+            const String sameDirGz = logicalPath + ".gz";
+            if(isRegularFile(sameDirGz)) {
+                pathToServe = sameDirGz;
                 usingCompressed = true;
+                found = true;
+            } else if(logicalPath.startsWith("/server/")) {
+                const size_t serverPrefixLen = 7; // length of "/server"
+                const String relative = logicalPath.substring(serverPrefixLen);
+                const String altPath = String("/server-compressed") + relative + ".gz";
+                if(isRegularFile(altPath)) {
+                    pathToServe = altPath;
+                    usingCompressed = true;
+                    found = true;
+                }
             }
         }
 
-        if(!f) {
+        if(!found) {
             if(firstRunRedirectCandidate) {
                 redirectToFirstRunPage(request);
                 return;
@@ -279,22 +274,19 @@ bool WebServerComponent::initInternal()
 
         String contentType = determineContentType(logicalPath.length() > 0 ? logicalPath : resolvedPath);
 
-        DBG("Serving file: " + String(f.name()) + " size: " + String(f.size()) + (usingCompressed ? " (gzip)" : ""));
+        DBG("Serving file: " + pathToServe + (usingCompressed ? " (gzip)" : ""));
 
-        AsyncWebServerResponse *response = request->beginChunkedResponse(contentType, [f](uint8_t *buffer, size_t maxLen, size_t index) mutable {
-
-            size_t len = f.read(buffer, maxLen);
-            if(len == 0) {
-                f.close();
-            }
-            return len;
-        });
+        AsyncWebServerResponse *response = request->beginResponse(FilesComponent::instance->getFS(), pathToServe, contentType, false);
+        if(!response) {
+            request->send(500, "text/plain", "Failed to create file response");
+            return;
+        }
 
         if(usingCompressed) {
             response->addHeader("Content-Encoding", "gzip");
         }
 
-        DBG("Serving file chunk");
+        DBG("Serving file response");
         request->send(response); });
 
 #endif
@@ -433,13 +425,14 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             if (len > 0 && uploadingFiles[i].file)
             {
                 size_t written = uploadingFiles[i].file.write(data, len);
-                if (written == 0) {
+                if (written == 0)
+                {
                     NDBG("Upload Aborted: Write error");
                     uploadingFiles[i].request->client()->close();
                 }
 
 #ifdef FILES_TYPE_FLASH
-                delayMicroseconds(500); 
+                delayMicroseconds(500);
 #endif
                 yield();
             }
@@ -597,7 +590,7 @@ void WebServerComponent::sendDebugLog(const String &msg, String source, String t
         }
     */
     String sanitizedMsg = msg;
-    //escape newlines and backslashes and quotes for JSON
+    // escape newlines and backslashes and quotes for JSON
     sanitizedMsg.replace("\\", "\\\\");
     sanitizedMsg.replace("\n", "\\n");
     sanitizedMsg.replace("\"", "\\\"");
