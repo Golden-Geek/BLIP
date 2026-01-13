@@ -1,6 +1,4 @@
 #include "UnityIncludes.h"
-#include "esp_dmx.h"
-#include "DMXReceiverComponent.h"
 
 ImplementSingleton(DMXReceiverComponent);
 
@@ -12,33 +10,33 @@ void DMXReceiverComponent::setupInternal(JsonObject o)
     artnetIsInit = false;
 #endif
 
-#ifdef USE_DMX
-    dmxIsInit = false;
-#endif
 }
 
 bool DMXReceiverComponent::initInternal()
 {
 
+    bool result = true;
+
 #ifdef USE_ARTNET
     artnet.setArtDmxCallback(&DMXReceiverComponent::onDmxFrame);
 #endif
 
+    setupConnection();
+
 #ifdef USE_DMX
-    dmx_config_t config = DMX_CONFIG_DEFAULT;
-    dmx_personality_t personalities[] = {
-        {1, "Default Personality"}};
-    int personality_count = 1;
-
-    dmx_driver_install(dmxPort, &config, personalities, personality_count);
-
-    /* Now set the DMX hardware pins to the pins that we want to use and setup
-      will be complete! */
-    dmx_set_pin(dmxPort, DMX_OUTPUT_PIN, DMX_RECEIVE_PIN, DMX_ENABLE_PIN);
+    dmx.onReceive([this](uint8_t *data, int len)  { 
+         RootComponent::instance->timeAtLastSignal = millis();
+         dispatchDMXData(0, data, 1, len); 
+    });
+    bool dmxResult = dmx.begin(DMXMode::Receive, DMX_RECEIVE_PIN, DMX_OUTPUT_PIN);
+    if (!result)
+    {
+        DBG("Failed to initialize DMX Receiver");
+        result = false;
+    }
 #endif
 
-    setupConnection();
-    return true;
+    return result;
 }
 
 void DMXReceiverComponent::updateInternal()
@@ -65,13 +63,6 @@ void DMXReceiverComponent::updateInternal()
         }
     }
 #endif
-}
-
-void DMXReceiverComponent::receiveDMX()
-{
-    dmx_read(dmxPort, data, 512);
-
-    dispatchDMXData(0, data, 1, 512);
 }
 
 void DMXReceiverComponent::clearInternal()
@@ -123,12 +114,12 @@ void DMXReceiverComponent::setupConnection()
 #endif
 }
 
-#if defined USE_DMX || defined USE_ARTNET
+#if defined USE_ARTNET
 void DMXReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
 {
     // DBG("On DMX Frame");
     RootComponent::instance->timeAtLastSignal = millis();
-    instance->dispatchStreamData(universe, data, 1, length);
+    instance->dispatchDMXData(universe, data, 1, length);
 }
 #endif
 
