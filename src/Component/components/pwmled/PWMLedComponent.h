@@ -36,7 +36,7 @@
 #define PWMLED_MAX_COUNT 16
 #endif
 
-DeclareComponent(PWMLed, "pwmled", LedStreamListenerDerive)
+DeclareComponent(PWMLed, "pwmled", DMXListenerDerive)
 
     DeclareIntParam(rPin, PWMLED_DEFAULT_RPIN);
 DeclareIntParam(gPin, PWMLED_DEFAULT_GPIN);

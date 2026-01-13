@@ -110,8 +110,8 @@ void ESPNowComponent::initESPNow()
     NDBG("ESP-NOW initialized as bridge");
     setupBroadcast();
 
-#if USE_STREAMING
-    LedStreamReceiverComponent::instance->registerStreamListener(this);
+#if defined USE_DMX || defined USE_ARTNET
+    DMXReceiverComponent::instance->registerDMXListener(this);
 #endif
 #endif
 
@@ -221,8 +221,8 @@ void ESPNowComponent::updateInternal()
 
 void ESPNowComponent::clearInternal()
 {
-#if defined USE_STREAMING && defined ESPNOW_BRIDGE
-    LedStreamReceiverComponent::instance->unregisterStreamListener(this);
+#if (defined USE_DMX || defined USE_ARTNET) && defined ESPNOW_BRIDGE
+    DMXReceiverComponent::instance->unregisterDMXListener(this);
 #endif
 }
 
@@ -273,7 +273,7 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
         {
             if (ESPNowComponent::streamReceivers[i] != nullptr)
             {
-                ESPNowComponent::streamReceivers[i]->onStreamReceived(incomingData + 1, len - 1);
+                ESPNowComponent::streamReceivers[i]->onDMXReceived(incomingData + 1, len - 1);
             }
         }
     }
@@ -637,7 +637,7 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
 #endif
 }
 
-void ESPNowComponent::registerStreamReceiver(ESPNowStreamReceiver *receiver)
+void ESPNowComponent::registerDMXReceiver(ESPNowDMXReceiver *receiver)
 {
     for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
     {
@@ -651,7 +651,7 @@ void ESPNowComponent::registerStreamReceiver(ESPNowStreamReceiver *receiver)
     DBG("No more stream receivers available");
 }
 
-void ESPNowComponent::unregisterStreamReceiver(ESPNowStreamReceiver *receiver)
+void ESPNowComponent::unregisterDMXReceiver(ESPNowDMXReceiver *receiver)
 {
     for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
     {
@@ -664,8 +664,8 @@ void ESPNowComponent::unregisterStreamReceiver(ESPNowStreamReceiver *receiver)
 }
 
 #ifdef ESPNOW_BRIDGE
-#ifdef USE_STREAMING
-void ESPNowComponent::onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
+#if defined USE_DMX || defined USE_ARTNET
+void ESPNowComponent::onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
     sendStream(-1, universe, (Color3 *)data, len / 3);
 }

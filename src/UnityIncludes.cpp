@@ -37,7 +37,6 @@
 
 #include "Component/components/communication/CommunicationComponent.cpp"
 
-
 #ifdef USE_SCRIPT
 #include "Common/script/Script.cpp"
 #include "Common/script/utf16.cpp"
@@ -65,15 +64,15 @@
 #include "Component/components/motion/MotionComponent.cpp"
 #endif
 
-#if defined USE_STREAMING
-#include "Component/components/ledstream/LedStreamReceiver.cpp"
+#if defined USE_DMX || defined USE_ARTNET
+#include "Component/components/dmx/DMXReceiverComponent.cpp"
 #endif
 
 #ifdef USE_LEDSTRIP
 #include "Component/components/ledstrip/Layer/LedStripLayer.cpp"
 #include "Component/components/ledstrip/Layer/layers/playback/LedStripPlaybackLayer.cpp"
 #include "Component/components/ledstrip/Layer/layers/system/LedStripSystemLayer.cpp"
-#ifdef USE_STREAMING
+#if defined USE_DMX || defined USE_ARTNET
 #include "Component/components/ledstrip/Layer/layers/stream/LedStripStreamLayer.cpp"
 #endif
 

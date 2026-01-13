@@ -98,8 +98,8 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&script);
 #endif
 
-#ifdef USE_STREAMING
-    AddOwnedComponent(&streamReceiver);
+#if defined USE_DMX || defined USE_ARTNET
+    AddOwnedComponent(&dmxReceiver);
 #endif
 
 #ifdef USE_IO
@@ -275,8 +275,8 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
                 NDBG("Setup connections now");
                 comm.server.setupConnection();
 
-#ifdef USE_STREAMING
-                streamReceiver.setupConnection();
+#if defined USE_DMX || defined USE_ARTNET
+        dmxReceiver.setupConnection();
 #endif
 
 #ifdef USE_OSC

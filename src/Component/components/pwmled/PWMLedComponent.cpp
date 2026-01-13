@@ -51,8 +51,8 @@ bool PWMLedComponent::initInternal()
     }
 #endif
 
-#ifdef USE_STREAMING
-    LedStreamReceiverComponent::instance->registerStreamListener(this);
+#if defined USE_DMX || defined USE_ARTNET
+    DMXReceiverComponent::instance->registerDMXReceiver(this);
 #endif
 
     return true;
@@ -142,9 +142,9 @@ void PWMLedComponent::clearInternal()
     delay(50);
 #endif
 
-#ifdef USE_STREAMING
-    if (LedStreamReceiverComponent::instance != nullptr)
-        LedStreamReceiverComponent::instance->unregisterStreamListener(this);
+#if defined USE_DMX || defined USE_ARTNET
+    if (DMXReceiverComponent::instance != nullptr)
+        DMXReceiverComponent::instance->unregisterDMXReceiver(this);
 #endif
 }
 

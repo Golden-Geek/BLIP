@@ -14,7 +14,7 @@ void LedStripStreamLayer::setupInternal(JsonObject o)
 
 bool LedStripStreamLayer::initInternal()
 {
-    LedStreamReceiverComponent::instance->registerStreamListener(this);
+    DMXReceiverComponent::instance->registerStreamListener(this);
 
     return true;
 }
@@ -30,9 +30,9 @@ void LedStripStreamLayer::updateInternal()
 
 void LedStripStreamLayer::clearInternal()
 {
-    if (LedStreamReceiverComponent::instance != nullptr)
+    if (DMXReceiverComponent::instance != nullptr)
     {
-        LedStreamReceiverComponent::instance->unregisterStreamListener(this);
+        DMXReceiverComponent::instance->unregisterStreamListener(this);
     }
 }
 

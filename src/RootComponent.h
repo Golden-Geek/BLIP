@@ -34,8 +34,8 @@ BatteryComponent battery;
 SequenceComponent sequence;
 #endif
 
-#ifdef USE_STREAMING
-LedStreamReceiverComponent streamReceiver;
+#if defined USE_DMX || defined USE_ARTNET
+DMXReceiverComponent dmxReceiver;
 #endif
 
 #ifdef USE_LEDSTRIP

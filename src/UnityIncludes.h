@@ -93,7 +93,6 @@
 
 #include "Component/components/communication/CommunicationComponent.h"
 
-
 #ifdef USE_SCRIPT
 #include "Component/components/script/ScriptComponent.h"
 #endif
@@ -132,8 +131,8 @@
 #include "Component/components/motion/MotionComponent.h"
 #endif
 
-#if defined USE_STREAMING
-#include "Component/components/ledstream/LedStreamReceiver.h"
+#if defined USE_DMX || defined USE_ARTNET
+#include "Component/components/dmx/DMXReceiverComponent.h"
 #endif
 
 #ifdef USE_LEDSTRIP
@@ -149,7 +148,7 @@
 #include "Component/components/ledstrip/Layer/layers/playback/LedStripPlaybackLayer.h"
 #include "Component/components/ledstrip/Layer/layers/system/LedStripSystemLayer.h"
 
-#ifdef USE_STREAMING
+#if defined USE_DMX || defined USE_ARTNET
 #include "Component/components/ledstrip/Layer/layers/stream/LedStripStreamLayer.h"
 #endif
 
@@ -198,7 +197,6 @@
 #ifdef USE_DUMMY
 #include "Component/components/dummy/DummyComponent.h"
 #endif
-
 
 #include "Component/components/settings/SettingsComponent.h"
 

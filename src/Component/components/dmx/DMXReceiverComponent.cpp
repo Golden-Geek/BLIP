@@ -1,27 +1,47 @@
 #include "UnityIncludes.h"
+#include "esp_dmx.h"
+#include "DMXReceiverComponent.h"
 
-ImplementSingleton(LedStreamReceiverComponent);
+ImplementSingleton(DMXReceiverComponent);
 
-void LedStreamReceiverComponent::setupInternal(JsonObject o)
+void DMXReceiverComponent::setupInternal(JsonObject o)
 {
+    AddIntParam(receiveRate);
+
 #ifdef USE_ARTNET
     artnetIsInit = false;
-    AddIntParam(receiveRate);
+#endif
+
+#ifdef USE_DMX
+    dmxIsInit = false;
 #endif
 }
 
-bool LedStreamReceiverComponent::initInternal()
+bool DMXReceiverComponent::initInternal()
 {
 
 #ifdef USE_ARTNET
-    artnet.setArtDmxCallback(&LedStreamReceiverComponent::onDmxFrame);
+    artnet.setArtDmxCallback(&DMXReceiverComponent::onDmxFrame);
+#endif
+
+#ifdef USE_DMX
+    dmx_config_t config = DMX_CONFIG_DEFAULT;
+    dmx_personality_t personalities[] = {
+        {1, "Default Personality"}};
+    int personality_count = 1;
+
+    dmx_driver_install(dmxPort, &config, personalities, personality_count);
+
+    /* Now set the DMX hardware pins to the pins that we want to use and setup
+      will be complete! */
+    dmx_set_pin(dmxPort, DMX_OUTPUT_PIN, DMX_RECEIVE_PIN, DMX_ENABLE_PIN);
 #endif
 
     setupConnection();
     return true;
 }
 
-void LedStreamReceiverComponent::updateInternal()
+void DMXReceiverComponent::updateInternal()
 {
 #ifdef USE_ARTNET
 
@@ -47,17 +67,24 @@ void LedStreamReceiverComponent::updateInternal()
 #endif
 }
 
-void LedStreamReceiverComponent::clearInternal()
+void DMXReceiverComponent::receiveDMX()
+{
+    dmx_read(dmxPort, data, 512);
+
+    dispatchDMXData(0, data, 1, 512);
+}
+
+void DMXReceiverComponent::clearInternal()
 {
     // artnet.stop(); //when it will be implemented
 }
 
-void LedStreamReceiverComponent::onEnabledChanged()
+void DMXReceiverComponent::onEnabledChanged()
 {
     setupConnection();
 }
 
-void LedStreamReceiverComponent::setupConnection()
+void DMXReceiverComponent::setupConnection()
 {
 #ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
@@ -96,8 +123,8 @@ void LedStreamReceiverComponent::setupConnection()
 #endif
 }
 
-#ifdef USE_ARTNET
-void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
+#if defined USE_DMX || defined USE_ARTNET
+void DMXReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t *data)
 {
     // DBG("On DMX Frame");
     RootComponent::instance->timeAtLastSignal = millis();
@@ -105,10 +132,9 @@ void LedStreamReceiverComponent::onDmxFrame(uint16_t universe, uint16_t length, 
 }
 #endif
 
-
 #if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
-void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
-{    
+void DMXReceiverComponent::onStreamReceived(const uint8_t *data, int len)
+{
     if (len < 4)
     {
         DBG("Not enough data received");
@@ -119,39 +145,39 @@ void LedStreamReceiverComponent::onStreamReceived(const uint8_t *data, int len)
     uint16_t startChannel = (data[2] << 8) | data[3];
 
     // DBG("Received stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len - 4) + " bytes");
-    
+
     if (len <= 4)
     {
         DBG("Error parsing stream data, not enough data");
         return;
     }
 
-    dispatchStreamData(universe, data + 4, startChannel, len - 4);
+    dispatchDMXData(universe, data + 4, startChannel, len - 4);
 }
 #endif
 
-void LedStreamReceiverComponent::registerStreamListener(LedStreamListener *listener)
+void DMXReceiverComponent::registerDMXListener(DMXListener *listener)
 {
-    streamListeners.push_back(listener);
+    dmxListeners.push_back(listener);
 }
 
-void LedStreamReceiverComponent::unregisterStreamListener(LedStreamListener *listener)
+void DMXReceiverComponent::unregisterDMXListener(DMXListener *listener)
 {
-    for (int i = 0; i < streamListeners.size(); i++)
+    for (int i = 0; i < dmxListeners.size(); i++)
     {
-        if (streamListeners[i] == listener)
+        if (dmxListeners[i] == listener)
         {
-            streamListeners.erase(streamListeners.begin() + i);
+            dmxListeners.erase(dmxListeners.begin() + i);
             return;
         }
     }
 }
 
-void LedStreamReceiverComponent::dispatchStreamData(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
+void DMXReceiverComponent::dispatchDMXData(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
-    // DBG("Dispatching stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len) + " bytes to " + String(streamListeners.size()) + " listeners");
-    for (auto &listener : streamListeners)
+    // DBG("Dispatching stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len) + " bytes to " + String(dmxListeners.size()) + " listeners");
+    for (auto &listener : dmxListeners)
     {
-        listener->onLedStreamReceived(universe, data, startChannel, len);
+        listener->onDMXReceived(universe, data, startChannel, len);
     }
 }

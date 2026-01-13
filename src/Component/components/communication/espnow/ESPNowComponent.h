@@ -16,12 +16,12 @@
 #endif
 
 #ifdef ESPNOW_BRIDGE
-#define LedStreamListenerActualDerive LedStreamListenerDerive
+#define DMXListenerActualDerive DMXListenerDerive
 #else
-#define LedStreamListenerActualDerive
+#define DMXListenerActualDerive
 #endif
 
-DeclareComponentSingletonEnabled(ESPNow, "espnow", LedStreamListenerActualDerive, ESPNOW_DEFAULT_ENABLED)
+DeclareComponentSingletonEnabled(ESPNow, "espnow", DMXListenerActualDerive, ESPNOW_DEFAULT_ENABLED)
     DeclareBoolParam(pairingMode, false);
 DeclareBoolParam(longRange, false);
 DeclareBoolParam(optimalRange, false);
@@ -72,7 +72,7 @@ long lastCheck = 0;
 uint8_t sendPacketData[250];
 uint8_t sendMac[6];
 
-ESPNowStreamReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
+ESPNowDMXReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -89,8 +89,8 @@ void sendStream(int id, int universe, Color3 *colors, int numColors);
 
 void sendPacket(int id, const uint8_t *data, int len);
 
-void registerStreamReceiver(ESPNowStreamReceiver *receiver);
-void unregisterStreamReceiver(ESPNowStreamReceiver *receiver);
+void registerDMXReceiver(ESPNowDMXReceiver *receiver);
+void unregisterDMXReceiver(ESPNowDMXReceiver *receiver);
 
 static void onDataSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status);
 
@@ -101,8 +101,8 @@ void processMessage(const uint8_t *incomingData, int len);
 
 #ifdef ESPNOW_BRIDGE
 
-#ifdef USE_STREAMING
-void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
+#if defined USE_DMX || defined USE_ARTNET
+void onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 #endif
 
 void setupBroadcast();
@@ -130,7 +130,6 @@ HandleSetParamInternalStart
 CheckAndSetParam(longRange);
 CheckAndSetParam(optimalRange);
 CheckAndSetParam(channel);
-
 
 #ifdef ESPNOW_BRIDGE
 CheckAndSetParam(broadcastMode);
