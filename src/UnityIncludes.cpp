@@ -106,6 +106,10 @@
 #include "Component/components/distance/DistanceSensorComponent.cpp"
 #endif
 
+#ifdef USE_DIPSWITCH
+#include "Component/components/dipswitch/DIPSwitchComponent.cpp"
+#endif
+
 #ifdef USE_BEHAVIOUR
 #include "Component/components/behaviour/BehaviourComponent.cpp"
 #endif

@@ -134,6 +134,10 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&distances);
 #endif
 
+#ifdef USE_DIPSWITCH
+    AddOwnedComponent(&dipswitch);
+#endif
+
 #ifdef USE_PWMLED
     AddOwnedComponent(&pwmleds);
 #endif

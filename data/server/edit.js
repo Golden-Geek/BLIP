@@ -3,8 +3,20 @@
 // ==============================
 const searchParams = new URLSearchParams(window.location.search);
 const urlIp = searchParams.get("ip");
-const local = window.location.hostname.startsWith("1") || window.location.hostname.includes(".local");
-const ip = urlIp || (local ? window.location.hostname : "192.168.1.193");
+//local should detect any ip like xxx.xxx.xxx.xxx or any .local domain
+
+const local =  window.location.hostname.includes(".local") || /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/.test(window.location.hostname);
+// Extract port if present in the URL (e.g., ?ip=192.168.1.10:8888 or from window.location)
+let ip = urlIp;
+if (!ip) {
+    ip = window.location.hostname;
+    if (window.location.port && window.location.port !== "80" && window.location.port !== "443") {
+        ip += ":" + window.location.port;
+    }
+    if (!local && !window.location.port) {
+        ip = "192.168.1.193";
+    }
+}
 let data = {};
 let oscWS;
 let connectAttempts = 0;

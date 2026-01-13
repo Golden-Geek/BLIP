@@ -183,6 +183,10 @@
 #include "Component/components/distance/DistanceSensorComponent.h"
 #endif
 
+#ifdef USE_DIPSWITCH
+#include "Component/components/dipswitch/DIPSwitchComponent.h"
+#endif
+
 #ifdef USE_BEHAVIOUR
 #include "Component/components/behaviour/BehaviourComponent.h"
 #endif
@@ -194,6 +198,7 @@
 #ifdef USE_DUMMY
 #include "Component/components/dummy/DummyComponent.h"
 #endif
+
 
 #include "Component/components/settings/SettingsComponent.h"
 

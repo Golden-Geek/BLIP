@@ -304,6 +304,11 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "getButtonState", "i(i)", &m3_getButtonState);
 #endif
 
+#ifdef USE_IO
+    m3_LinkRawFunction(module, arduino, "getIOValue", "f(i)", &m3_getIOValue);
+    m3_LinkRawFunction(module, arduino, "setIOValue", "v(if)", &m3_setIOValue);
+#endif
+
 #ifdef USE_MIC
     m3_LinkRawFunction(module, arduino, "setMicEnabled", "v(i)", &m3_setMicEnabled);
     m3_LinkRawFunction(module, arduino, "getMicLevel", "f()", &m3_getMicLevel);

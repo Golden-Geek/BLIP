@@ -13,7 +13,7 @@
 #endif
 
 #ifndef IO_PULL_DEBOUNCE
-#define IO_PULL_DEBOUNCE 5  // denoising, needs five reads to validate a change
+#define IO_PULL_DEBOUNCE 5 // denoising, needs five reads to validate a change
 #endif
 
 DeclareComponent(IO, "io", )
@@ -26,21 +26,24 @@ DeclareComponent(IO, "io", )
                    A_OUTPUT,
                    D_OSC,
                    A_OSC,
+                   TOUCH_INPUT,
                    PINMODE_MAX };
 
 DeclareIntParam(pin, -1);
 DeclareIntParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
+DeclareIntParam(updateRate, 60);
 
 bool ledCAttached;
 int curPin;
+long lastUpdateTime;
 
 DeclareFloatParam(value, 0);
 float prevValue;
 
 int debounceCount = 0;
 
-const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator"};
+const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator", "Touch"};
 
 virtual void setupInternal(JsonObject o) override;
 virtual bool initInternal() override;
@@ -56,6 +59,7 @@ HandleSetParamInternalStart
     CheckAndSetParam(pin);
 CheckAndSetEnumParam(mode, modeOptions, PINMODE_MAX);
 CheckAndSetParam(inverted);
+CheckAndSetParam(updateRate);
 CheckAndSetParam(value);
 HandleSetParamInternalEnd;
 
@@ -67,8 +71,8 @@ FillSettingsInternalStart
     FillSettingsParam(pin);
 FillSettingsParam(mode);
 FillSettingsParam(inverted);
-
-if(mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
+FillSettingsParam(updateRate);
+if (mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
 {
     FillSettingsParam(value);
 }
@@ -81,6 +85,7 @@ FillSettingsInternalEnd
         FillOSCQueryIntParam(pin);
 FillOSCQueryEnumParam(mode, modeOptions, PINMODE_MAX);
 FillOSCQueryBoolParam(inverted);
+FillOSCQueryIntParam(updateRate);
 FillOSCQueryRangeParam(value, 0, 1);
 FillOSCQueryInternalEnd
 
@@ -89,4 +94,4 @@ FillOSCQueryInternalEnd
 // Manager
 
 DeclareComponentManager(IO, IO, gpio, gpio, IO_MAX_COUNT)
-EndDeclareComponent
+    EndDeclareComponent

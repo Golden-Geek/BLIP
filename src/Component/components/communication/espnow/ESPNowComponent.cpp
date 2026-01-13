@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "ESPNowComponent.h"
 
 ImplementSingleton(ESPNowComponent);
 
@@ -79,7 +78,7 @@ void ESPNowComponent::initESPNow()
 #ifdef USE_ETHERNET
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 #else
-    SetParam(channel, WiFiComponent::instance->getChannel());
+    SetParam(channel, WifiComponent::instance->getChannel());
 #endif
 
 #else
@@ -253,7 +252,7 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
     RootComponent::instance->timeAtLastSignal = millis();
 
 #ifndef ESPNOW_BRIDGE
-    if (pairingMode && pairOnAnyData)
+    if ((pairingMode || !bridgeInit) && pairOnAnyData)
     {
         registerBridgeMac(mac, channel, false);
     }
@@ -269,6 +268,7 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
 
     case 1: // Stream
     {
+        // DBG("[ESPNow] Stream data received: " + String(len - 1) + " bytes");
         for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
         {
             if (ESPNowComponent::streamReceivers[i] != nullptr)
@@ -560,7 +560,7 @@ void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numCo
     const int headerSize = 5;
 
     int colorsSent = 0;
-    // DBG("Streaming now, numColors : " + String(numColors) + ", universe : " + String(universe));
+    DBG("Streaming now, numColors : " + String(numColors) + ", universe : " + String(universe));
 
     while (colorsSent < numColors)
     {
