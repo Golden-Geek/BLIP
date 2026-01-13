@@ -162,6 +162,10 @@ void LedStripComponent::updateInternal()
     processLayer(&systemLayer);
 #endif
 
+#if USE_FX
+    fx.process(colors);
+#endif
+
     showLeds();
 }
 
@@ -289,10 +293,16 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
     if (!layer->enabled)
         return;
 
+    // DBG("Processing Layer "+String(layer->name));
+
     for (int i = 0; i < count; i++)
     {
         int index = getColorIndex(i);
         Color c = layer->colors[index];
+        // if(index == 0)
+        // {
+        //     DBG(" Layer color for led " + String(i) + ": " + String(c.r) + ", " + String(c.g) + ", " + String(c.b) + ", " + String(c.a));
+        // }
 
         LedStripLayer::BlendMode bm = (LedStripLayer::BlendMode)layer->blendMode;
 
@@ -335,10 +345,6 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
             break;
         }
     }
-
-#if USE_FX
-    fx.process(colors);
-#endif
 }
 
 // Color functions
@@ -351,6 +357,7 @@ void LedStripComponent::clearColors()
 
 void LedStripComponent::showLeds()
 {
+    // DBG("Showing Leds, led 0 color: " + String(colors[0].r) + ", " + String(colors[0].g) + ", " + String(colors[0].b) + ", " + String(colors[0].a));
     float targetBrightness = brightness * LED_BRIGHTNESS_FACTOR;
     if (maxPower > 0)
     {
@@ -374,6 +381,8 @@ void LedStripComponent::showLeds()
             // NDBG("maxOkBrightness: " + String(maxOkBrightness) + ", Target brightness: " + String(targetBrightness));
         }
     }
+
+    // DBG("Strip power is " + String(currentStripPower) + ", brightness : " + String(brightness) + ", target brightness: " + String(targetBrightness));
 
 #ifdef LED_USE_FASTLED
     FastLED.setBrightness(min(int(targetBrightness * 255), 255));

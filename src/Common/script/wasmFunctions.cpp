@@ -410,6 +410,30 @@ m3ApiRawFunction(m3_getButtonState)
 }
 #endif
 
+#ifdef USE_IO
+m3ApiRawFunction(m3_getIOValue)
+{
+    m3ApiReturnType(float);
+
+    m3ApiGetArg(uint32_t, ioIndex);
+    float v = ioIndex < RootComponent::instance->ios.count ? RootComponent::instance->ios.items[ioIndex]->value : 0.0f;
+    m3ApiReturn((float)v);
+}
+
+m3ApiRawFunction(m3_setIOValue)
+{
+    m3ApiGetArg(uint32_t, ioIndex);
+    m3ApiGetArg(float, v);
+    if (ioIndex < RootComponent::instance->ios.count)
+    {
+        IOComponent *ioComp = RootComponent::instance->ios.items[ioIndex];
+        var val[1] = {v};
+        ioComp->setParam(&ioComp->value, val, 1);
+    }
+    m3ApiSuccess();
+}
+#endif
+
 #ifdef USE_MIC
 m3ApiRawFunction(m3_setMicEnabled)
 {

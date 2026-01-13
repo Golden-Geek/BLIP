@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifdef USE_SCRIPT
 
 #include <wasm3.h>
@@ -64,6 +63,10 @@ m3ApiRawFunction(m3_getSpin);
 m3ApiRawFunction(m3_getButtonState);
 #endif
 
+#ifdef USE_IO
+m3ApiRawFunction(m3_getIOValue);
+m3ApiRawFunction(m3_setIOValue);
+#endif
 
 #ifdef USE_MIC
 m3ApiRawFunction(m3_setMicEnabled);

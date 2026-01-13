@@ -91,6 +91,10 @@ DCMotorComponent motor;
 DistanceSensorManagerComponent distances;
 #endif
 
+#ifdef USE_DIPSWITCH
+DIPSwitchComponent dipswitch;
+#endif
+
 // Behaviour
 Timer<5> timer;
 unsigned long timeAtStart;
