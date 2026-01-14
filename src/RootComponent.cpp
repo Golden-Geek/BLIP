@@ -7,10 +7,6 @@
 #endif
 #endif
 
-#ifndef TESTMODE_PRESSCOUNT
-#define TESTMODE_PRESSCOUNT -1
-#endif
-
 #ifndef DEMO_MODE_COUNT
 #define DEMO_MODE_COUNT 3
 #endif
@@ -227,6 +223,20 @@ void RootComponent::powerdown()
 #endif
 }
 
+void RootComponent::switchToWifi()
+{
+    comm.espNow.setEnabled(false);
+    settings.saveSettings();
+    restart();
+}
+
+void RootComponent::switchToESPNow()
+{
+    comm.espNow.setEnabled(true);
+    settings.saveSettings();
+    restart();
+}
+
 void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 {
     if (isShuttingDown())
@@ -276,7 +286,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
                 comm.server.setupConnection();
 
 #if defined USE_DMX || defined USE_ARTNET
-        dmxReceiver.setupConnection();
+                dmxReceiver.setupConnection();
 #endif
 
 #ifdef USE_OSC
@@ -336,11 +346,6 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
         }
         else if (param == &bc->multiPressCount)
         {
-            if (bc->multiPressCount == TESTMODE_PRESSCOUNT)
-            {
-                NDBG("Toggle testing mode");
-                testMode = !testMode;
-            }
 
 #ifdef USE_SCRIPT
 
@@ -361,7 +366,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
             }
             else if (bc->multiPressCount == ESPNOW_ENABLED_PRESSCOUNT)
             {
-                comm.espNow.toggleEnabled();
+                comm.espNow.setEnabled(!comm.espNow.enabled);
                 settings.saveSettings();
                 restart();
             }
@@ -409,6 +414,5 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
     {
         return false;
     }
-
     return true;
 }

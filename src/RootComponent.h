@@ -1,11 +1,8 @@
 #pragma once
 
-
-
 DeclareComponentSingleton(Root, "root", )
 
-
-bool remoteWakeUpMode = false;
+    bool remoteWakeUpMode = false;
 
 // system
 SettingsComponent settings;
@@ -23,8 +20,6 @@ DisplayComponent display;
 #ifdef USE_FILES
 FilesComponent files;
 #endif
-
-
 
 #ifdef USE_BATTERY
 BatteryComponent battery;
@@ -45,7 +40,6 @@ LedStripManagerComponent strips;
 #ifdef USE_PWMLED
 PWMLedManagerComponent pwmleds;
 #endif
-
 
 #ifdef USE_SCRIPT
 ScriptComponent script;
@@ -101,13 +95,11 @@ unsigned long timeAtStart;
 unsigned long timeAtShutdown;
 unsigned long timeAtLastSignal = 0;
 
-DeclareBoolParam(testMode, false);
 bool demoMode = false;
 int demoIndex = 0;
 
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
-
 
 void shutdown(bool restarting = false);
 void restart();
@@ -115,6 +107,9 @@ void standby();
 
 void reboot();
 void powerdown();
+
+void switchToWifi();
+void switchToESPNow();
 
 void onChildComponentEvent(const ComponentEvent &e) override;
 void childParamValueChanged(Component *caller, Component *comp, void *param);
@@ -127,20 +122,28 @@ HandleSetParamInternalStart
     CheckTrigger(shutdown);
 CheckTrigger(restart);
 CheckTrigger(standby);
-CheckAndSetParam(testMode);
-
+#if defined USE_WIFI && defined USE_ESPNOW
+CheckTrigger(switchToWifi);
+CheckTrigger(switchToESPNow);
+#endif
 HandleSetParamInternalEnd;
 
 FillSettingsInternalStart
 
-FillSettingsInternalEnd;
+    FillSettingsInternalEnd;
 
 FillOSCQueryInternalStart
 
     FillOSCQueryTrigger(shutdown);
 FillOSCQueryTrigger(restart);
 FillOSCQueryTrigger(standby);
-FillOSCQueryBoolParam(testMode);
+
+#if defined USE_WIFI && defined USE_ESPNOW
+FillOSCQueryTrigger(switchToWifi);
+FillOSCQueryTrigger(switchToESPNow);
+#endif
+
+// FillOSCQueryBoolParam(testMode);
 
 FillOSCQueryInternalEnd
 

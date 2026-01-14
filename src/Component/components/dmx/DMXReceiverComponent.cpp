@@ -9,7 +9,6 @@ void DMXReceiverComponent::setupInternal(JsonObject o)
 #ifdef USE_ARTNET
     artnetIsInit = false;
 #endif
-
 }
 
 bool DMXReceiverComponent::initInternal()
@@ -24,10 +23,10 @@ bool DMXReceiverComponent::initInternal()
     setupConnection();
 
 #ifdef USE_DMX
-    dmx.onReceive([this](uint8_t *data, int len)  { 
+    dmx.onReceive([this](uint8_t *data, int len)
+                  { 
          RootComponent::instance->timeAtLastSignal = millis();
-         dispatchDMXData(0, data, 1, len); 
-    });
+         dispatchDMXData(0, data, 1, len); });
     bool dmxResult = dmx.begin(DMXMode::Receive, DMX_RECEIVE_PIN, DMX_OUTPUT_PIN);
     if (!result)
     {

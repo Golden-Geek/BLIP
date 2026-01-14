@@ -14,7 +14,7 @@ void LedStripStreamLayer::setupInternal(JsonObject o)
 
 bool LedStripStreamLayer::initInternal()
 {
-    DMXReceiverComponent::instance->registerStreamListener(this);
+    DMXReceiverComponent::instance->registerDMXListener(this);
 
     return true;
 }
@@ -32,11 +32,11 @@ void LedStripStreamLayer::clearInternal()
 {
     if (DMXReceiverComponent::instance != nullptr)
     {
-        DMXReceiverComponent::instance->unregisterStreamListener(this);
+        DMXReceiverComponent::instance->unregisterDMXListener(this);
     }
 }
 
-void LedStripStreamLayer::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t startChannel, uint16_t len)
+void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
     int colorDataSize = includeAlpha ? 4 : 3;
     if (use16Bits)

@@ -11,16 +11,16 @@ public:
 #endif
 
 #ifdef USE_ESPNOW
-class ESPNowDMXReceiver
+class ESPNowStreamReceiver
 {
 public:
-  virtual void onDMXReceived(const uint8_t *data, int len) = 0;
+  virtual void onStreamReceived(const uint8_t *data, int len) = 0;
 };
 
 #ifdef ESPNOW_BRIDGE
 #define ESPNowDerive
 #else
-#define ESPNowDerive , public ESPNowDMXReceiver
+#define ESPNowDerive , public ESPNowStreamReceiver
 #endif
 #else
 #define ESPNowDerive

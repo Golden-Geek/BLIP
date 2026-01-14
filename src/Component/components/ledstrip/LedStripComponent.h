@@ -3,10 +3,12 @@
 #define LEDSTRIP_NUM_USER_LAYERS 3
 #define USE_BAKELAYER 1
 
-#ifdef USE_STREAMING
+#ifndef USE_STREAMINGLAYER
+#if defined USE_DMX || defined USE_ARTNET
 #define USE_STREAMINGLAYER 1
 #else
 #define USE_STREAMINGLAYER 0
+#endif
 #endif
 
 #ifdef USE_SCRIPT
@@ -14,7 +16,6 @@
 #else
 #define USE_SCRIPTLAYER 0
 #endif
-
 
 #define USE_SYSTEMLAYER 1
 

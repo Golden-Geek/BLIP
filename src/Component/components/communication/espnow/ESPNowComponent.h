@@ -72,7 +72,7 @@ long lastCheck = 0;
 uint8_t sendPacketData[250];
 uint8_t sendMac[6];
 
-ESPNowDMXReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
+ESPNowStreamReceiver *streamReceivers[ESPNOW_MAX_STREAM_RECEIVERS];
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -89,8 +89,8 @@ void sendStream(int id, int universe, Color3 *colors, int numColors);
 
 void sendPacket(int id, const uint8_t *data, int len);
 
-void registerDMXReceiver(ESPNowDMXReceiver *receiver);
-void unregisterDMXReceiver(ESPNowDMXReceiver *receiver);
+void registerStreamReceiver(ESPNowStreamReceiver *receiver);
+void unregisterStreamReceiver(ESPNowStreamReceiver *receiver);
 
 static void onDataSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status);
 

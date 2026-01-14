@@ -273,7 +273,7 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
         {
             if (ESPNowComponent::streamReceivers[i] != nullptr)
             {
-                ESPNowComponent::streamReceivers[i]->onDMXReceived(incomingData + 1, len - 1);
+                ESPNowComponent::streamReceivers[i]->onStreamReceived(incomingData + 1, len - 1);
             }
         }
     }
@@ -637,7 +637,7 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
 #endif
 }
 
-void ESPNowComponent::registerDMXReceiver(ESPNowDMXReceiver *receiver)
+void ESPNowComponent::registerStreamReceiver(ESPNowStreamReceiver *receiver)
 {
     for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
     {
@@ -651,7 +651,7 @@ void ESPNowComponent::registerDMXReceiver(ESPNowDMXReceiver *receiver)
     DBG("No more stream receivers available");
 }
 
-void ESPNowComponent::unregisterDMXReceiver(ESPNowDMXReceiver *receiver)
+void ESPNowComponent::unregisterStreamReceiver(ESPNowStreamReceiver *receiver)
 {
     for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
     {

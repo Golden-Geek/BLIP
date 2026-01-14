@@ -1,5 +1,7 @@
 #pragma once
+#if defined USE_DMX
 #include "easydmx.h"
+#endif
 
 DeclareComponentSingleton(DMXReceiver, "dmxReceiver", ESPNowDerive)
 
@@ -34,7 +36,7 @@ static void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uin
 #endif
 
 #if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
-void onDMXReceived(const uint8_t *data, int len) override;
+void onStreamReceived(const uint8_t *data, int len) override;
 #endif
 
 std::vector<DMXListener *> dmxListeners;

@@ -6,7 +6,7 @@
 #define LEDSTREAM_ARTNET_PORT 5678
 #endif
 
-class LedStripStreamLayer : public LedStripLayer, public LedStreamListener
+class LedStripStreamLayer : public LedStripLayer, public DMXListener
 {
 public:
     LedStripStreamLayer(LedStripComponent *strip) : LedStripLayer("streamLayer", LedStripLayer::Stream, strip) {}
@@ -27,7 +27,7 @@ public:
     void updateInternal() override;
     void clearInternal() override;
 
-    void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
+    void onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 
     HandleSetParamInternalStart
         HandleSetParamInternalMotherClass(LedStripLayer)

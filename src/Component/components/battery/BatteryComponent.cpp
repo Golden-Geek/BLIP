@@ -91,6 +91,9 @@ Color BatteryComponent::getBatteryColor()
 void BatteryComponent::readChargePin()
 {
     // Read the charging state
+    if(chargePin < 0)
+        return;
+        
     if (chargePin == RX && !readChargePinOnNextCheck)
         return;
 

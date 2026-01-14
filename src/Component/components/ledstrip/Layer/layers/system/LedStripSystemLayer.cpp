@@ -44,34 +44,6 @@ void LedStripSystemLayer::updateConnectionStatus()
 
     int numColors = strip->numColors;
 
-    if (RootComponent::instance->testMode)
-    {
-        int numTest = 0;
-#ifdef USE_MOTION
-        numTest++;
-#endif
-
-#ifdef USE_FILES
-        numTest++;
-#endif
-
-        int curTest = 0;
-#ifdef USE_MOTION
-
-        fillAll(Color(0, 0, 0)); // clear strip
-
-        Color c = RootComponent::instance->motion.isInit ? Color(50, 255, 0) : Color(255, 0, 120);
-        point(c, curTest++ * 1.0f / std::max(numTest - 1.0f, .5f), .05f, false);
-#endif
-
-#ifdef USE_FILES
-        Color c2 = RootComponent::instance->files.isInit ? Color(50, 255, 0) : Color(255, 0, 120);
-        point(c2, curTest++ * 1.0f / std::max(numTest - 1.0f, .5f), .05f, false);
-#endif
-
-        return;
-    }
-
     bool showEspNow = false;
 
 #if defined USE_ESPNOW && not defined ESPNOW_BRIDGE

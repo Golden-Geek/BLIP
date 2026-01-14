@@ -9,11 +9,16 @@ void Component::setup(JsonObject o)
 
 bool Component::init()
 {
+    if (!enabled)
+        return false;
+
     NDBG("Init");
 
     for (int i = 0; i < numComponents; i++)
     {
         // NDBG("> Init " + components[i]->name);
+        if (!components[i]->enabled)
+            continue;
         components[i]->init();
     }
 
@@ -431,7 +436,7 @@ void Component::setParam(void *param, var *value, int numData)
 
     if (numData == 0 && t != Trigger)
     {
-        //Send current value feedback
+        // Send current value feedback
         SendParamFeedback(param);
         // NDBG("Expecting at least 1 parameter");
         return;
