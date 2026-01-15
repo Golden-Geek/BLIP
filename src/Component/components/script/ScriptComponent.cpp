@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "ScriptComponent.h"
 
 ImplementSingleton(ScriptComponent);
 
@@ -8,6 +9,12 @@ void ScriptComponent::setupInternal(JsonObject o)
 
     AddIntParam(updateRate);
     AddStringParamConfig(scriptAtLaunch);
+    AddIntParam(universe);
+    AddIntParam(startChannel);
+
+#if defined USE_DMX || defined USE_ARTNET
+    DMXReceiverComponent::instance->registerDMXListener(this);
+#endif
 }
 
 bool ScriptComponent::initInternal()
@@ -37,6 +44,9 @@ void ScriptComponent::updateInternal()
 
 void ScriptComponent::clearInternal()
 {
+#if defined USE_DMX || defined USE_ARTNET
+    DMXReceiverComponent::instance->unregisterDMXListener(this);
+#endif
     script.shutdown();
 }
 
@@ -79,4 +89,20 @@ void ScriptComponent::sendScriptParamFeedback(String paramName, float value)
     data[0] = paramName;
     data[1] = value;
     sendEvent(ScriptParamFeedback, data, 2);
+}
+
+void ScriptComponent::onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
+{
+    if (!script.isRunning)
+        return;
+
+    if (universe == this->universe)
+    {
+        int dataStartIndex = this->startChannel - startChannel;
+
+        if (dataStartIndex < 0 || dataStartIndex + WASM_VARIABLES_MAX >= len)
+            return;
+
+        script.setParamsFromDMX(data + dataStartIndex, len);
+    }
 }

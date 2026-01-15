@@ -18,7 +18,8 @@ Script::Script() : localComponent(NULL),
                    // env(NULL),
                    initFunc(NULL),
                    updateFunc(NULL),
-                   stopFunc(NULL)
+                   stopFunc(NULL),
+                   isInUpdateFunc(false)
 {
 }
 
@@ -42,7 +43,9 @@ void Script::update()
         // TSTART()
         if (updateFunc != NULL)
         {
+            isInUpdateFunc = true;
             M3Result r = m3_CallV(updateFunc);
+            isInUpdateFunc = false;
             logWasm("update", r);
         }
         // TFINISH("Script ")
@@ -83,6 +86,15 @@ void Script::load(const String &path)
                     break;
                 JsonObject varObj = v.as<JsonObject>();
                 variableNames[variableCount] = varObj["name"].as<String>();
+                if (varObj.containsKey("min"))
+                    mins[variableCount] = varObj["min"].as<float>();
+                else
+                    mins[variableCount] = INT32_MIN;
+                if (varObj.containsKey("max"))
+                    maxs[variableCount] = varObj["max"].as<float>();
+                else
+                    maxs[variableCount] = INT32_MAX;
+
                 variableCount++;
             }
 
@@ -385,6 +397,8 @@ void Script::setScriptParam(String paramName, float value)
     if (paramIndex != -1 && setScriptParamFunc != NULL)
     {
         // DBG("Setting script param " + paramName + " to value " + String(value));
+        while (isInUpdateFunc)
+            delay(1);
         m3_CallV(setScriptParamFunc, paramIndex, value);
     }
 }
@@ -404,6 +418,8 @@ void Script::triggerFunction(String funcName)
     if (funcIndex != -1 && triggerFunctionFunc != NULL)
     {
         // DBG("Triggering script function " + funcName);
+        while (isInUpdateFunc)
+            delay(1);
         m3_CallV(triggerFunctionFunc, funcIndex);
     }
 }
@@ -425,6 +441,21 @@ void Script::sendScriptParamFeedback(int paramId, float value)
     String paramName = variableNames[paramId];
 
     localComponent->sendScriptParamFeedback(paramName, value);
+}
+
+void Script::setParamsFromDMX(const uint8_t *data, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++)
+    {
+        if (i >= variableCount)
+            break;
+
+        float value = (float)data[i] / 255.0f; // normalize to 0..1
+        if (mins[i] != INT32_MIN && maxs[i] != INT32_MAX)
+            value = mins[i] + value * (maxs[i] - mins[i]);
+
+        setScriptParam(variableNames[i], value);
+    }
 }
 
 void Script::shutdown()

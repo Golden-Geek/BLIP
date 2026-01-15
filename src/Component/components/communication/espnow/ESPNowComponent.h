@@ -15,7 +15,7 @@
 #define ESPNOW_DEFAULT_ENABLED false
 #endif
 
-#ifdef ESPNOW_BRIDGE
+#if (defined USE_DMX || defined USE_ARNET) && defined ESPNOW_BRIDGE
 #define DMXListenerActualDerive DMXListenerDerive
 #else
 #define DMXListenerActualDerive

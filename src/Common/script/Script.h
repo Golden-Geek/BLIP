@@ -42,21 +42,23 @@ public:
 
     bool isRunning;
     unsigned char scriptData[SCRIPT_MAX_SIZE];
-    
+
     // struct ScriptVariable
     // {
-        // String name;
-        // String niceName;
-        // float min;
-        // float max;
+    // String name;
+    // String niceName;
+    // float min;
+    // float max;
     // };
 
     String variableNames[WASM_VARIABLES_MAX];
+    float mins[WASM_VARIABLES_MAX];
+    float maxs[WASM_VARIABLES_MAX];
     int variableCount;
 
     String functionNames[WASM_FUNCTIONS_MAX];
     int functionCount;
-    
+
     String eventNames[WASM_EVENTS_MAX];
     int eventCount;
 
@@ -73,6 +75,7 @@ public:
     IM3Function setScriptParamFunc;
     IM3Function triggerFunctionFunc;
 
+    bool isInUpdateFunc;
     static float timeAtLaunch;
 
     void load(const String &name);
@@ -94,6 +97,7 @@ public:
     void sendScriptEvent(int eventId);
     void sendScriptParamFeedback(int paramId, float value);
 
+    void setParamsFromDMX(const uint8_t *data, uint16_t len);
 
 #if WASM_ASYNC
     static void launchWasmTaskStatic(void *);
