@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "BatteryComponent.h"
 
 ImplementSingleton(BatteryComponent);
 
@@ -9,11 +10,18 @@ void BatteryComponent::setupInternal(JsonObject o)
 
     AddIntParamConfig(batteryPin);
     AddIntParamConfig(chargePin);
+
+#ifdef LED_CHARGE_DISABLE_PIN
+    AddBoolParamConfig(disableChargingLed);
+    pinMode(LED_CHARGE_DISABLE_PIN, OUTPUT);
+    digitalWrite(LED_CHARGE_DISABLE_PIN, disableChargingLed ? LOW : HIGH);
+#endif
+
 #ifndef BATTERY_READ_MILLIVOLTS
     AddIntParamConfig(rawMin);
     AddIntParamConfig(rawMax);
 #endif
-    
+
     AddFloatParamConfig(lowBatteryThreshold);
 
     AddFloatParamFeedback(batteryLevel);
@@ -95,9 +103,9 @@ Color BatteryComponent::getBatteryColor()
 void BatteryComponent::readChargePin()
 {
     // Read the charging state
-    if(chargePin < 0)
+    if (chargePin < 0)
         return;
-        
+
     if (chargePin == RX && !readChargePinOnNextCheck)
         return;
 
@@ -238,4 +246,14 @@ void BatteryComponent::checkShouldAutoShutdown()
             return;
         }
     }
+}
+
+void BatteryComponent::paramValueChangedInternal(void *param)
+{
+#ifdef LED_CHARGE_DISABLE_PIN
+    if (param == &disableChargingLed)
+    {
+        digitalWrite(LED_CHARGE_DISABLE_PIN, disableChargingLed ? LOW : HIGH);
+    }
+#endif
 }
