@@ -40,23 +40,5 @@ var OSCArgumentToVar(OSCMessage &m, int index);
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");
 
-    // HandleSetParamInternalStart
-    //     CheckAndSetParam(remoteHost);
-    //     CheckAndSetParam(remotePort);
-    //     CheckAndSetParam(sendFeedback);
-    // HandleSetParamInternalEnd;
-
-    // FillSettingsInternalStart
-    //     FillSettingsParam(remoteHost);
-    //     FillSettingsParam(remotePort);
-    //     FillSettingsParam(sendFeedback);
-    // FillSettingsInternalEnd;
-
-    // FillOSCQueryInternalStart
-    //     FillOSCQueryStringParam(remoteHost);
-    // FillOSCQueryIntParam(remotePort);
-    // FillOSCQueryBoolParam(sendFeedback);
-    // FillOSCQueryBoolParamReadOnly(isAlive);
-    // FillOSCQueryInternalEnd
 
 EndDeclareComponent

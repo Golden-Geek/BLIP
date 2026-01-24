@@ -61,31 +61,6 @@ public:
 
     // DeclareScriptFunctionReturn0(ButtonComponent, getMultipress, uint32_t) { return multiPressCount; }
 #endif
-
-    // HandleSetParamInternalStart
-    //     HandleSetParamInternalMotherClass(IOComponent);
-    // CheckAndSetParam(canShutDown);
-    // HandleSetParamInternalEnd;
-
-    // FillSettingsInternalStart
-    //     FillSettingsInternalMotherClass(IOComponent);
-    // FillSettingsParam(canShutDown);
-    // FillSettingsInternalEnd;
-
-    // CheckFeedbackParamInternalStart
-    //     CheckFeedbackParamInternalMotherClass(IOComponent);
-    // CheckAndSendParamFeedback(multiPressCount);
-    // CheckAndSendParamFeedback(longPress);
-    // CheckAndSendParamFeedback(veryLongPress);
-    // CheckFeedbackParamInternalEnd;
-
-    // FillOSCQueryInternalStart
-    //     FillOSCQueryInternalMotherClass(IOComponent);
-    // FillOSCQueryIntParamReadOnly(multiPressCount);
-    // FillOSCQueryBoolParamReadOnly(longPress);
-    // FillOSCQueryBoolParamReadOnly(veryLongPress);
-    // FillOSCQueryBoolParam(canShutDown);
-    // FillOSCQueryInternalEnd;
 };
 
 DeclareComponentManager(Button, BUTTON, buttons, button, BUTTON_MAX_COUNT)

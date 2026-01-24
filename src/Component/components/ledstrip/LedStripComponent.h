@@ -145,43 +145,6 @@ public:
     uint8_t getDitheredBrightness(uint8_t brightness, uint8_t frame);
 
     int ledMap(int index) const;
-
-    // HandleSetParamInternalStart
-
-    //     CheckAndSetParam(count);
-    // CheckAndSetParam(dataPin);
-    // CheckAndSetParam(clkPin);
-    // CheckAndSetParam(enPin);
-    // CheckAndSetParam(brightness);
-    // CheckAndSetParam(invertStrip);
-    // CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
-    // CheckAndSetParam(maxPower);
-    // CheckAndSetParam(colorCorrection);
-    // HandleSetParamInternalEnd;
-
-    // FillSettingsInternalStart
-    //     FillSettingsParam(count);
-    // FillSettingsParam(dataPin);
-    // FillSettingsParam(clkPin);
-    // FillSettingsParam(enPin);
-    // FillSettingsParam(brightness);
-    // FillSettingsParam(invertStrip);
-    // FillSettingsParam(maxPower);
-    // FillSettingsParam(multiLedMode);
-    // FillSettingsParam(colorCorrection);
-    // FillSettingsInternalEnd
-
-    //     FillOSCQueryInternalStart
-    //         FillOSCQueryIntParam(count);
-    // FillOSCQueryIntParam(dataPin);
-    // FillOSCQueryIntParam(clkPin);
-    // FillOSCQueryIntParam(enPin);
-    // FillOSCQueryRangeParam(brightness, 0, 2);
-    // FillOSCQueryBoolParam(invertStrip);
-    // FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
-    // FillOSCQueryIntParam(maxPower);
-    // FillOSCQueryBoolParam(colorCorrection);
-    // FillOSCQueryInternalEnd
 };
 
 DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)

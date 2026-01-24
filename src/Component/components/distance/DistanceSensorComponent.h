@@ -78,43 +78,6 @@ void updateVL53L0X();
 
 void paramValueChangedInternal(void *param) override;
 
-// HandleSetParamInternalStart
-// #ifdef DISTANCE_SENSOR_HCSR04
-//     CheckAndSetParam(trigPin);
-// CheckAndSetParam(echoPin);
-// #endif
-// CheckAndSetParam(distanceMax);
-// CheckAndSetParam(sendRate);
-// HandleSetParamInternalEnd;
-
-// CheckFeedbackParamInternalStart;
-// CheckAndSendParamFeedback(value);
-// CheckFeedbackParamInternalEnd;
-
-// FillSettingsInternalStart
-// #ifdef DISTANCE_SENSOR_HCSR04
-//     FillSettingsParam(trigPin);
-// FillSettingsParam(echoPin);
-// #endif
-// FillSettingsParam(debounceFrame);
-// FillSettingsParam(distanceMax);
-// FillSettingsParam(sendRate);
-// FillSettingsInternalEnd
-
-//     FillOSCQueryInternalStart
-// #ifdef DISTANCE_SENSOR_HCSR04
-//         FillOSCQueryIntParam(trigPin);
-// FillOSCQueryIntParam(echoPin);
-// #elif defined(DISTANCE_SENSOR_VL53L0X)
-//         FillOSCQueryBoolParamReadOnly(isConnected);
-// #endif
-// FillOSCQueryIntParam(debounceFrame);
-// FillOSCQueryIntParam(distanceMax);
-// FillOSCQueryRangeParamReadOnly(value, 0, 1);
-// FillOSCQueryIntParam(sendRate);
-// FillOSCQueryInternalEnd
-
-//     EndDeclareComponent
 ;
 
 // Manager

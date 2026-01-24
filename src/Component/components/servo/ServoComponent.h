@@ -17,20 +17,4 @@ void updateInternal() override;
 void clearInternal() override;
 void paramValueChangedInternal(void *param) override;
 
-
-//    HandleSetParamInternalStart
-//         CheckAndSetParam(pin);
-//     CheckAndSetParam(position);
-//     HandleSetParamInternalEnd;
-
-//     FillSettingsInternalStart
-//         FillSettingsParam(pin);
-//     FillSettingsParam(position);
-//     FillSettingsInternalEnd
-
-//         FillOSCQueryInternalStart
-//             FillOSCQueryIntParam(pin);
-//     FillOSCQueryFloatParam(position);
-//     FillOSCQueryInternalEnd
-
 EndDeclareComponent

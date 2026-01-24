@@ -28,34 +28,4 @@ public:
     void clearInternal() override;
 
     void onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
-
-    // HandleSetParamInternalStart
-    //     HandleSetParamInternalMotherClass(LedStripLayer)
-    //         CheckAndSetParam(universe);
-    // CheckAndSetParam(startChannel);
-    // CheckAndSetParam(use16Bits);
-    // CheckAndSetParam(includeAlpha);
-    // CheckAndSetParam(clearOnNoReception);
-    // CheckAndSetParam(noReceptionTime);
-    // HandleSetParamInternalEnd;
-
-    // FillSettingsInternalStart
-    //     FillSettingsInternalMotherClass(LedStripLayer)
-    //         FillSettingsParam(universe);
-    // FillSettingsParam(startChannel);
-    // FillSettingsParam(use16Bits);
-    // FillSettingsParam(includeAlpha);
-    // FillSettingsParam(clearOnNoReception);
-    // FillSettingsParam(noReceptionTime);
-    // FillSettingsInternalEnd;
-
-    // FillOSCQueryInternalStart
-    //     FillOSCQueryInternalMotherClass(LedStripLayer)
-    //         FillOSCQueryIntParam(universe);
-    // FillOSCQueryIntParam(startChannel);
-    // FillOSCQueryBoolParam(use16Bits);
-    // FillOSCQueryBoolParam(includeAlpha);
-    // FillOSCQueryBoolParam(clearOnNoReception);
-    // FillOSCQueryFloatParam(noReceptionTime);
-    // FillOSCQueryInternalEnd;
 };

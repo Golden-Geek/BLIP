@@ -118,33 +118,4 @@ bool handleCommandInternal(const String &command, var *data, int numData) overri
 
 bool isShuttingDown() const { return timeAtShutdown > 0; }
 
-// HandleSetParamInternalStart
-//     CheckTrigger(shutdown);
-// CheckTrigger(restart);
-// CheckTrigger(standby);
-// #if defined USE_WIFI && defined USE_ESPNOW
-// CheckTrigger(switchToWifi);
-// CheckTrigger(switchToESPNow);
-// #endif
-// HandleSetParamInternalEnd;
-
-// FillSettingsInternalStart
-
-//     FillSettingsInternalEnd;
-
-// FillOSCQueryInternalStart
-
-//     FillOSCQueryTrigger(shutdown);
-// FillOSCQueryTrigger(restart);
-// FillOSCQueryTrigger(standby);
-
-// #if defined USE_WIFI && defined USE_ESPNOW
-// FillOSCQueryTrigger(switchToWifi);
-// FillOSCQueryTrigger(switchToESPNow);
-// #endif
-
-// FillOSCQueryBoolParam(testMode);
-
-// FillOSCQueryInternalEnd
-
-    EndDeclareComponent
+EndDeclareComponent

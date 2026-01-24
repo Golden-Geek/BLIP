@@ -46,39 +46,6 @@ public:
     void process(Color* sourcColors);
     void reset();
 
-    // HandleSetParamInternalStart
-    //     CheckAndSetParam(staticOffset);
-    // CheckAndSetParam(offsetSpeed);
-    // CheckAndSetParam(isolationSpeed);
-    // CheckAndSetParam(isolationSmoothing);
-    // CheckAndSetEnumParam(isolationAxis, isoOptions, IsoAxisMax);
-    // CheckAndSetParam(swapOnFlip);
-    // CheckAndSetParam(showCalibration);
-    // HandleSetParamInternalEnd;
-
-    // // CheckFeedbackParamInternalStart
-    // // CheckFeedbackParamInternalEnd;
-
-    // FillSettingsInternalStart
-    //     FillSettingsParam(staticOffset);
-    // FillSettingsParam(offsetSpeed);
-    // FillSettingsParam(isolationSpeed);
-    // FillSettingsParam(isolationSmoothing);
-    // FillSettingsParam(isolationAxis);
-    // FillSettingsParam(swapOnFlip);
-    // FillSettingsParam(showCalibration);
-    // FillSettingsInternalEnd;
-
-    // FillOSCQueryInternalStart
-    //     FillOSCQueryFloatParam(staticOffset);
-    // FillOSCQueryFloatParam(offsetSpeed);
-    // FillOSCQueryFloatParam(isolationSpeed);
-    // FillOSCQueryFloatParam(isolationSmoothing);
-    // FillOSCQueryEnumParam(isolationAxis, isoOptions, IsoAxisMax);
-    // FillOSCQueryBoolParam(swapOnFlip);
-    // FillOSCQueryBoolParam(showCalibration);
-    // FillOSCQueryInternalEnd;
-
     String getTypeString() const override { return "fx"; }
 };
 

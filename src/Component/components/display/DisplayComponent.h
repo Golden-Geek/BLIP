@@ -50,15 +50,6 @@ void clearDisplay();
 
 bool handleCommandInternal(const String &command, var *data, int numData) override;
 
-// HandleSetParamInternalStart
-//     CheckTrigger(clearDisplay);
-// HandleSetParamInternalEnd;
 
-// FillSettingsInternalStart
-//     FillSettingsInternalEnd
-
-//         FillOSCQueryInternalStart
-//             FillOSCQueryTrigger(clearDisplay);
-// FillOSCQueryInternalEnd
 
 };

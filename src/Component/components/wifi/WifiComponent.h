@@ -132,43 +132,6 @@ String getIP() const;
 int getChannel() const;
 uint8_t getWifiProtocol() const;
 
-// HandleSetParamInternalStart
-//     CheckAndSetParam(mode);
-// CheckAndSetParam(ssid);
-// CheckAndSetParam(pass);
-// CheckAndSetParam(channel);
-// CheckAndSetParam(manualIP);
-// CheckAndSetParam(manualGateway);
-// CheckAndSetParam(channelScanMode);
-// CheckAndSetEnumParam(txPower, txPowerLevelNames, 4);
-// CheckAndSetEnumParam(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
-
-// HandleSetParamInternalEnd;
-
-// FillSettingsInternalStart
-//     FillSettingsParam(mode);
-// FillSettingsParam(ssid);
-// FillSettingsParam(pass);
-// FillSettingsParam(channel);
-// FillSettingsParam(manualIP);
-// FillSettingsParam(manualGateway);
-// FillSettingsParam(channelScanMode);
-// FillSettingsParam(txPower);
-// FillSettingsParam(wifiProtocol);
-// FillSettingsInternalEnd;
-
-// FillOSCQueryInternalStart
-//     FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
-// FillOSCQueryStringParam(ssid);
-// FillOSCQueryStringParam(pass);
-// FillOSCQueryIntParam(channel);
-// FillOSCQueryFloatParamReadOnly(signal);
-// FillOSCQueryStringParam(manualIP);
-// FillOSCQueryStringParam(manualGateway);
-// FillOSCQueryBoolParam(channelScanMode);
-// FillOSCQueryEnumParam(txPower, txPowerLevelNames, 4);
-// FillOSCQueryEnumParam(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
-// FillOSCQueryInternalEnd;
 
 DeclareComponentEventTypes(ConnectionStateChanged);
 DeclareComponentEventNames("ConnectionStateChanged");

@@ -32,27 +32,6 @@ void updatePins();
 
 void paramValueChangedInternal(void *param) override;
 
-// HandleSetParamInternalStart
-//     CheckAndSetParam(pin1);
-// CheckAndSetParam(pin2);
-// CheckAndSetParam(value);
-// HandleSetParamInternalEnd;
-
-// FillSettingsInternalStart
-//     FillSettingsParam(pin1);
-// FillSettingsParam(pin2);
-// if (keepValueOnReboot)
-//     FillSettingsParam(value);
-// FillSettingsParam(keepValueOnReboot);
-// FillSettingsInternalEnd
-
-//     FillOSCQueryInternalStart
-//         FillOSCQueryIntParam(pin1);
-// FillOSCQueryIntParam(pin2);
-// FillOSCQueryRangeParam(value, 0, 1);
-// FillOSCQueryBoolParam(keepValueOnReboot);
-// FillOSCQueryInternalEnd
-
     EndDeclareComponent;
 
 // Manager

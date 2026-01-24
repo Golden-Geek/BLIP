@@ -46,15 +46,5 @@ public:
 
     void setBlendMode(BlendMode b);
 
-    // HandleSetParamInternalStart
-    //     CheckAndSetEnumParam(blendMode, blendModeOptions, BlendModeMax);
-    // HandleSetParamInternalEnd;
 
-    // FillSettingsInternalStart
-    //     FillSettingsParam(blendMode);
-    // FillSettingsInternalEnd;
-
-    // FillOSCQueryInternalStart
-    //         FillOSCQueryEnumParam(blendMode, blendModeOptions, BlendModeMax);
-    // FillOSCQueryInternalEnd
 };

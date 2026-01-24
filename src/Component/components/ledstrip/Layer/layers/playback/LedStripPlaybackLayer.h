@@ -85,21 +85,4 @@ public:
     DeclareComponentEventTypes(Loaded, LoadError, Playing, Paused, Stopped, Seek, Looped);
     DeclareComponentEventNames("Loaded", "LoadError", "Playing", "Paused", "Stopped", "Seek", "Looped");
 
-    // HandleSetParamInternalStart
-    //     HandleSetParamInternalMotherClass(LedStripLayer)
-    //         CheckAndSetParam(idMode);
-    // CheckAndSetParam(loop);
-    // HandleSetParamInternalEnd;
-
-    // FillSettingsInternalStart
-    //     FillSettingsInternalMotherClass(LedStripLayer)
-    //         FillSettingsParam(idMode);
-    // FillSettingsParam(loop);
-    // FillSettingsInternalEnd;
-
-    // FillOSCQueryInternalStart
-    //     FillOSCQueryInternalMotherClass(LedStripLayer)
-    //         FillOSCQueryBoolParam(idMode);
-    // FillOSCQueryBoolParam(loop);
-    // FillOSCQueryInternalEnd
 };

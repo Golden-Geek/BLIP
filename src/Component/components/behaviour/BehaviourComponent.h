@@ -69,37 +69,6 @@ void trigger();
 DeclareComponentEventTypes(CommandLaunched);
 DeclareComponentEventNames("CommandLaunched");
 
-// HandleSetParamInternalStart
-//     CheckAndSetParam(paramName);
-// CheckAndSetEnumParam(comparator, operatorOptions, OPERATOR_MAX);
-// CheckAndSetParam(compareValue);
-// CheckAndSetParam(validationTime);
-// CheckAndSetParam(alwaysTrigger);
-// CheckAndSetEnumParam(triggerAction, triggerActionOptions, ActionMax);
-// CheckAndSetParam(triggerValue);
-// HandleSetParamInternalEnd;
-
-// FillSettingsInternalStart
-//     FillSettingsParam(paramName);
-// FillSettingsParam(comparator);
-// FillSettingsParam(compareValue);
-// FillSettingsParam(validationTime);
-// FillSettingsParam(alwaysTrigger);
-// FillSettingsParam(triggerAction);
-// FillSettingsParam(triggerValue);
-// FillSettingsInternalEnd;
-
-// FillOSCQueryInternalStart
-//     FillOSCQueryStringParam(paramName);
-// FillOSCQueryEnumParam(comparator, operatorOptions, OPERATOR_MAX);
-// FillOSCQueryFloatParam(compareValue);
-// FillOSCQueryFloatParam(validationTime);
-// FillOSCQueryBoolParam(alwaysTrigger);
-// FillOSCQueryBoolParamReadOnly(valid);
-// FillOSCQueryEnumParam(triggerAction, triggerActionOptions, ActionMax);
-// FillOSCQueryStringParam(triggerValue);
-// FillOSCQueryInternalEnd;
-}
 ;
 
 DeclareComponentManager(Behaviour, BEHAVIOUR, behaviours, behaviour, BEHAVIOUR_MAX_COUNT)
