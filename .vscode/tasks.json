@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "BLIP: Monitor (decoded) creatorsball COM20",
+      "type": "shell",
+      "command": "${env:USERPROFILE}\\.platformio\\penv\\Scripts\\python.exe",
+      "args": [
+        "tools\\monitor_decode.py",
+        "-e",
+        "creatorsball",
+        "-p",
+        "COM20",
+        "--reconnect"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,6 +1,31 @@
 # BLIP 
 BLIP: Beautiful Light In Props
 
+## Decoding Crash Backtraces
+
+When the device prints a `Backtrace:` line (or panic output with `0x...` addresses), decode it against the exact matching PlatformIO build ELF.
+
+- Build the same environment you flashed (example: `creatorsball`).
+- Copy/paste the `Backtrace:` line into the decoder:
+
+	- `python tools/decode_backtrace.py -e creatorsball "Backtrace: 0x...:0x... 0x...:0x..."`
+
+Or pipe a captured log:
+
+- `type crash.txt | python tools/decode_backtrace.py -e creatorsball`
+
+## Live Serial Monitor (Auto-Decode)
+
+For an always-human-readable crash workflow, use the decoded serial monitor. It watches for `Backtrace:` output, `abort() was called at PC ...`, and `Guru Meditation Error` panic dumps and prints a decoded section automatically.
+
+- `python tools/monitor_decode.py -e creatorsball -p COM20`
+
+If you see `Access is denied` on Windows, another serial monitor is already using the port — close it and retry.
+
+If the device resets / disconnects and you want auto-reconnect:
+
+- `python tools/monitor_decode.py -e creatorsball -p COM20 --reconnect`
+
 ## Automated Releases
 
 Pushing a tag that matches the current `BLIP_VERSION` defined in `configs/blip.ini` triggers the `Build and Publish BLIP` GitHub Actions workflow. The pipeline:

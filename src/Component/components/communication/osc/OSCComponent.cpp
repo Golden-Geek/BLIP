@@ -57,7 +57,11 @@ void OSCComponent::setupConnection()
         udp.clear();
         SetParam(isAlive, true);
 
-        if (MDNS.begin((DeviceName).c_str()))
+        String mdnsName = DeviceName;
+        mdnsName.toLowerCase();
+        mdnsName.replace(" ", "_");
+
+        if (MDNS.begin(mdnsName.c_str()))
         {
             MDNS.setInstanceName("BLIP - " + DeviceName);
             NDBG("OSC Zeroconf started");
