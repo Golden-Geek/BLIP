@@ -1,5 +1,3 @@
-#include "UnityIncludes.h"
-#include "RootComponent.h"
 
 #ifdef USE_POWER
 #ifndef POWER_EXT
