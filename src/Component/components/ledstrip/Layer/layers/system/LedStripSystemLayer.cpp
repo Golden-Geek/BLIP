@@ -66,7 +66,7 @@ void LedStripSystemLayer::updateConnectionStatus()
                 if (ESPNowComponent::instance->bridgeInit)
                     fillAll(Color(50, 255, 0).withMultipliedAlpha(val));
                 else
-                    fillAll(Color(0, 120, 250).withMultipliedAlpha(val));
+                    fillAll(Color(espSyncColor[0], espSyncColor[1], espSyncColor[2], espSyncColor[3]).withMultipliedAlpha(val));
             }
             else
                 fillAll(Color(250, 50, 0).withMultipliedAlpha(val));

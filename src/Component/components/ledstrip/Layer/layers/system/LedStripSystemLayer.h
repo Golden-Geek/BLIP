@@ -9,6 +9,7 @@ public:
     long timeAtStartup = 0;
 
     DeclareBoolParam(showBattery, false);
+    DeclareColorParam(espSyncColor, 0, 1, 1, 1);
 
     void setupInternal(JsonObject o) override;
     void updateInternal() override;
@@ -18,14 +19,15 @@ public:
     void updateConnectionStatus();
     void updateShutdown();
 
-
     HandleSetParamInternalStart
         HandleSetParamInternalMotherClass(LedStripLayer);
-        CheckAndSetParam(showBattery);
+    CheckAndSetParam(espSyncColor);
+    CheckAndSetParam(showBattery);
     HandleSetParamInternalEnd;
 
     FillOSCQueryInternalStart
         FillOSCQueryInternalMotherClass(LedStripLayer);
-        FillOSCQueryBoolParam(showBattery);
+    FillOSCQueryBoolParam(showBattery);
+    FillOSCQueryColorParam(espSyncColor);
     FillOSCQueryInternalEnd;
 };
