@@ -32,7 +32,6 @@ DeclareComponent(IO, "io", )
 DeclareIntParam(pin, -1);
 DeclareIntParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
-DeclareIntParam(updateRate, 60);
 
 bool ledCAttached;
 int curPin;
@@ -59,7 +58,6 @@ HandleSetParamInternalStart
     CheckAndSetParam(pin);
 CheckAndSetEnumParam(mode, modeOptions, PINMODE_MAX);
 CheckAndSetParam(inverted);
-CheckAndSetParam(updateRate);
 CheckAndSetParam(value);
 HandleSetParamInternalEnd;
 
@@ -71,7 +69,6 @@ FillSettingsInternalStart
     FillSettingsParam(pin);
 FillSettingsParam(mode);
 FillSettingsParam(inverted);
-FillSettingsParam(updateRate);
 if (mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
 {
     FillSettingsParam(value);
@@ -85,7 +82,6 @@ FillSettingsInternalEnd
         FillOSCQueryIntParam(pin);
 FillOSCQueryEnumParam(mode, modeOptions, PINMODE_MAX);
 FillOSCQueryBoolParam(inverted);
-FillOSCQueryIntParam(updateRate);
 FillOSCQueryRangeParam(value, 0, 1);
 FillOSCQueryInternalEnd
 

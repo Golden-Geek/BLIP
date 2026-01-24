@@ -37,7 +37,6 @@ DeclareIntParam(echoPin, DISTANCE_DEFAULT_ECHO_PIN);
 float debounceBuffer[ DEBOUNCE_MAX_FRAMES ] = {0};
 int debounceIndex = 0;
 
-DeclareIntParam(updateRate, 50); // in Hz
 DeclareIntParam(debounceFrame, 6);
 DeclareIntParam(distanceMax, 100);
 DeclareFloatParam(value, 1.0f); // Normalized 0.0 - 1.0
@@ -65,13 +64,11 @@ int lastEchoState = LOW;
 unsigned long lastConnectTime = 0;
 VL53L0X_mod sensor;
 unsigned long lastMeasurementTime = 0;
-unsigned long lastSendTime = 0;
-
 #endif
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
-void updateInternal() override;
+void update() override;
 
 #ifdef DISTANCE_SENSOR_HCSR04
 void updateHCSR04();
@@ -87,19 +84,11 @@ HandleSetParamInternalStart
     CheckAndSetParam(trigPin);
 CheckAndSetParam(echoPin);
 #endif
-CheckAndSetParam(updateRate);
 CheckAndSetParam(distanceMax);
 CheckAndSetParam(sendRate);
 HandleSetParamInternalEnd;
 
 CheckFeedbackParamInternalStart;
-CheckAndSendParamFeedback(isConnected);
-if (sendRate < 0)
-    return false;
-if (sendRate > 0 && millis() - lastSendTime < (1000 / sendRate))
-    return false;
-
-lastSendTime = millis();
 CheckAndSendParamFeedback(value);
 CheckFeedbackParamInternalEnd;
 
@@ -108,7 +97,6 @@ FillSettingsInternalStart
     FillSettingsParam(trigPin);
 FillSettingsParam(echoPin);
 #endif
-FillSettingsParam(updateRate);
 FillSettingsParam(debounceFrame);
 FillSettingsParam(distanceMax);
 FillSettingsParam(sendRate);
@@ -121,7 +109,6 @@ FillOSCQueryIntParam(echoPin);
 #elif defined(DISTANCE_SENSOR_VL53L0X)
         FillOSCQueryBoolParamReadOnly(isConnected);
 #endif
-FillOSCQueryIntParam(updateRate);
 FillOSCQueryIntParam(debounceFrame);
 FillOSCQueryIntParam(distanceMax);
 FillOSCQueryRangeParamReadOnly(value, 0, 1);

@@ -38,6 +38,12 @@ void Component::update()
     if (!enabled)
         return;
 
+    long currentTime = millis();
+    if (lastUpdateTime > 0 && updateRate > 0 && currentTime - lastUpdateTime < (1000 / updateRate))
+        return;
+
+    lastUpdateTime = currentTime;
+
     for (int i = 0; i < numComponents; i++)
         components[i]->update();
 

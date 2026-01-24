@@ -13,7 +13,6 @@ void IOComponent::setupInternal(JsonObject o)
         mode = IO_DEFAULT_MODE;
     }
 
-    AddIntParamConfig(updateRate);
     AddIntParamConfig(pin);
     AddIntParamConfig(mode);
     AddBoolParamConfig(inverted);
@@ -126,11 +125,7 @@ void IOComponent::updatePin()
     if (pin == -1)
         return;
 
-    long currentTime = millis();
-    if (lastUpdateTime > 0 && updateRate > 0 && currentTime - lastUpdateTime < (1000 / updateRate))
-        return;
-
-    lastUpdateTime = currentTime;
+   
 
     int m = mode;
     switch (m)

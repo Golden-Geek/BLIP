@@ -240,28 +240,28 @@
         }                                            \
     }
 
-#define CheckAndSetEnumParam(param, options, numOption)                   \
-    {                                                                     \
-        if (paramName == #param)                                          \
-        {                                                                 \
-            var newData[1];                                               \
-            if (data[0].type == 's')                                      \
-            {                                                             \
-                String s = data[0].stringValue();                         \
-                for (int i = 0; i < numOption; i++)                       \
-                {                                                         \
-                    if (s == options[i])                                  \
-                    {                                                     \
-                        newData[0] = i;                                   \
-                        break;                                            \
-                    }                                                     \
-                };                                                        \
-            }                                                             \
-            else                                                          \
-                newData[0] = data[0].intValue();                          \
-            setParam((void *)&param, newData, 1);                         \
-            return true;                                                  \
-        }                                                                 \
+#define CheckAndSetEnumParam(param, options, numOption) \
+    {                                                   \
+        if (paramName == #param)                        \
+        {                                               \
+            var newData[1];                             \
+            if (data[0].type == 's')                    \
+            {                                           \
+                String s = data[0].stringValue();       \
+                for (int i = 0; i < numOption; i++)     \
+                {                                       \
+                    if (s == options[i])                \
+                    {                                   \
+                        newData[0] = i;                 \
+                        break;                          \
+                    }                                   \
+                };                                      \
+            }                                           \
+            else                                        \
+                newData[0] = data[0].intValue();        \
+            setParam((void *)&param, newData, 1);       \
+            return true;                                \
+        }                                               \
     }
 
 #define HandleSetParamInternalEnd \

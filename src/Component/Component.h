@@ -13,6 +13,7 @@ public:
                                                                          autoInit(true),
                                                                          exposeEnabled(true),
                                                                          saveEnabled(true),
+                                                                         lastUpdateTime(0),
                                                                          parentComponent(NULL),
                                                                          numComponents(0),
                                                                          numParams(0)
@@ -29,7 +30,10 @@ public:
     bool exposeEnabled;
     bool saveEnabled;
 
+    long lastUpdateTime;
+
     DeclareBoolParam(enabled, true);
+    DeclareIntParam(updateRate);
 
     Component *parentComponent;
 
@@ -78,13 +82,21 @@ public:
 
     void setup(JsonObject o = JsonObject());
     bool init();
-    void update();
+    virtual void update();
     void clear();
 
     virtual void setupInternal(JsonObject o) {}
     virtual bool initInternal() { return true; }
     virtual void updateInternal() {}
     virtual void clearInternal() {}
+
+    void setCustomUpdateRate(int defaultRate, JsonObject o)
+    {
+        if (updateRate < 0)
+            return;
+        updateRate = defaultRate;
+        AddIntParamConfig(updateRate);
+    }
 
     void sendEvent(uint8_t type, var *data = NULL, int numData = 0)
     {

@@ -7,7 +7,6 @@ void ScriptComponent::setupInternal(JsonObject o)
 {
     script.localComponent = this;
 
-    AddIntParam(updateRate);
     AddStringParamConfig(scriptAtLaunch);
     AddIntParam(universe);
     AddIntParam(startChannel);
@@ -34,11 +33,6 @@ bool ScriptComponent::initInternal()
 
 void ScriptComponent::updateInternal()
 {
-    if (lastUpdateTime > 0 && updateRate > 0 && millis() - lastUpdateTime < (1000 / updateRate))
-        return;
-
-    lastUpdateTime = millis();
-
     script.update();
 }
 

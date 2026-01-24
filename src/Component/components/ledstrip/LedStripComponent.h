@@ -55,7 +55,6 @@ public:
     DeclareIntParam(clkPin, LED_DEFAULT_CLK_PIN);
     DeclareIntParam(enPin, LED_DEFAULT_EN_PIN);
 
-    DeclareIntParam(updateRate, 60);
     DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
     DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
@@ -153,7 +152,6 @@ public:
     CheckAndSetParam(dataPin);
     CheckAndSetParam(clkPin);
     CheckAndSetParam(enPin);
-    CheckAndSetParam(updateRate);
     CheckAndSetParam(brightness);
     CheckAndSetParam(invertStrip);
     CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
@@ -166,7 +164,6 @@ public:
     FillSettingsParam(dataPin);
     FillSettingsParam(clkPin);
     FillSettingsParam(enPin);
-    FillSettingsParam(updateRate);
     FillSettingsParam(brightness);
     FillSettingsParam(invertStrip);
     FillSettingsParam(maxPower);
@@ -179,7 +176,6 @@ public:
     FillOSCQueryIntParam(dataPin);
     FillOSCQueryIntParam(clkPin);
     FillOSCQueryIntParam(enPin);
-    FillOSCQueryIntParam(updateRate);
     FillOSCQueryRangeParam(brightness, 0, 2);
     FillOSCQueryBoolParam(invertStrip);
     FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
