@@ -567,9 +567,13 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
     AwsFrameInfo *info = (AwsFrameInfo *)arg;
     if (info->final && info->index == 0 && info->len == len)
     {
-        data[len] = 0;
         if (info->opcode == WS_TEXT)
-            parseTextMessage(String((char *)data));
+        {
+            String text;
+            text.reserve(len + 1);
+            text.concat((const char *)data, len);
+            parseTextMessage(text);
+        }
         else if (info->opcode == WS_BINARY)
             parseBinaryMessage(data, len);
     }
