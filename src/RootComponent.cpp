@@ -3,7 +3,10 @@
 
 #ifdef USE_POWER
 #ifndef POWER_EXT
+#ifndef C6_BOARD
 #define POWER_EXT 0
+#endif
+#define POWER_EXT 1
 #endif
 #endif
 

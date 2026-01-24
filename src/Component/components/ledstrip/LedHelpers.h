@@ -48,8 +48,16 @@
 #define LEDSTRIP_MAX_COUNT 1
 #endif
 
-#ifndef LED_DEFAULT_COUNT
-#define LED_DEFAULT_COUNT 100
+#ifdef LED_FIXED_COUNT
+#define LED_DEFAULT_COUNT LED_FIXED_COUNT
+#define LED_MAX_COUNT LED_FIXED_COUNT
+#else
+#ifndef LED_MAX_COUNT
+#define LED_DEFAULT_COUNT 60
+#endif
+#ifndef LED_MAX_COUNT
+#define LED_MAX_COUNT 1024
+#endif
 #endif
 
 #ifndef LED_DEFAULT_DATA_PIN

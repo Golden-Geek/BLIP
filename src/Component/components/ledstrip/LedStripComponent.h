@@ -192,47 +192,47 @@ DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 
 #ifdef USE_SCRIPT
 
-    LinkScriptFunctionsStart
-    LinkScriptFunction(LedStripManagerComponent, clear, v, );
-LinkScriptFunction(LedStripManagerComponent, fillAll, v, i);
-LinkScriptFunction(LedStripManagerComponent, fillRange, v, iff);
-LinkScriptFunction(LedStripManagerComponent, fillRGB, v, iii);
-LinkScriptFunction(LedStripManagerComponent, fillHSV, v, fff);
+    // LinkScriptFunctionsStart
+//     LinkScriptFunction(LedStripManagerComponent, clear, v, );
+// LinkScriptFunction(LedStripManagerComponent, fillAll, v, i);
+// LinkScriptFunction(LedStripManagerComponent, fillRange, v, iff);
+// LinkScriptFunction(LedStripManagerComponent, fillRGB, v, iii);
+// LinkScriptFunction(LedStripManagerComponent, fillHSV, v, fff);
 
-LinkScriptFunction(LedStripManagerComponent, point, v, iff);
-LinkScriptFunction(LedStripManagerComponent, pointRGB, v, iiiff);
-LinkScriptFunction(LedStripManagerComponent, pointHSV, v, fffff);
+// LinkScriptFunction(LedStripManagerComponent, point, v, iff);
+// LinkScriptFunction(LedStripManagerComponent, pointRGB, v, iiiff);
+// LinkScriptFunction(LedStripManagerComponent, pointHSV, v, fffff);
 
-LinkScriptFunction(LedStripManagerComponent, set, v, ii);
-LinkScriptFunction(LedStripManagerComponent, setRGB, v, iiii);
-LinkScriptFunction(LedStripManagerComponent, setHSV, v, ifff);
+// LinkScriptFunction(LedStripManagerComponent, set, v, ii);
+// LinkScriptFunction(LedStripManagerComponent, setRGB, v, iiii);
+// LinkScriptFunction(LedStripManagerComponent, setHSV, v, ifff);
 
-LinkScriptFunction(LedStripManagerComponent, get, i, i);
+// LinkScriptFunction(LedStripManagerComponent, get, i, i);
 
-LinkScriptFunction(LedStripManagerComponent, setBlendMode, v, iii);
+// LinkScriptFunction(LedStripManagerComponent, setBlendMode, v, iii);
 
-LinkScriptFunctionsEnd
+// LinkScriptFunctionsEnd
 
-DeclareScriptFunctionVoid0(LedStripManagerComponent, clear)
-{
-    items[0]->scriptLayer.clearColors();
-}
-DeclareScriptFunctionVoid1(LedStripManagerComponent, fillAll, uint32_t) { items[0]->scriptLayer.fillAll(arg1); }
-DeclareScriptFunctionVoid3(LedStripManagerComponent, fillRange, uint32_t, float, float) { items[0]->scriptLayer.fillRange(arg1, arg2, arg3); }
+// DeclareScriptFunctionVoid0(LedStripManagerComponent, clear)
+// {
+//     items[0]->scriptLayer.clearColors();
+// }
+// DeclareScriptFunctionVoid1(LedStripManagerComponent, fillAll, uint32_t) { items[0]->scriptLayer.fillAll(arg1); }
+// DeclareScriptFunctionVoid3(LedStripManagerComponent, fillRange, uint32_t, float, float) { items[0]->scriptLayer.fillRange(arg1, arg2, arg3); }
 
-DeclareScriptFunctionVoid3(LedStripManagerComponent, fillRGB, uint32_t, uint32_t, uint32_t) { items[0]->scriptLayer.fillAll(Color(arg1, arg2, arg3)); }
-DeclareScriptFunctionVoid3(LedStripManagerComponent, fillHSV, float, float, float) { items[0]->scriptLayer.fillAll(Color::HSV(arg1, arg2, arg3)); }
+// DeclareScriptFunctionVoid3(LedStripManagerComponent, fillRGB, uint32_t, uint32_t, uint32_t) { items[0]->scriptLayer.fillAll(Color(arg1, arg2, arg3)); }
+// DeclareScriptFunctionVoid3(LedStripManagerComponent, fillHSV, float, float, float) { items[0]->scriptLayer.fillAll(Color::HSV(arg1, arg2, arg3)); }
 
-DeclareScriptFunctionVoid3(LedStripManagerComponent, point, uint32_t, float, float) { items[0]->scriptLayer.point(arg1, arg2, arg3, false); }
-DeclareScriptFunctionVoid5(LedStripManagerComponent, pointRGB, uint32_t, uint32_t, uint32_t, float, float) { items[0]->scriptLayer.point(Color(arg1, arg2, arg3), arg4, arg5, false); }
-DeclareScriptFunctionVoid5(LedStripManagerComponent, pointHSV, float, float, float, float, float) { items[0]->scriptLayer.point(Color::HSV(arg1, arg2, arg3), arg4, arg5, false); }
+// DeclareScriptFunctionVoid3(LedStripManagerComponent, point, uint32_t, float, float) { items[0]->scriptLayer.point(arg1, arg2, arg3, false); }
+// DeclareScriptFunctionVoid5(LedStripManagerComponent, pointRGB, uint32_t, uint32_t, uint32_t, float, float) { items[0]->scriptLayer.point(Color(arg1, arg2, arg3), arg4, arg5, false); }
+// DeclareScriptFunctionVoid5(LedStripManagerComponent, pointHSV, float, float, float, float, float) { items[0]->scriptLayer.point(Color::HSV(arg1, arg2, arg3), arg4, arg5, false); }
 
-DeclareScriptFunctionVoid2(LedStripManagerComponent, set, uint32_t, uint32_t) { items[0]->scriptLayer.setLed(arg1, arg2); }
-DeclareScriptFunctionVoid4(LedStripManagerComponent, setRGB, uint32_t, uint32_t, uint32_t, uint32_t) { items[0]->scriptLayer.setLed(arg1, Color(arg2, arg3, arg4)); }
-DeclareScriptFunctionVoid4(LedStripManagerComponent, setHSV, uint32_t, float, float, float) { items[0]->scriptLayer.setLed(arg1, Color::HSV(arg2, arg3, arg4)); }
-DeclareScriptFunctionReturn1(LedStripManagerComponent, get, uint32_t, uint32_t) { return items[0]->scriptLayer.getLed(arg1).value; }
+// DeclareScriptFunctionVoid2(LedStripManagerComponent, set, uint32_t, uint32_t) { items[0]->scriptLayer.setLed(arg1, arg2); }
+// DeclareScriptFunctionVoid4(LedStripManagerComponent, setRGB, uint32_t, uint32_t, uint32_t, uint32_t) { items[0]->scriptLayer.setLed(arg1, Color(arg2, arg3, arg4)); }
+// DeclareScriptFunctionVoid4(LedStripManagerComponent, setHSV, uint32_t, float, float, float) { items[0]->scriptLayer.setLed(arg1, Color::HSV(arg2, arg3, arg4)); }
+// DeclareScriptFunctionReturn1(LedStripManagerComponent, get, uint32_t, uint32_t) { return items[0]->scriptLayer.getLed(arg1).value; }
 
-DeclareScriptFunctionVoid3(LedStripManagerComponent, setBlendMode, uint32_t, uint32_t, uint32_t) { return items[0]->userLayers[(int)arg2]->setBlendMode((LedStripLayer::BlendMode)arg3); }
+// DeclareScriptFunctionVoid3(LedStripManagerComponent, setBlendMode, uint32_t, uint32_t, uint32_t) { return items[0]->userLayers[(int)arg2]->setBlendMode((LedStripLayer::BlendMode)arg3); }
 #endif
 
 void shutdown()

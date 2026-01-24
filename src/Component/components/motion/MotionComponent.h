@@ -97,29 +97,29 @@ DeclareComponentEventTypes(OrientationUpdate, AccelUpdate, GyroUpdate, LinearAcc
 DeclareComponentEventNames("orientation", "accel", "gyro", "linearAccel", "throwState", "calibration", "activity", "debug", "projectedAngle");
 
 #ifdef USE_SCRIPT
-LinkScriptFunctionsStart
-    LinkScriptFunctionsStartMotherClass(Component)
-        LinkScriptFunction(MotionComponent, getOrientation, f, i);
-LinkScriptFunction(MotionComponent, getYaw, f, );
-LinkScriptFunction(MotionComponent, getPitch, f, );
-LinkScriptFunction(MotionComponent, getRoll, f, );
-LinkScriptFunction(MotionComponent, getProjectedAngle, f, );
-LinkScriptFunction(MotionComponent, setProjectedAngleOffset, v, ff);
-LinkScriptFunction(MotionComponent, getActivity, f, );
-LinkScriptFunction(MotionComponent, getThrowState, i, );
-LinkScriptFunctionsEnd
+// LinkScriptFunctionsStart
+//     LinkScriptFunctionsStartMotherClass(Component)
+//         LinkScriptFunction(MotionComponent, getOrientation, f, i);
+// LinkScriptFunction(MotionComponent, getYaw, f, );
+// LinkScriptFunction(MotionComponent, getPitch, f, );
+// LinkScriptFunction(MotionComponent, getRoll, f, );
+// LinkScriptFunction(MotionComponent, getProjectedAngle, f, );
+// LinkScriptFunction(MotionComponent, setProjectedAngleOffset, v, ff);
+// LinkScriptFunction(MotionComponent, getActivity, f, );
+// LinkScriptFunction(MotionComponent, getThrowState, i, );
+// LinkScriptFunctionsEnd
 
-DeclareScriptFunctionReturn1(MotionComponent, getOrientation, float, uint32_t)
-{
-    return arg1 >= 3 ? 0.0f : orientation[arg1];
-}
-DeclareScriptFunctionReturn0(MotionComponent, getYaw, float) { return orientation[0]; }
-DeclareScriptFunctionReturn0(MotionComponent, getPitch, float) { return orientation[1]; }
-DeclareScriptFunctionReturn0(MotionComponent, getRoll, float) { return orientation[2]; }
-DeclareScriptFunctionReturn0(MotionComponent, getProjectedAngle, float) { return projectedAngle; }
-DeclareScriptFunctionVoid2(MotionComponent, setProjectedAngleOffset, float, float) { setProjectAngleOffset(arg1, arg2); }
-DeclareScriptFunctionReturn0(MotionComponent, getActivity, float) { return activity; }
-DeclareScriptFunctionReturn0(MotionComponent, getThrowState, uint32_t) { return throwState; }
+// DeclareScriptFunctionReturn1(MotionComponent, getOrientation, float, uint32_t)
+// {
+//     return arg1 >= 3 ? 0.0f : orientation[arg1];
+// }
+// DeclareScriptFunctionReturn0(MotionComponent, getYaw, float) { return orientation[0]; }
+// DeclareScriptFunctionReturn0(MotionComponent, getPitch, float) { return orientation[1]; }
+// DeclareScriptFunctionReturn0(MotionComponent, getRoll, float) { return orientation[2]; }
+// DeclareScriptFunctionReturn0(MotionComponent, getProjectedAngle, float) { return projectedAngle; }
+// DeclareScriptFunctionVoid2(MotionComponent, setProjectedAngleOffset, float, float) { setProjectAngleOffset(arg1, arg2); }
+// DeclareScriptFunctionReturn0(MotionComponent, getActivity, float) { return activity; }
+// DeclareScriptFunctionReturn0(MotionComponent, getThrowState, uint32_t) { return throwState; }
 #endif
 
 // CheckFeedbackParamInternalStart

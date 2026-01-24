@@ -48,18 +48,18 @@ public:
     void paramValueChangedInternal(void *param) override;
 
 #if USE_SCRIPT
-    LinkScriptFunctionsStart
-        LinkScriptFunction(ButtonComponent, getState, i, );
-    LinkScriptFunction(ButtonComponent, getMultipress, i, );
-    LinkScriptFunctionsEnd
+    // LinkScriptFunctionsStart
+    //     LinkScriptFunction(ButtonComponent, getState, i, );
+    // LinkScriptFunction(ButtonComponent, getMultipress, i, );
+    // LinkScriptFunctionsEnd
 
-    DeclareScriptFunctionReturn0(ButtonComponent, getState, uint32_t)
-    {
-        return veryLongPress ? 3 : longPress ? 2
-                                             : value;
-    }
+    // DeclareScriptFunctionReturn0(ButtonComponent, getState, uint32_t)
+    // {
+    //     return veryLongPress ? 3 : longPress ? 2
+    //                                          : value;
+    // }
 
-    DeclareScriptFunctionReturn0(ButtonComponent, getMultipress, uint32_t) { return multiPressCount; }
+    // DeclareScriptFunctionReturn0(ButtonComponent, getMultipress, uint32_t) { return multiPressCount; }
 #endif
 
     HandleSetParamInternalStart
