@@ -29,7 +29,7 @@ void LedStripComponent::setupInternal(JsonObject o)
     AddIntParamConfig(clkPin);
     AddFloatParam(brightness);
     AddBoolParamConfig(invertStrip);
-    AddIntParam(multiLedMode);
+    AddEnumParamConfig(multiLedMode, multiLedModeOptions, MultiLedModeMax);
     AddIntParamConfig(maxPower);
     AddBoolParam(colorCorrection);
 

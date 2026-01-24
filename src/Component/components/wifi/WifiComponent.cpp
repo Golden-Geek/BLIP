@@ -7,10 +7,7 @@ ImplementSingleton(WifiComponent)
 {
     state = Off;
 
-    // AddAndSetParameter(ssid);
-    // AddAndSetParameter(pass);
-    // AddAndSetParameter(apOnNoWifi);
-    AddIntParamConfig(mode);
+    AddEnumParamConfig(mode , wifiModeNames, MODE_MAX);
 
 #ifdef USE_ETHERNET
     WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
@@ -21,8 +18,8 @@ ImplementSingleton(WifiComponent)
     AddStringParamConfig(manualIP);
     AddStringParamConfig(manualGateway);
     AddBoolParamConfig(channelScanMode);
-    AddIntParamConfig(txPower);
-    AddIntParamConfig(wifiProtocol);
+    AddEnumParamConfig(txPower , txPowerLevelNames, MAX_POWER_LEVELS);
+    AddEnumParamConfig(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
     AddFloatParam(signal);
 
 #ifdef WIFI_C6_USE_EXTERNAL_ANTENNA

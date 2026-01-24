@@ -12,8 +12,29 @@ DeclareComponent(Motion, "motion", )
 double lastUpdateTime;
 #endif
 
+enum SendLevel
+{
+    SendLevelNone,
+    SendLevelOrientation,
+    SendLevelAll,
+    SendLevelMax
+};
+const String sendLevelOptions[3]{"None", "Orientation", "All"};
+
+enum ThrowState
+{
+    ThrowStateNone,
+    ThrowStateFlat,
+    ThrowStateSingle,
+    ThrowStateDouble,
+    ThrowStateFlatFront,
+    ThrowStateLoftie,
+    ThrowStateMax
+};
+const String throwStateOptions[6]{"None", "Flat", "Single", "Double", "Flat Front", "Loftie"};
+
 DeclareBoolParam(connected, false);
-DeclareIntParam(sendLevel, 0);
+DeclareEnumParam(sendLevel, 0);
 DeclareIntParam(orientationSendRate, 50);
 
 #ifdef IMU_TYPE_BNO055
@@ -31,7 +52,7 @@ DeclareP3DParam(gyro, 0, 0, 0);
 DeclareP3DParam(linearAccel, 0, 0, 0);
 DeclareFloatParam(orientationXOffset, 0);
 
-DeclareIntParam(throwState, 0); // 0 = none, 1 = flat, 2 = single, 3 = double+, 4 = flat-front, 5 = loftie
+DeclareEnumParam(throwState, ThrowStateNone);
 DeclareFloatParam(activity, 0);
 float prevActivity;
 float debug[4];
@@ -64,9 +85,6 @@ bool hasNewData;
 bool imuLock;
 bool shouldStopRead;
 
-const String sendLevelOptions[3]{"None", "Orientation", "All"};
-const String throwStateOptions[6]{"None", "Flat", "Single", "Double", "Flat Front", "Loftie"};
-
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
 void updateInternal() override;
@@ -89,6 +107,7 @@ void setOrientationXOffset(float offset);
 void setProjectAngleOffset(float yaw, float angle);
 
 void onEnabledChanged() override;
+void paramValueChangedInternal(void *param) override;
 
 bool handleCommandInternal(const String &command, var *data, int numData) override;
 
@@ -207,4 +226,4 @@ DeclareComponentEventNames("orientation", "accel", "gyro", "linearAccel", "throw
 
 // FillOSCQueryInternalEnd
 
-    EndDeclareComponent
+EndDeclareComponent

@@ -46,7 +46,7 @@ const String triggerActionOptions[ActionMax] = {
     "Launch Script",
     "Launch Command"};
 
-DeclareIntParam(triggerAction, None);
+DeclareEnumParam(triggerAction, None);
 DeclareStringParam(triggerValue, "");
 
 void *targetParam;

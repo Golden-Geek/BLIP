@@ -12,7 +12,7 @@ void StepperComponent::setupInternal(JsonObject o)
 
     AddFloatParamConfig(accel);
     AddFloatParamConfig(speed);
-    AddFloatParam(position);
+    AddFloatParamFeedback(position);
 }
 
 bool StepperComponent::initInternal()

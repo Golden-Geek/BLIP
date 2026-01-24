@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "MotionComponent.h"
 
 void MotionComponent::setupInternal(JsonObject o)
 {
@@ -8,8 +9,7 @@ void MotionComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(connected);
     connected = false;
 
-    AddIntParam(sendLevel);
-
+    AddEnumParamConfig(sendLevel, sendLevelOptions, SendLevelMax);
     AddIntParamConfig(orientationSendRate);
 
 #ifdef IMU_TYPE_BNO055
@@ -17,15 +17,17 @@ void MotionComponent::setupInternal(JsonObject o)
     AddIntParamConfig(sclPin);
 #endif
 
+    AddEnumParam(throwState, throwStateOptions, ThrowStateMax);
     AddP3DParam(orientation);
     AddP3DParam(accel);
     AddP3DParam(gyro);
     AddP3DParam(linearAccel);
-    // AddP3DParam(gravity);
+    AddFloatParam(projectedAngle);
+    AddIntParam(spinCount);
+    AddFloatParam(spin);
+    AddFloatParam(activity);
 
     AddFloatParamConfig(orientationXOffset);
-    AddIntParam(throwState);
-    AddFloatParamConfig(activity);
     AddP2DParamConfig(flatThresholds);
     AddP3DParamConfig(accelThresholds);
     AddFloatParamConfig(diffThreshold);
@@ -33,10 +35,7 @@ void MotionComponent::setupInternal(JsonObject o)
     AddFloatParamConfig(loftieThreshold);
     AddFloatParamConfig(singleThreshold);
     AddFloatParamConfig(angleOffset);
-    AddFloatParam(projectedAngle);
     AddFloatParamConfig(xOnCalibration);
-    AddIntParam(spinCount);
-    AddFloatParam(spin);
 
     lastThrowState = 0;
     launchOrientationX = 0;
@@ -44,6 +43,8 @@ void MotionComponent::setupInternal(JsonObject o)
     currentSpinLastUpdate = 0;
     prevActivity = 0;
     countNonDouble = 0;
+
+    paramValueChangedInternal(&sendLevel); // force feedback setup
 }
 
 bool MotionComponent::initInternal()
@@ -84,7 +85,6 @@ void MotionComponent::updateInternal()
     long curTime = millis();
     int orientationSendMS = 1000 / orientationSendRate;
 
-
     // REFACTOR : This will need to set feedback on/off on sendLevel change
     // if (curTime > timeSinceOrientationLastSent + orientationSendMS)
     // {
@@ -122,6 +122,22 @@ void MotionComponent::onEnabledChanged()
         startIMUTask();
     else
         shouldStopRead = true;
+}
+
+void MotionComponent::paramValueChangedInternal(void *param)
+{
+    if (param == &sendLevel)
+    {
+        setParamFeedback(&throwState, sendLevel != SendLevelNone);
+        setParamFeedback(&orientation, sendLevel != SendLevelNone);
+        setParamFeedback(&accel, sendLevel == SendLevelAll);
+        setParamFeedback(&gyro, sendLevel == SendLevelAll);
+        setParamFeedback(&linearAccel, sendLevel == SendLevelAll);
+        setParamFeedback(&projectedAngle, sendLevel == SendLevelAll);
+        setParamFeedback(&spinCount, sendLevel == SendLevelAll);
+        setParamFeedback(&spin, sendLevel == SendLevelAll);
+        setParamFeedback(&activity, sendLevel == SendLevelAll);
+    }
 }
 
 void MotionComponent::startIMUTask()
@@ -185,7 +201,6 @@ bool MotionComponent::setupIMU()
     SetParam(connected, true);
 #elif defined IMU_TYPE_M5MPU
     bool result = mpu.init();
-    
 
     if (!result)
     {
@@ -361,7 +376,7 @@ void MotionComponent::computeThrow()
     float maxLinearAccel = max(max(fabsf(linearAccel[0]), fabsf(linearAccel[1])), fabsf(linearAccel[2]));
     float accLinearDiff = fabsf(maxAccelYZ - maxLinearAccel);
 
-    bool curIsFlat = throwState == 1;
+    bool curIsFlat = throwState == ThrowStateFlat;
     float flatThresh = curIsFlat ? flatThresholds[1] : flatThresholds[0];
     bool isFlatting = maxAccel < flatThresh;
     bool isFastSpin = false;
@@ -373,7 +388,7 @@ void MotionComponent::computeThrow()
     }
     else
     {
-        bool curIsThrowing = throwState > 1;
+        bool curIsThrowing = throwState != ThrowStateNone && throwState != ThrowStateFlat;
         float throwThresh = curIsThrowing ? accelThresholds[1] : accelThresholds[0];
         throwThresh = isFastSpin ? throwThresh : accelThresholds[2];
 
@@ -395,13 +410,13 @@ void MotionComponent::computeThrow()
         if (isThrowing)
         {
             if (throwPower < semiFlatThreshold)
-                newState = 4;
+                newState = ThrowStateFlatFront;
             else if (throwPower < loftieThreshold)
-                newState = 5;
+                newState = ThrowStateLoftie;
             else if (throwPower < singleThreshold)
-                newState = 2;
+                newState = ThrowStateSingle;
             else
-                newState = 3; // double
+                newState = ThrowStateDouble;
         }
     }
 
@@ -515,6 +530,3 @@ bool MotionComponent::handleCommandInternal(const String &command, var *data, in
 
     return false;
 }
-
-// Script functions
-

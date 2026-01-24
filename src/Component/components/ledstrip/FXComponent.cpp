@@ -6,13 +6,13 @@
 
 void FXComponent::setupInternal(JsonObject o)
 {
-    AddFloatParam(staticOffset);
-    AddFloatParam(offsetSpeed);
-    AddFloatParam(isolationSpeed);
-    AddFloatParam(isolationSmoothing);
-    AddIntParam(isolationAxis);
-    AddBoolParam(swapOnFlip);
-    AddBoolParam(showCalibration);
+    AddFloatParamConfig(staticOffset);
+    AddFloatParamConfig(offsetSpeed);
+    AddFloatParamConfig(isolationSpeed);
+    AddFloatParamConfig(isolationSmoothing);
+    AddEnumParamConfig(isolationAxis, isoOptions, IsoAxisMax);
+    AddBoolParamConfig(swapOnFlip);
+    AddBoolParamConfig(showCalibration);
 
     memset(colors, 0, strip->numColors * sizeof(Color));
 }
@@ -27,8 +27,9 @@ void FXComponent::clearInternal()
 
 void FXComponent::process(Color *sourceColors)
 {
-    if(!enabled) return;
-    
+    if (!enabled)
+        return;
+
     int numLeds = strip->numColors;
     if (numLeds == 0)
         return;
@@ -125,10 +126,9 @@ void FXComponent::process(Color *sourceColors)
 
             colors[i] = sourceColors[index];
 
-            memcpy(sourceColors, colors, numLeds * sizeof(Color)); //copy back colors into ledstrip's colors array
+            memcpy(sourceColors, colors, numLeds * sizeof(Color)); // copy back colors into ledstrip's colors array
         }
     }
-
 }
 
 void FXComponent::reset()

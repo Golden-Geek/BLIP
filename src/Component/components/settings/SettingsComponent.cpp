@@ -4,8 +4,10 @@ ImplementSingleton(SettingsComponent);
 
 void SettingsComponent::setupInternal(JsonObject o)
 {
-    AddIntParam(propID);
-    AddStringParam(deviceName);
+    AddFunctionTrigger(saveSettings);
+    AddFunctionTrigger(clearSettings);
+    AddIntParamConfig(propID);
+    AddStringParamConfig(deviceName);
     AddStringParamConfig(deviceType);
     AddStringParamConfig(firmwareVersion);
 #ifdef USE_POWER
@@ -80,4 +82,3 @@ String SettingsComponent::getDeviceID() const
     d.toUpperCase();
     return d;
 }
-

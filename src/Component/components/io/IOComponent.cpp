@@ -14,9 +14,9 @@ void IOComponent::setupInternal(JsonObject o)
     }
 
     AddIntParamConfig(pin);
-    AddIntParamConfig(mode);
+    AddEnumParamConfig(mode, modeOptions, PINMODE_MAX);
     AddBoolParamConfig(inverted);
-    
+
     AddFloatParam(value);
 
     lastUpdateTime = millis();
@@ -127,8 +127,6 @@ void IOComponent::updatePin()
 {
     if (pin == -1)
         return;
-
-   
 
     int m = mode;
     switch (m)

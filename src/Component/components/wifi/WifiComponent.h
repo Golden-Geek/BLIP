@@ -21,7 +21,6 @@
 #define WIFI_DEFAULT_MODE MODE_STA
 #endif
 
-
 DeclareComponentSingleton(Wifi, "wifi", )
 
     enum ConnectionState { Off,
@@ -102,11 +101,11 @@ DeclareIntParam(channel, 0);
 DeclareStringParam(manualIP, "");
 DeclareStringParam(manualGateway, "");
 DeclareBoolParam(channelScanMode, true);
-DeclareIntParam(txPower, 2); // Index into txPowerLevels
-DeclareIntParam(wifiProtocol, WIFI_11BGN);
+DeclareEnumParam(txPower, 2); // Index into txPowerLevels
+DeclareEnumParam(wifiProtocol, WIFI_11BGN);
 
-DeclareFloatParam(signal, 0)
-    DeclareIntParam(mode, WIFI_DEFAULT_MODE);
+DeclareFloatParam(signal, 0);
+DeclareEnumParam(mode, WIFI_DEFAULT_MODE);
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;

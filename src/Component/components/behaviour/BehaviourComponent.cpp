@@ -4,14 +4,14 @@ ImplementManagerSingleton(Behaviour)
 void BehaviourComponent::setupInternal(JsonObject o)
 {
     AddStringParamConfig(paramName);
-    AddIntParamConfig(comparator);
+    AddEnumParamConfig(comparator, operatorOptions, OPERATOR_MAX);
 
     AddFloatParamConfig(compareValue);
     AddFloatParamConfig(validationTime);
     AddBoolParamConfig(alwaysTrigger);
     AddBoolParam(valid);
 
-    AddIntParamConfig(triggerAction);
+    AddEnumParamConfig(triggerAction, triggerActionOptions, ActionMax);
     AddStringParamConfig(triggerValue);
 }
 

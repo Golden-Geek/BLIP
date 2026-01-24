@@ -93,8 +93,7 @@
             addItemInternal(i);                                                            \
         }                                                                                  \
     }                                                                                      \
-    virtual void addItemInternal(int index) {}                                             \
-
+    virtual void addItemInternal(int index) {}
 
 #define DeclareComponentManager(Type, MType, mName, itemName, MaxCount) \
     DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, 1)
@@ -131,9 +130,7 @@
 // Class-less parameter system
 #define DeclareBoolParam(name, val) bool name = val;
 #define DeclareIntParam(name, val) int name = val;
-#define DeclareEnumParam(name, val) \
-    int name = val;                 \
-    bool##name##isEnum = true;
+#define DeclareEnumParam(name, val) int name = val;
 #define DeclareFloatParam(name, val) float name = val;
 #define DeclareStringParam(name, val) String name = val;
 #define DeclareP2DParam(name, val1, val2) float name[2]{val1, val2};
@@ -142,14 +139,14 @@
 
 #define AddFunctionTrigger(func) addTrigger(#func, [this]() { this->func(); });
 
-#define AddParamWithTag(type, class, param, tag) \
-    addParam(&param, ParamType::type, #param, tag);      \
+#define AddParamWithTag(type, class, param, tag)    \
+    addParam(&param, ParamType::type, #param, tag); \
     SetParam(param, Settings::getVal<class>(o, #param, param));
 
 #define AddMultiParamWithTag(type, class, param, tag, numData) \
     {                                                          \
                                                                \
-        addParam(&param, ParamType::type, #param, tag);                \
+        addParam(&param, ParamType::type, #param, tag);        \
         if (o.containsKey(#param))                             \
         {                                                      \
             JsonArray vArr = o[#param].as<JsonArray>();        \
@@ -169,6 +166,8 @@
 #define AddP2DParamWithTag(param, tag) AddMultiParamWithTag(P2D, float, param, tag, 2);
 #define AddP3DParamWithTag(param, tag) AddMultiParamWithTag(P3D, float, param, tag, 3);
 #define AddColorParamWithTag(param, tag) AddMultiParamWithTag(TypeColor, float, param, tag, 4);
+#define AddEnumParamWithTag(param, tag, options, numOptions) AddParamWithTag(TypeEnum, int, param, tag) \
+    setEnumOptions(&param, options, numOptions);
 
 #define AddBoolParam(param) AddBoolParamWithTag(param, TagNone)
 #define AddIntParam(param) AddIntParamWithTag(param, TagNone)
@@ -177,6 +176,7 @@
 #define AddP2DParam(param) AddP2DParamWithTag(param, TagNone)
 #define AddP3DParam(param) AddP3DParamWithTag(param, TagNone)
 #define AddColorParam(param) AddColorParamWithTag(param, TagNone)
+#define AddEnumParam(param, options, numOptions) AddEnumParamWithTag(param, TagNone, options, numOptions)
 
 #define AddBoolParamConfig(param) AddBoolParamWithTag(param, TagConfig)
 #define AddIntParamConfig(param) AddIntParamWithTag(param, TagConfig)
@@ -185,6 +185,7 @@
 #define AddP2DParamConfig(param) AddP2DParamWithTag(param, TagConfig)
 #define AddP3DParamConfig(param) AddP3DParamWithTag(param, TagConfig)
 #define AddColorParamConfig(param) AddColorParamWithTag(param, TagConfig)
+#define AddEnumParamConfig(param, options, numOptions) AddEnumParamWithTag(param, TagConfig, options, numOptions)
 
 #define AddBoolParamFeedback(param) AddBoolParamWithTag(param, TagFeedback)
 #define AddIntParamFeedback(param) AddIntParamWithTag(param, TagFeedback)
@@ -193,12 +194,11 @@
 #define AddP2DParamFeedback(param) AddP2DParamWithTag(param, TagFeedback)
 #define AddP3DParamFeedback(param) AddP3DParamWithTag(param, TagFeedback)
 #define AddColorParamFeedback(param) AddColorParamWithTag(param, TagFeedback)
-
+#define AddEnumParamFeedback(param, options, numOptions) AddEnumParamWithTag(param, TagFeedback, options, numOptions)
 
 #define SetParamRange(param, min, max) setParamRange(&param, {min, max});
 #define SetParamRange2D(param, minX, maxX, minY, maxY) setParamRange(&param, {minX, maxX, minY, maxY});
 #define SetParamRange3D(param, minX, maxX, minY, maxY, minZ, maxZ) setParamRange(&param, {minX, maxX, minY, maxY, minZ, maxZ});
-#define SetEnumOptions(param, options) setEnumOptions(&param, options);
 
 #define SetParam(param, val)        \
     {                               \
@@ -211,7 +211,7 @@
         var pData[2];                \
         pData[0] = val1;             \
         pData[1] = val2;             \
-        setParam(&param, pData, 2);   \
+        setParam(&param, pData, 2);  \
     };
 #define SetParam3(param, val1, val2, val3) \
     {                                      \
@@ -221,7 +221,6 @@
         pData[2] = val3;                   \
         setParam(&param, pData, 3);        \
     };
-
 
 // Script
 

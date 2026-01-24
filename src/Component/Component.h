@@ -86,7 +86,7 @@ public:
     std::map<void *, String> paramToNameMap;
     std::map<String, void *> nameToParamMap;
     std::map<void *, uint8_t> paramTagsMap;
-    std::map<void *, String *> enumOptionsMap;
+    std::map<void *, const String *> enumOptionsMap;
     std::map<void *, int> enumOptionsCountMap;
     std::map<void *, ParamRange> paramRangesMap;
     std::map<String, std::function<void(void)>> triggersMap;
@@ -140,7 +140,7 @@ public:
 
     void addParam(void *param, ParamType type, const String &name, uint8_t tags = TagNone);
     void setParamRange(void *param, ParamRange range);
-    void setEnumOptions(void *param, String *enumOptions, int numOptions);
+    void setEnumOptions(void *param, const String *enumOptions, int numOptions);
     void setParam(void *param, var *value, int numData);
     ParamType getParamType(void *param) const;
     bool checkParamTag(void *param, ParamTag tag) const;
@@ -160,7 +160,7 @@ public:
 
     void setParamConfig(void *param, bool config) { setParamTag(param, TagConfig, config); }
     void setParamFeedback(void *param, bool feedback) { setParamTag(param, TagFeedback, feedback); }
-    
+
     void setEnabled(bool v) { SetParam(enabled, v); }
     virtual void onEnabledChanged() {}
 

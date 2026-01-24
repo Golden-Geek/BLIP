@@ -293,7 +293,7 @@ void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, void *pa
         case ParamType::TypeEnum:
         {
             int numOptions = enumOptionsCountMap.contains(param) ? enumOptionsCountMap.at(param) : 0;
-            String *options = enumOptionsMap.contains(param) ? enumOptionsMap.at(param) : nullptr;
+            const String *options = enumOptionsMap.contains(param) ? enumOptionsMap.at(param) : nullptr;
             if (options != nullptr && numOptions > 0)
             {
                 JsonArray rArr = po.createNestedArray("RANGE");
@@ -518,7 +518,7 @@ void Component::setParamRange(void *param, ParamRange range)
     paramRangesMap.emplace(param, range);
 }
 
-void Component::setEnumOptions(void *param, String *enumOptions, int numOptions)
+void Component::setEnumOptions(void *param, const String *enumOptions, int numOptions)
 {
     enumOptionsMap.emplace(param, enumOptions);
     enumOptionsCountMap.emplace(param, numOptions);

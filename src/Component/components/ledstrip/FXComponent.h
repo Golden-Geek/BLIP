@@ -28,7 +28,7 @@ public:
     };
     const String isoOptions[IsoAxisMax]{"Projected Angle", "Yaw", "Pitch", "Roll"};
 
-    DeclareIntParam(isolationAxis, ProjectedAngle); // 0 = projectedAngle, 1 = yaw, 2 = pitch, 3 = roll
+    DeclareEnumParam(isolationAxis, ProjectedAngle); // 0 = projectedAngle, 1 = yaw, 2 = pitch, 3 = roll
 
     DeclareBoolParam(swapOnFlip, false); // this is a hack to make the flip work with the current implementation of the isolation axis, using quaternions should be better for that
     bool boardIsFlipped = false;

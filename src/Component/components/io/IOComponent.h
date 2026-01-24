@@ -30,7 +30,7 @@ DeclareComponent(IO, "io", )
                    PINMODE_MAX };
 
 DeclareIntParam(pin, -1);
-DeclareIntParam(mode, IOComponent::D_OUTPUT);
+DeclareEnumParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
 
 bool ledCAttached;

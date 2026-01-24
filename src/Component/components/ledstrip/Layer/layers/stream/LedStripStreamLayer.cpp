@@ -86,10 +86,11 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
         {
 
             int channelIndex = dataStartIndex + i * colorDataSize;
+            uint8_t alpha = includeAlpha ? data[channelIndex + 3] : 255;
             Color c = Color(data[channelIndex],
                             data[channelIndex + 1],
                             data[channelIndex + 2],
-                            includeAlpha ? data[channelIndex + 3] : 255);
+                            alpha);
 
             colors[ledStart + i] = c;
 

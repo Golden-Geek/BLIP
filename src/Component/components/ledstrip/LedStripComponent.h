@@ -75,7 +75,7 @@ public:
         "Single Color",
         "Two Colors"};
 
-    DeclareIntParam(multiLedMode, LED_DEFAULT_MULTILED_MODE);
+    DeclareEnumParam(multiLedMode, LED_DEFAULT_MULTILED_MODE);
 
     int numColors = 0;
 
