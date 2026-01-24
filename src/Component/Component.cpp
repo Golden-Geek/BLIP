@@ -175,7 +175,7 @@ void Component::fillSettingsParam(JsonObject o, void *param)
         break;
 
     case ParamType::TypeEnum:
-        o[pName] = getEnumString(param);
+        o[pName] = (*(int *)param);
         break;
 
     default:
