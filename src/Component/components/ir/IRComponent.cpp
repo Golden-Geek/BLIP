@@ -10,6 +10,7 @@ void IRComponent::setupInternal(JsonObject o)
     AddIntParamConfig(pin1);
     AddIntParamConfig(pin2);
     AddFloatParam(value);
+    SetParamRange(value, 0.0f, 1.0f);
     AddBoolParamConfig(keepValueOnReboot);
     setParamConfig(&value, keepValueOnReboot);
 

@@ -18,6 +18,7 @@ void IOComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(inverted);
 
     AddFloatParam(value);
+    SetParamRange(value, 0.0f, 1.0f);
 
     lastUpdateTime = millis();
 
