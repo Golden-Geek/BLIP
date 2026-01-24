@@ -46,9 +46,7 @@
 DeclareComponentSingleton(Battery, "battery", )
 
     DeclareIntParam(batteryPin, BATTERY_DEFAULT_PIN);
-#ifdef LED_CHARGE_DISABLE_PIN
 DeclareIntParam(chargePin, BATTERY_DEFAULT_CHARGE_PIN);
-#endif
 
 #ifndef BATTERY_READ_MILLIVOLTS
 DeclareIntParam(rawMin, BATTERY_DEFAUT_RAW_MIN);
@@ -61,7 +59,7 @@ DeclareIntParam(feedbackInterval, 3); // seconds
 DeclareFloatParam(batteryLevel, 1.0f);
 DeclareFloatParam(voltage, BATTERY_MAX_VOLTAGE);
 DeclareBoolParam(charging, false);
-DeclareBoolParam(disableChargingLed, false);
+DeclareFloatParam(chargeLedIntensity, 0.01f);
 DeclareIntParam(shutdownChargeNoSignal, 0);      // seconds, 0 = disabled
 DeclareIntParam(shutdownChargeSignalTimeout, 0); // seconds, 0 = disabled
 

@@ -11,10 +11,11 @@ void BatteryComponent::setupInternal(JsonObject o)
     AddIntParamConfig(batteryPin);
     AddIntParamConfig(chargePin);
 
-#ifdef LED_CHARGE_DISABLE_PIN
-    AddBoolParamConfig(disableChargingLed);
-    pinMode(LED_CHARGE_DISABLE_PIN, OUTPUT);
-    digitalWrite(LED_CHARGE_DISABLE_PIN, disableChargingLed ? LOW : HIGH);
+#ifdef BATTERY_CHARGE_LED_PIN
+    AddFloatParamConfig(chargeLedIntensity);
+    SetParamRange(chargeLedIntensity, 0.0f, 1.0f);
+    pinMode(BATTERY_CHARGE_LED_PIN, OUTPUT);
+    analogWrite(BATTERY_CHARGE_LED_PIN, (int)(chargeLedIntensity * 255));
 #endif
 
 #ifndef BATTERY_READ_MILLIVOLTS
@@ -250,10 +251,10 @@ void BatteryComponent::checkShouldAutoShutdown()
 
 void BatteryComponent::paramValueChangedInternal(void *param)
 {
-#ifdef LED_CHARGE_DISABLE_PIN
-    if (param == &disableChargingLed)
+#ifdef BATTERY_CHARGE_LED_PIN
+    if (param == &chargeLedIntensity)
     {
-        digitalWrite(LED_CHARGE_DISABLE_PIN, disableChargingLed ? LOW : HIGH);
+        analogWrite(BATTERY_CHARGE_LED_PIN, (int)(chargeLedIntensity * 255));
     }
 #endif
 }

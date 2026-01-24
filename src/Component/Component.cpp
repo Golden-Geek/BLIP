@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "Component.h"
 
 void Component::setup(JsonObject o)
 {
