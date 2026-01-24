@@ -30,7 +30,7 @@
 #endif
 
 // Forward declaration of the component
-DeclareComponentSingleton(Files, "files", ); 
+DeclareComponentSingleton(Files, "files", );
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;

@@ -115,9 +115,10 @@ void Component::fillSettingsData(JsonObject o)
             continue;
 
         bool isReadOnly = checkParamTag(param, TagFeedback);
+
         if (isReadOnly)
             continue;
-        fillSettingsParam(o, paramToNameMap.at(param), param);
+        fillSettingsParam(o, param);
     }
 
     if (numComponents > 0)
@@ -132,9 +133,10 @@ void Component::fillSettingsData(JsonObject o)
     }
 }
 
-void Component::fillSettingsParam(JsonObject o, const String &pName, void *param)
+void Component::fillSettingsParam(JsonObject o, void *param)
 {
     ParamType t = getParamType(param);
+    const String pName = paramToNameMap.at(param);
 
     switch (t)
     {
@@ -176,6 +178,7 @@ void Component::fillSettingsParam(JsonObject o, const String &pName, void *param
         break;
 
     default:
+        DBG("Unsupported param type for saving settings: " + typeNames[t] + "(" + String((int)t) + ")");
         break;
     }
 }
@@ -193,11 +196,23 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
                       "\"ACCESS\":0," +
                       "\"CONTENTS\":";
 
-        if (numParams > 0)
-        {
+        int numParamsSaved = 0;
 
+        // iterates through trigger map
+
+        if (numParams > 0 || triggersMap.size() > 0)
+        {
             StaticJsonDocument<6000> doc;
             JsonObject o = doc.to<JsonObject>();
+
+            if (triggersMap.size() > 0)
+            {
+                for (const auto &[triggerName, triggerFunc] : triggersMap)
+                {
+                    createBaseOSCQueryObject(o, fullPath, triggerName, "I", false);
+                    numParamsSaved++;
+                }
+            }
 
             for (int i = 0; i < numParams; i++)
             {
@@ -206,7 +221,10 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
                 if (param == &enabled && !exposeEnabled)
                     continue;
 
-                fillOSCQueryParam(o, fullPath, param, showConfig);
+                if (fillOSCQueryParam(o, fullPath, param, showConfig))
+                {
+                    numParamsSaved++;
+                }
             }
 
             String str;
@@ -223,7 +241,7 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
         {
             chunk->nextType = Start;
             chunk->nextComponent = components[0];
-            if (numParams > 0)
+            if (numParamsSaved > 0)
                 chunk->data += ",";
             chunk->data += "\"" + components[0]->name + "\":";
         }
@@ -252,29 +270,24 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
     }
 }
 
-void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, void *param, bool showConfig)
+bool Component::fillOSCQueryParam(JsonObject o, const String &fullPath, void *param, bool showConfig)
 {
     bool isConfig = checkParamTag(param, TagConfig);
 
     if (!showConfig && isConfig)
-        return;
+        return false;
 
     const String pName = paramToNameMap.at(param);
     ParamType t = getParamType(param);
     bool readOnly = checkParamTag(param, TagFeedback);
 
-    JsonObject po = o.createNestedObject(pName);
-    po["DESCRIPTION"] = StringHelpers::lowerCamelToTitleCase(pName);
-    po["ACCESS"] = readOnly ? 1 : 3;
-    const String pType = t == Bool ? (*(bool *)param) ? "T" : "F" : typeNames[t];
-    po["TYPE"] = pType;
-    po["FULL_PATH"] = fullPath + "/" + pName;
+    JsonObject po = createBaseOSCQueryObject(o, fullPath, pName, t == Bool ? (*(bool *)param) ? "T" : "F" : typeNames[t], readOnly);
 
-    if (isConfig)
-    {
-        JsonArray to = po.createNestedArray("TAGS");
-        to.add("config");
-    }
+    // if (isConfig)
+    // {
+    //     JsonArray to = po.createNestedArray("TAGS");
+    //     to.add("config");
+    // }
 
     if (t != ParamType::Trigger)
     {
@@ -375,6 +388,18 @@ void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, void *pa
             }
         }
     }
+
+    return true;
+}
+
+JsonObject Component::createBaseOSCQueryObject(JsonObject o, const String &fullPath, const String &pName, const String &type, bool readOnly)
+{
+    JsonObject obj = o.createNestedObject(pName);
+    obj["DESCRIPTION"] = StringHelpers::lowerCamelToTitleCase(pName);
+    obj["ACCESS"] = readOnly ? 1 : 3;
+    obj["TYPE"] = type;
+    obj["FULL_PATH"] = fullPath + "/" + pName;
+    return obj;
 }
 
 void Component::setupChunkAfterComponent(OSCQueryChunk *chunk, const Component *c)
@@ -505,7 +530,7 @@ void Component::addParam(void *param, ParamType type, const String &paramName, u
     }
 
     params[numParams] = param;
-    paramTypesMap.insert(std::make_pair(param, type));
+    paramTypesMap.insert(std::make_pair(param, (int)type));
     paramTagsMap.insert(std::make_pair(param, tags));
     nameToParamMap.insert(std::make_pair(paramName, param));
     paramToNameMap.insert(std::make_pair(param, paramName));
@@ -728,8 +753,7 @@ bool Component::checkParamsFeedback(void *param)
 
 Component::ParamType Component::getParamType(void *param) const
 {
-    paramTypesMap.at(param);
-    return ParamType::ParamTypeMax;
+    return (ParamType)paramTypesMap.at(param);
 }
 
 bool Component::checkParamTag(void *param, ParamTag tag) const

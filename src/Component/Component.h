@@ -82,7 +82,7 @@ public:
     const String tagNames[TagNameMax]{"", "config", "feedback"};
 
     void *params[MAX_CHILD_PARAMS];
-    std::map<void *, ParamType> paramTypesMap;
+    std::map<void *, int> paramTypesMap;
     std::map<void *, String> paramToNameMap;
     std::map<String, void *> nameToParamMap;
     std::map<void *, uint8_t> paramTagsMap;
@@ -178,8 +178,9 @@ public:
     bool handleSetParam(const String &paramName, var *data, int numData);
 
     void fillSettingsData(JsonObject o);
-    void fillSettingsParam(JsonObject o, const String &pName, void *param);
-    virtual void fillOSCQueryParam(JsonObject o, const String &fullPath, void *param, bool showConfig = true);
+    void fillSettingsParam(JsonObject o, void *param);
+    bool fillOSCQueryParam(JsonObject o, const String &fullPath, void *param, bool showConfig = true);
+    JsonObject createBaseOSCQueryObject(JsonObject o, const String &fullPath, const String& pName, const String& type, bool readOnly);
 
     enum OSCQueryChunkType
     {
