@@ -1,22 +1,26 @@
 #include "UnityIncludes.h"
-#include "BatteryComponent.h"
 
 ImplementSingleton(BatteryComponent);
 
 void BatteryComponent::setupInternal(JsonObject o)
 {
+    setCustomUpdateRate(5, o); // default to 5 seconds
+    setCustomFeedbackRate(.5f, o);
+
     AddIntParamConfig(batteryPin);
     AddIntParamConfig(chargePin);
 #ifndef BATTERY_READ_MILLIVOLTS
     AddIntParamConfig(rawMin);
     AddIntParamConfig(rawMax);
 #endif
-    AddIntParamConfig(feedbackInterval);
+    
     AddFloatParamConfig(lowBatteryThreshold);
 
-    AddFloatParam(batteryLevel);
-    AddFloatParam(voltage);
-    AddBoolParam(charging);
+    AddFloatParamFeedback(batteryLevel);
+    SetParamRange(batteryLevel, 0.0f, 1.0f);
+    AddFloatParamFeedback(voltage);
+    SetParamRange(voltage, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE);
+    AddBoolParamFeedback(charging);
 
     AddIntParamConfig(shutdownChargeNoSignal);      // seconds, 0 = disabled
     AddIntParamConfig(shutdownChargeSignalTimeout); // seconds, 0 = disabled

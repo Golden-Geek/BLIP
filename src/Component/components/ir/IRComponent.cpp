@@ -10,6 +10,8 @@ void IRComponent::setupInternal(JsonObject o)
     AddIntParamConfig(pin1);
     AddIntParamConfig(pin2);
     AddFloatParam(value);
+    AddBoolParamConfig(keepValueOnReboot);
+    setParamConfig(&value, keepValueOnReboot);
 
     prevValue = -1;
 }
@@ -37,6 +39,8 @@ void IRComponent::paramValueChangedInternal(void *param)
         setupPins();
     if (param == &value)
         updatePins();
+    if (param == &keepValueOnReboot)
+        setParamConfig(&value, keepValueOnReboot);
 }
 
 void IRComponent::setupPins()
@@ -76,8 +80,10 @@ void IRComponent::updatePins()
         return;
 
     uint32_t v = value * 1024;
-    if (curPin1 > 0 && ledCAttached1)ledcWrite(curPin1, v);
-    if (curPin2 > 0 && ledCAttached2)ledcWrite(curPin2, v);
+    if (curPin1 > 0 && ledCAttached1)
+        ledcWrite(curPin1, v);
+    if (curPin2 > 0 && ledCAttached2)
+        ledcWrite(curPin2, v);
 
     prevValue = value;
 }

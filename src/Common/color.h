@@ -122,9 +122,61 @@ struct Color
 #endif
     }
 
+    Color(int r, int g, int b, int a = maxValue())
+        : a(constrain(a, 0, maxValue())),
+          r(constrain(r, 0, maxValue())),
+          g(constrain(g, 0, maxValue())),
+          b(constrain(b, 0, maxValue()))
+    {
+    }
+
+    Color(float r, float g, float b, float a = 1.0f)
+        : a(constrain(a * maxValue(), 0, maxValue())),
+          r(constrain(r * maxValue(), 0, maxValue())),
+          g(constrain(g * maxValue(), 0, maxValue())),
+          b(constrain(b * maxValue(), 0, maxValue()))
+    {
+    }
+    
     Color(ColorType r, ColorType g, ColorType b, ColorType a = maxValue())
         : a(a), r(r), g(g), b(b)
     {
+    }
+
+    Color(const String &hexString)
+    {
+        String s = hexString;
+        if (s.startsWith("#"))
+            s = s.substring(1);
+#ifdef USE_16BIT_COLOR
+        if (s.length() == 16)
+        {
+            r = (ColorType)strtoul(s.substring(0, 4).c_str(), nullptr, 16);
+            g = (ColorType)strtoul(s.substring(4, 8).c_str(), nullptr, 16);
+            b = (ColorType)strtoul(s.substring(8, 12).c_str(), nullptr, 16);
+            a = (ColorType)strtoul(s.substring(12, 16).c_str(), nullptr, 16);
+        }
+        else
+        {
+            r = g = b = a = 0;
+        }
+#else
+        if (s.length() == 8)
+        {
+            value = (uint32_t)strtoul(s.c_str(), nullptr, 16);
+        }
+        else if (s.length() == 6)
+        {
+            r = (ColorType)strtoul(s.substring(0, 2).c_str(), nullptr, 16);
+            g = (ColorType)strtoul(s.substring(2, 4).c_str(), nullptr, 16);
+            b = (ColorType)strtoul(s.substring(4, 6).c_str(), nullptr, 16);
+            a = maxValue();
+        }
+        else
+        {
+            value = 0;
+        }
+#endif
     }
 
     Color clone() { return Color(r, g, b, a); }
@@ -162,9 +214,25 @@ struct Color
         return c;
     }
 
+    float getFloatRed() const { return r / (float)maxValue(); }
+    float getFloatGreen() const { return g / (float)maxValue(); }
+    float getFloatBlue() const { return b / (float)maxValue(); }
+    float getFloatAlpha() const { return a / (float)maxValue(); }
+
     String toString() const
     {
         return "[" + String(r) + "," + String(g) + "," + String(b) + "," + String(a) + "]";
+    }
+
+    String toHexString(bool hashtag = true) const
+    {
+        char buf[9];
+#ifdef USE_16BIT_COLOR
+        snprintf(buf, sizeof(buf), "%04X%04X%04X%04X", r, g, b, a);
+#else
+        snprintf(buf, sizeof(buf), "%02X%02X%02X%02X", r, g, b, a);
+#endif
+        return (hashtag ? "#" : "") + String(buf);
     }
 
 private:

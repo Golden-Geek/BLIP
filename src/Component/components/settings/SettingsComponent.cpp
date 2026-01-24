@@ -45,7 +45,7 @@ void SettingsComponent::saveSettings()
 {
     Settings::settings.clear();
     JsonObject o = Settings::settings.to<JsonObject>();
-    RootComponent::instance->fillSettingsData(o, true);
+    RootComponent::instance->fillSettingsData(o);
     Settings::saveSettings();
     NDBG("Settings saved");
 }

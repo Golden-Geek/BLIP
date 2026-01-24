@@ -4,7 +4,7 @@ ImplementSingleton(DMXReceiverComponent);
 
 void DMXReceiverComponent::setupInternal(JsonObject o)
 {
-    AddIntParam(receiveRate);
+    setCustomUpdateRate(60, o);
 
 #ifdef USE_ARTNET
     artnetIsInit = false;
@@ -41,26 +41,16 @@ bool DMXReceiverComponent::initInternal()
 void DMXReceiverComponent::updateInternal()
 {
 #ifdef USE_ARTNET
-
-#if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
-    if (ESPNowComponent::instance->enabled)
-        return;
-#endif
-
     if (!artnetIsInit)
         return;
 
-    long curTime = millis();
-    if (curTime > lastReceiveTime + (1000 / max(receiveRate, 1)))
+    int r = -1;
+    while (r != 0)
     {
-        lastReceiveTime = curTime;
-        int r = -1;
-        while (r != 0)
-        {
-            r = artnet.read();
-            // DBG("Receiving artnet, returned " + String(r));
-        }
+        r = artnet.read();
+        // DBG("Receiving artnet, returned " + String(r));
     }
+
 #endif
 }
 

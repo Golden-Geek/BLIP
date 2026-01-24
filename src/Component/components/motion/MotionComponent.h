@@ -49,7 +49,6 @@ DeclareFloatParam(angleOffset, 0);
 DeclareFloatParam(projectedAngle, 0);
 DeclareFloatParam(xOnCalibration, 0);
 
-
 // Spin Compute
 DeclareIntParam(spinCount, 0);
 DeclareFloatParam(spin, 0);
@@ -131,82 +130,81 @@ DeclareComponentEventNames("orientation", "accel", "gyro", "linearAccel", "throw
 // CheckAndSendParamFeedback(projectedAngle);
 // CheckFeedbackParamInternalEnd;
 
-GetEnumStringStart
-    GetEnumStringParam(sendLevel, sendLevelOptions, SendLevel);
-GetEnumStringParam(throwState, throwStateOptions, 6);
-GetEnumStringEnd;
+// GetEnumStringStart
+//     GetEnumStringParam(sendLevel, sendLevelOptions, SendLevel);
+// GetEnumStringParam(throwState, throwStateOptions, 6);
+// GetEnumStringEnd;
 
+// HandleSetParamInternalStart
+//     CheckAndSetEnumParam(sendLevel, sendLevelOptions, 3);
+// CheckAndSetParam(orientationSendRate);
+// #ifdef IMU_TYPE_BNO055
+// CheckAndSetParam(sdaPin);
+// CheckAndSetParam(sclPin);
+// CheckAndSetParam(intPin);
+// #endif
+// CheckAndSetParam(orientationXOffset);
+// CheckAndSetParam(flatThresholds);
+// CheckAndSetParam(accelThresholds);
+// CheckAndSetParam(diffThreshold);
+// CheckAndSetParam(semiFlatThreshold);
+// CheckAndSetParam(loftieThreshold);
+// CheckAndSetParam(singleThreshold);
+// CheckAndSetParam(angleOffset);
+// CheckAndSetParam(xOnCalibration);
+// HandleSetParamInternalEnd;
 
-HandleSetParamInternalStart
-    CheckAndSetEnumParam(sendLevel, sendLevelOptions, 3);
-CheckAndSetParam(orientationSendRate);
-#ifdef IMU_TYPE_BNO055
-CheckAndSetParam(sdaPin);
-CheckAndSetParam(sclPin);
-CheckAndSetParam(intPin);
-#endif
-CheckAndSetParam(orientationXOffset);
-CheckAndSetParam(flatThresholds);
-CheckAndSetParam(accelThresholds);
-CheckAndSetParam(diffThreshold);
-CheckAndSetParam(semiFlatThreshold);
-CheckAndSetParam(loftieThreshold);
-CheckAndSetParam(singleThreshold);
-CheckAndSetParam(angleOffset);
-CheckAndSetParam(xOnCalibration);
-HandleSetParamInternalEnd;
+// CheckFeedbackParamInternalStart;
+// CheckAndSendParamFeedback(connected);
+// CheckFeedbackParamInternalEnd;
 
-CheckFeedbackParamInternalStart;
-CheckAndSendParamFeedback(connected);
-CheckFeedbackParamInternalEnd;
+// FillSettingsInternalStart
+//     FillSettingsParam(sendLevel);
+// FillSettingsParam(orientationSendRate);
+// #ifdef IMU_TYPE_BNO055
+// FillSettingsParam(sdaPin);
+// FillSettingsParam(sclPin);
+// FillSettingsParam(intPin);
+// #endif
+// FillSettingsParam(orientationXOffset);
+// FillSettingsParam2(flatThresholds);
+// FillSettingsParam3(accelThresholds);
+// FillSettingsParam(diffThreshold);
+// FillSettingsParam(semiFlatThreshold);
+// FillSettingsParam(loftieThreshold);
+// FillSettingsParam(singleThreshold);
+// FillSettingsParam(angleOffset);
+// FillSettingsParam(xOnCalibration);
+// FillSettingsInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(sendLevel);
-FillSettingsParam(orientationSendRate);
-#ifdef IMU_TYPE_BNO055
-FillSettingsParam(sdaPin);
-FillSettingsParam(sclPin);
-FillSettingsParam(intPin);
-#endif
-FillSettingsParam(orientationXOffset);
-FillSettingsParam2(flatThresholds);
-FillSettingsParam3(accelThresholds);
-FillSettingsParam(diffThreshold);
-FillSettingsParam(semiFlatThreshold);
-FillSettingsParam(loftieThreshold);
-FillSettingsParam(singleThreshold);
-FillSettingsParam(angleOffset);
-FillSettingsParam(xOnCalibration);
-FillSettingsInternalEnd;
+// FillOSCQueryInternalStart
+//     FillOSCQueryBoolParamReadOnly(connected);
+// FillOSCQueryEnumParam(sendLevel, sendLevelOptions, 3);
+// FillOSCQueryIntParam(orientationSendRate);
+// #ifdef IMU_TYPE_BNO055
+// FillOSCQueryIntParam(sdaPin);
+// FillOSCQueryIntParam(sclPin);
+// FillOSCQueryIntParam(intPin);
+// #endif
+// FillOSCQueryP3DRangeParamReadOnly(orientation, -180, 180, -90, 90, -180, 180);
+// FillOSCQueryP3DParamReadOnly(accel);
+// FillOSCQueryP3DParamReadOnly(gyro);
+// FillOSCQueryP3DParamReadOnly(linearAccel);
+// FillOSCQueryFloatParam(orientationXOffset);
+// FillOSCQueryEnumParamReadOnly(throwState, throwStateOptions, 6);
+// FillOSCQueryFloatParamReadOnly(activity);
+// FillOSCQueryP2DParam(flatThresholds);
+// FillOSCQueryP3DParam(accelThresholds);
+// FillOSCQueryFloatParam(diffThreshold);
+// FillOSCQueryFloatParam(semiFlatThreshold);
+// FillOSCQueryFloatParam(loftieThreshold);
+// FillOSCQueryFloatParam(singleThreshold);
+// FillOSCQueryFloatParam(angleOffset);
+// FillOSCQueryFloatParamReadOnly(projectedAngle);
+// FillOSCQueryFloatParam(xOnCalibration);
+// FillOSCQueryIntParamReadOnly(spinCount);
+// FillOSCQueryFloatParamReadOnly(spin);
 
-FillOSCQueryInternalStart
-    FillOSCQueryBoolParamReadOnly(connected);
-FillOSCQueryEnumParam(sendLevel, sendLevelOptions, 3);
-FillOSCQueryIntParam(orientationSendRate);
-#ifdef IMU_TYPE_BNO055
-FillOSCQueryIntParam(sdaPin);
-FillOSCQueryIntParam(sclPin);
-FillOSCQueryIntParam(intPin);
-#endif
-FillOSCQueryP3DRangeParamReadOnly(orientation, -180, 180, -90, 90, -180, 180);
-FillOSCQueryP3DParamReadOnly(accel);
-FillOSCQueryP3DParamReadOnly(gyro);
-FillOSCQueryP3DParamReadOnly(linearAccel);
-FillOSCQueryFloatParam(orientationXOffset);
-FillOSCQueryEnumParamReadOnly(throwState, throwStateOptions, 6);
-FillOSCQueryFloatParamReadOnly(activity);
-FillOSCQueryP2DParam(flatThresholds);
-FillOSCQueryP3DParam(accelThresholds);
-FillOSCQueryFloatParam(diffThreshold);
-FillOSCQueryFloatParam(semiFlatThreshold);
-FillOSCQueryFloatParam(loftieThreshold);
-FillOSCQueryFloatParam(singleThreshold);
-FillOSCQueryFloatParam(angleOffset);
-FillOSCQueryFloatParamReadOnly(projectedAngle);
-FillOSCQueryFloatParam(xOnCalibration);
-FillOSCQueryIntParamReadOnly(spinCount);
-FillOSCQueryFloatParamReadOnly(spin);
-
-FillOSCQueryInternalEnd
+// FillOSCQueryInternalEnd
 
     EndDeclareComponent

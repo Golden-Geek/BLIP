@@ -18,19 +18,19 @@ void clearInternal() override;
 void paramValueChangedInternal(void *param) override;
 
 
-   HandleSetParamInternalStart
-        CheckAndSetParam(pin);
-    CheckAndSetParam(position);
-    HandleSetParamInternalEnd;
+//    HandleSetParamInternalStart
+//         CheckAndSetParam(pin);
+//     CheckAndSetParam(position);
+//     HandleSetParamInternalEnd;
 
-    FillSettingsInternalStart
-        FillSettingsParam(pin);
-    FillSettingsParam(position);
-    FillSettingsInternalEnd
+//     FillSettingsInternalStart
+//         FillSettingsParam(pin);
+//     FillSettingsParam(position);
+//     FillSettingsInternalEnd
 
-        FillOSCQueryInternalStart
-            FillOSCQueryIntParam(pin);
-    FillOSCQueryFloatParam(position);
-    FillOSCQueryInternalEnd
+//         FillOSCQueryInternalStart
+//             FillOSCQueryIntParam(pin);
+//     FillOSCQueryFloatParam(position);
+//     FillOSCQueryInternalEnd
 
 EndDeclareComponent

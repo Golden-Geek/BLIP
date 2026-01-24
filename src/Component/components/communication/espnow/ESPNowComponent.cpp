@@ -22,12 +22,6 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddBoolParam(wakeUpMode);
     AddBoolParamConfig(routeAll);
     AddBoolParamConfig(acceptCommands);
-
-    for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
-    {
-        AddStringParamConfig(remoteMacs[i]);
-    }
-
 #else
     AddBoolParamConfig(autoPairing);
     AddBoolParamConfig(pairOnAnyData);

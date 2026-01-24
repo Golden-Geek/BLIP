@@ -74,19 +74,19 @@ void sendBye(String type);
 DeclareComponentEventTypes(UploadStart, Uploading, UploadDone, UploadCanceled);
 DeclareComponentEventNames("UploadStart", "Uploading", "UploadDone", "UploadCanceled");
 
-HandleSetParamInternalStart
-    CheckAndSetParam(sendFeedback);
-    CheckAndSetParam(sendDebugLogs);
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+//     CheckAndSetParam(sendFeedback);
+//     CheckAndSetParam(sendDebugLogs);
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(sendFeedback);
-    FillSettingsParam(sendDebugLogs);
-FillSettingsInternalEnd;
+// FillSettingsInternalStart
+//     FillSettingsParam(sendFeedback);
+//     FillSettingsParam(sendDebugLogs);
+// FillSettingsInternalEnd;
 
-FillOSCQueryInternalStart
-    FillOSCQueryBoolParam(sendFeedback);
-    FillOSCQueryBoolParam(sendDebugLogs);
-FillOSCQueryInternalEnd;
+// FillOSCQueryInternalStart
+//     FillOSCQueryBoolParam(sendFeedback);
+//     FillOSCQueryBoolParam(sendDebugLogs);
+// FillOSCQueryInternalEnd;
 
 EndDeclareComponent

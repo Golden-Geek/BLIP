@@ -152,6 +152,14 @@ void RootComponent::setupInternal(JsonObject)
 #ifdef USE_SEQUENCE
     AddOwnedComponent(&sequence);
 #endif
+
+    AddFunctionTrigger(shutdown);
+    AddFunctionTrigger(restart);
+    AddFunctionTrigger(standby);
+#if defined USE_WIFI && defined USE_ESPNOW
+    AddFunctionTrigger(switchToWifi);
+    AddFunctionTrigger(switchToESPNow);
+#endif
 }
 
 void RootComponent::updateInternal()

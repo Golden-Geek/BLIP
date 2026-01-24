@@ -5,8 +5,6 @@
 
 DeclareComponentSingleton(DMXReceiver, "dmxReceiver", ESPNowDerive)
 
-    DeclareIntParam(receiveRate, 60);
-float lastReceiveTime = 0;
 
 #ifdef USE_ARTNET
 bool artnetIsInit;
@@ -44,22 +42,22 @@ void registerDMXListener(DMXListener *listener);
 void unregisterDMXListener(DMXListener *listener);
 void dispatchDMXData(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len);
 
-HandleSetParamInternalStart
-#if defined USE_DMX || defined USE_ARTNET
-    CheckAndSetParam(receiveRate);
-#endif
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+// #if defined USE_DMX || defined USE_ARTNET
+//     CheckAndSetParam(receiveRate);
+// #endif
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-#if defined USE_DMX || defined USE_ARTNET
-    FillSettingsParam(receiveRate);
-#endif
-FillSettingsInternalEnd;
+// FillSettingsInternalStart
+// #if defined USE_DMX || defined USE_ARTNET
+//     FillSettingsParam(receiveRate);
+// #endif
+// FillSettingsInternalEnd;
 
-FillOSCQueryInternalStart
-#if defined USE_DMX || defined USE_ARTNET
-    FillOSCQueryIntParam(receiveRate);
-#endif
-FillOSCQueryInternalEnd;
+// FillOSCQueryInternalStart
+// #if defined USE_DMX || defined USE_ARTNET
+//     FillOSCQueryIntParam(receiveRate);
+// #endif
+// FillOSCQueryInternalEnd;
 
 EndDeclareComponent

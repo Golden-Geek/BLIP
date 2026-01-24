@@ -84,27 +84,26 @@ void MotionComponent::updateInternal()
     long curTime = millis();
     int orientationSendMS = 1000 / orientationSendRate;
 
-    if (curTime > timeSinceOrientationLastSent + orientationSendMS)
-    {
-        if (sendLevel >= 1)
-        {
-            SendMultiParamFeedback(orientation);
 
-            if (sendLevel >= 2)
-            {
-                SendMultiParamFeedback(accel);
-                SendMultiParamFeedback(gyro);
-                SendMultiParamFeedback(linearAccel);
-                SendParamFeedback(projectedAngle);
+    // REFACTOR : This will need to set feedback on/off on sendLevel change
+    // if (curTime > timeSinceOrientationLastSent + orientationSendMS)
+    // {
+    //     if (sendLevel >= 1)
+    //     {
+    //         SendMultiParamFeedback(orientation);
 
-                // sendEvent(ActivityUpdate);
-                // sendEvent(ProjectedAngleUpdate);
-                // sendEvent(Gravity, gravity, 3);
-            }
-        }
+    //         if (sendLevel >= 2)
+    //         {
+    //             SendMultiParamFeedback(accel);
+    //             SendMultiParamFeedback(gyro);
+    //             SendMultiParamFeedback(linearAccel);
+    //             SendParamFeedback(projectedAngle);
 
-        timeSinceOrientationLastSent = curTime;
-    }
+    //         }
+    //     }
+
+    //     timeSinceOrientationLastSent = curTime;
+    // }
 
     imuLock = false;
 }

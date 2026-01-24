@@ -39,38 +39,38 @@ void clearSettings();
 
 String getDeviceID() const;
 
-HandleSetParamInternalStart
-    CheckTrigger(saveSettings);
-CheckTrigger(clearSettings);
-CheckAndSetParam(deviceName);
-CheckAndSetParam(propID);
-#ifdef USE_POWER
-CheckAndSetParam(wakeUpButton);
-CheckAndSetParam(wakeUpState);
-#endif
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+//     CheckTrigger(saveSettings);
+// CheckTrigger(clearSettings);
+// CheckAndSetParam(deviceName);
+// CheckAndSetParam(propID);
+// #ifdef USE_POWER
+// CheckAndSetParam(wakeUpButton);
+// CheckAndSetParam(wakeUpState);
+// #endif
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(deviceName);
-FillSettingsParam(propID);
-#ifdef USE_POWER
-FillSettingsParam(wakeUpButton);
-FillSettingsParam(wakeUpState);
-#endif
-FillSettingsInternalEnd
+// FillSettingsInternalStart
+//     FillSettingsParam(deviceName);
+// FillSettingsParam(propID);
+// #ifdef USE_POWER
+// FillSettingsParam(wakeUpButton);
+// FillSettingsParam(wakeUpState);
+// #endif
+// FillSettingsInternalEnd
 
-    FillOSCQueryInternalStart
-        FillOSCQueryTrigger(saveSettings);
-FillOSCQueryTrigger(clearSettings);
-FillOSCQueryIntParam(propID);
-FillOSCQueryStringParam(deviceName);
-FillOSCQueryStringParamReadOnly(deviceType);
-FillOSCQueryStringParamReadOnly(firmwareVersion);
-#ifdef USE_POWER
-FillOSCQueryIntParam(wakeUpButton);
-FillOSCQueryBoolParam(wakeUpState);
-#endif
-FillOSCQueryInternalEnd
+//     FillOSCQueryInternalStart
+//         FillOSCQueryTrigger(saveSettings);
+// FillOSCQueryTrigger(clearSettings);
+// FillOSCQueryIntParam(propID);
+// FillOSCQueryStringParam(deviceName);
+// FillOSCQueryStringParamReadOnly(deviceType);
+// FillOSCQueryStringParamReadOnly(firmwareVersion);
+// #ifdef USE_POWER
+// FillOSCQueryIntParam(wakeUpButton);
+// FillOSCQueryBoolParam(wakeUpState);
+// #endif
+// FillOSCQueryInternalEnd
 
     EndDeclareComponent
 

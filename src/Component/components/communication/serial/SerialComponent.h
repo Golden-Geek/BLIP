@@ -18,16 +18,16 @@ void send(const String &message);
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");
 
-HandleSetParamInternalStart
-    CheckAndSetParam(sendFeedback);
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+//     CheckAndSetParam(sendFeedback);
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(sendFeedback);
-FillSettingsInternalEnd;
+// FillSettingsInternalStart
+//     FillSettingsParam(sendFeedback);
+// FillSettingsInternalEnd;
 
-FillOSCQueryInternalStart
-    FillOSCQueryBoolParam(sendFeedback);
-FillOSCQueryInternalEnd
+// FillOSCQueryInternalStart
+//     FillOSCQueryBoolParam(sendFeedback);
+// FillOSCQueryInternalEnd
 
     EndDeclareComponent

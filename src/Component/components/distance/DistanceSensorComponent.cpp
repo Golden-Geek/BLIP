@@ -16,7 +16,7 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 
     AddIntParamConfig(distanceMax);
     AddIntParamConfig(debounceFrame);
-    AddFloatParam(value);
+    AddFloatParamFeedback(value);
     AddIntParamConfig(sendRate);
 
     for (int i = 0; i < DEBOUNCE_MAX_FRAMES; i++)

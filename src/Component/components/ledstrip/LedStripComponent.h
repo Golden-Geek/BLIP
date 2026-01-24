@@ -146,49 +146,49 @@ public:
 
     int ledMap(int index) const;
 
-    HandleSetParamInternalStart
+    // HandleSetParamInternalStart
 
-        CheckAndSetParam(count);
-    CheckAndSetParam(dataPin);
-    CheckAndSetParam(clkPin);
-    CheckAndSetParam(enPin);
-    CheckAndSetParam(brightness);
-    CheckAndSetParam(invertStrip);
-    CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
-    CheckAndSetParam(maxPower);
-    CheckAndSetParam(colorCorrection);
-    HandleSetParamInternalEnd;
+    //     CheckAndSetParam(count);
+    // CheckAndSetParam(dataPin);
+    // CheckAndSetParam(clkPin);
+    // CheckAndSetParam(enPin);
+    // CheckAndSetParam(brightness);
+    // CheckAndSetParam(invertStrip);
+    // CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
+    // CheckAndSetParam(maxPower);
+    // CheckAndSetParam(colorCorrection);
+    // HandleSetParamInternalEnd;
 
-    FillSettingsInternalStart
-        FillSettingsParam(count);
-    FillSettingsParam(dataPin);
-    FillSettingsParam(clkPin);
-    FillSettingsParam(enPin);
-    FillSettingsParam(brightness);
-    FillSettingsParam(invertStrip);
-    FillSettingsParam(maxPower);
-    FillSettingsParam(multiLedMode);
-    FillSettingsParam(colorCorrection);
-    FillSettingsInternalEnd
+    // FillSettingsInternalStart
+    //     FillSettingsParam(count);
+    // FillSettingsParam(dataPin);
+    // FillSettingsParam(clkPin);
+    // FillSettingsParam(enPin);
+    // FillSettingsParam(brightness);
+    // FillSettingsParam(invertStrip);
+    // FillSettingsParam(maxPower);
+    // FillSettingsParam(multiLedMode);
+    // FillSettingsParam(colorCorrection);
+    // FillSettingsInternalEnd
 
-        FillOSCQueryInternalStart
-            FillOSCQueryIntParam(count);
-    FillOSCQueryIntParam(dataPin);
-    FillOSCQueryIntParam(clkPin);
-    FillOSCQueryIntParam(enPin);
-    FillOSCQueryRangeParam(brightness, 0, 2);
-    FillOSCQueryBoolParam(invertStrip);
-    FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
-    FillOSCQueryIntParam(maxPower);
-    FillOSCQueryBoolParam(colorCorrection);
-    FillOSCQueryInternalEnd
+    //     FillOSCQueryInternalStart
+    //         FillOSCQueryIntParam(count);
+    // FillOSCQueryIntParam(dataPin);
+    // FillOSCQueryIntParam(clkPin);
+    // FillOSCQueryIntParam(enPin);
+    // FillOSCQueryRangeParam(brightness, 0, 2);
+    // FillOSCQueryBoolParam(invertStrip);
+    // FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
+    // FillOSCQueryIntParam(maxPower);
+    // FillOSCQueryBoolParam(colorCorrection);
+    // FillOSCQueryInternalEnd
 };
 
 DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 
 #ifdef USE_SCRIPT
 
-    // LinkScriptFunctionsStart
+// LinkScriptFunctionsStart
 //     LinkScriptFunction(LedStripManagerComponent, clear, v, );
 // LinkScriptFunction(LedStripManagerComponent, fillAll, v, i);
 // LinkScriptFunction(LedStripManagerComponent, fillRange, v, iff);
@@ -231,7 +231,7 @@ DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 // DeclareScriptFunctionVoid3(LedStripManagerComponent, setBlendMode, uint32_t, uint32_t, uint32_t) { return items[0]->userLayers[(int)arg2]->setBlendMode((LedStripLayer::BlendMode)arg3); }
 #endif
 
-void shutdown()
+    void shutdown()
 {
     for (int i = 0; i < count; i++)
     {

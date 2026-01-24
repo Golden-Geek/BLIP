@@ -81,55 +81,55 @@ void paramValueChangedInternal(void *param) override;
 
 void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 
-HandleSetParamInternalStart
-    CheckAndSetParam(rPin);
-CheckAndSetParam(gPin);
-CheckAndSetParam(bPin);
-CheckAndSetParam(wPin);
-CheckAndSetParam(pwmResolution);
-CheckAndSetParam(pwmFrequency);
-CheckAndSetParam(useAlpha);
-CheckAndSetParam(rgbwMode);
-CheckAndSetParam(color);
-#ifdef PWMLED_USE_STREAMING
-CheckAndSetParam(universe);
-CheckAndSetParam(ledIndex);
-CheckAndSetParam(use16bit);
-#endif
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+//     CheckAndSetParam(rPin);
+// CheckAndSetParam(gPin);
+// CheckAndSetParam(bPin);
+// CheckAndSetParam(wPin);
+// CheckAndSetParam(pwmResolution);
+// CheckAndSetParam(pwmFrequency);
+// CheckAndSetParam(useAlpha);
+// CheckAndSetParam(rgbwMode);
+// CheckAndSetParam(color);
+// #ifdef PWMLED_USE_STREAMING
+// CheckAndSetParam(universe);
+// CheckAndSetParam(ledIndex);
+// CheckAndSetParam(use16bit);
+// #endif
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(rPin);
-FillSettingsParam(gPin);
-FillSettingsParam(bPin);
-FillSettingsParam(wPin);
-FillSettingsParam(pwmResolution);
-FillSettingsParam(pwmFrequency);
-FillSettingsParam(useAlpha);
-FillSettingsParam(rgbwMode);
-#ifdef PWMLED_USE_STREAMING
-FillSettingsParam(universe);
-FillSettingsParam(ledIndex);
-FillSettingsParam(use16bit);
-#endif
-FillSettingsInternalEnd
+// FillSettingsInternalStart
+//     FillSettingsParam(rPin);
+// FillSettingsParam(gPin);
+// FillSettingsParam(bPin);
+// FillSettingsParam(wPin);
+// FillSettingsParam(pwmResolution);
+// FillSettingsParam(pwmFrequency);
+// FillSettingsParam(useAlpha);
+// FillSettingsParam(rgbwMode);
+// #ifdef PWMLED_USE_STREAMING
+// FillSettingsParam(universe);
+// FillSettingsParam(ledIndex);
+// FillSettingsParam(use16bit);
+// #endif
+// FillSettingsInternalEnd
 
-    FillOSCQueryInternalStart
-        FillOSCQueryIntParam(rPin);
-FillOSCQueryIntParam(gPin);
-FillOSCQueryIntParam(bPin);
-FillOSCQueryIntParam(wPin);
-FillOSCQueryIntParam(pwmResolution);
-FillOSCQueryIntParam(pwmFrequency);
-FillOSCQueryBoolParam(useAlpha);
-FillOSCQueryBoolParam(rgbwMode);
-FillOSCQueryColorParam(color);
-#ifdef PWMLED_USE_STREAMING
-FillOSCQueryIntParam(universe);
-FillOSCQueryIntParam(ledIndex);
-FillOSCQueryBoolParam(use16bit);
-#endif
-FillOSCQueryInternalEnd
+//     FillOSCQueryInternalStart
+//         FillOSCQueryIntParam(rPin);
+// FillOSCQueryIntParam(gPin);
+// FillOSCQueryIntParam(bPin);
+// FillOSCQueryIntParam(wPin);
+// FillOSCQueryIntParam(pwmResolution);
+// FillOSCQueryIntParam(pwmFrequency);
+// FillOSCQueryBoolParam(useAlpha);
+// FillOSCQueryBoolParam(rgbwMode);
+// FillOSCQueryColorParam(color);
+// #ifdef PWMLED_USE_STREAMING
+// FillOSCQueryIntParam(universe);
+// FillOSCQueryIntParam(ledIndex);
+// FillOSCQueryBoolParam(use16bit);
+// #endif
+// FillOSCQueryInternalEnd
 
     EndDeclareComponent;
 

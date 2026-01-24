@@ -14,6 +14,7 @@ public:
                                                                          exposeEnabled(true),
                                                                          saveEnabled(true),
                                                                          lastUpdateTime(0),
+                                                                         lastFeedbackTime(0),
                                                                          parentComponent(NULL),
                                                                          numComponents(0),
                                                                          numParams(0)
@@ -31,9 +32,11 @@ public:
     bool saveEnabled;
 
     long lastUpdateTime;
+    long lastFeedbackTime;
 
     DeclareBoolParam(enabled, true);
-    DeclareIntParam(updateRate);
+    DeclareIntParam(updateRate, 0);
+    DeclareFloatParam(feedbackRate, 0);
 
     Component *parentComponent;
 
@@ -59,17 +62,34 @@ public:
 
     enum ParamTag
     {
-        TagNone,
-        TagConfig,
+        TagNone = 0,
+        TagConfig = 1,
+        TagFeedback = 2,
         TagNameMax
     };
 
+    struct ParamRange
+    {
+        float vMin = 0;
+        float vMax = 0;
+        float vMin2 = 0;
+        float vMax2 = 0;
+        float vMin3 = 0;
+        float vMax3 = 0;
+    };
+
     const String typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r", "i"};
-    const String tagNames[TagNameMax]{"", "config"};
+    const String tagNames[TagNameMax]{"", "config", "feedback"};
 
     void *params[MAX_CHILD_PARAMS];
-    ParamType paramTypes[MAX_CHILD_PARAMS];
-    ParamTag paramTags[MAX_CHILD_PARAMS];
+    std::map<void *, ParamType> paramTypesMap;
+    std::map<void *, String> paramToNameMap;
+    std::map<String, void *> nameToParamMap;
+    std::map<void *, uint8_t> paramTagsMap;
+    std::map<void *, String *> enumOptionsMap;
+    std::map<void *, int> enumOptionsCountMap;
+    std::map<void *, ParamRange> paramRangesMap;
+    std::map<String, std::function<void(void)>> triggersMap;
 
     uint8_t numParams;
 
@@ -98,6 +118,14 @@ public:
         AddIntParamConfig(updateRate);
     }
 
+    void setCustomFeedbackRate(float defaultRate, JsonObject o)
+    {
+        if (feedbackRate < 0)
+            return;
+        feedbackRate = defaultRate;
+        AddFloatParamConfig(feedbackRate);
+    }
+
     void sendEvent(uint8_t type, var *data = NULL, int numData = 0)
     {
         EventBroadcaster::sendEvent(ComponentEvent(this, type, data, numData));
@@ -110,12 +138,29 @@ public:
 
     Component *getComponentWithName(const String &name);
 
-    void addParam(void *param, ParamType type, ParamTag tag = TagNone);
-    void setParam(void *param, var *value, int nmData);
+    void addParam(void *param, ParamType type, const String &name, uint8_t tags = TagNone);
+    void setParamRange(void *param, ParamRange range);
+    void setEnumOptions(void *param, String *enumOptions, int numOptions);
+    void setParam(void *param, var *value, int numData);
     ParamType getParamType(void *param) const;
-    ParamTag getParamTag(void *param) const;
+    bool checkParamTag(void *param, ParamTag tag) const;
     String getParamString(void *param) const;
 
+    void addTrigger(const String &name, std::function<void(void)> func);
+
+     void setParamTag(void *param, ParamTag tag, bool enable)
+    {
+        uint8_t currentTags = paramTagsMap[param];
+        if (enable)
+            currentTags |= tag;
+        else
+            currentTags &= ~tag;
+        paramTagsMap[param] = currentTags;
+    }
+
+    void setParamConfig(void *param, bool config) { setParamTag(param, TagConfig, config); }
+    void setParamFeedback(void *param, bool feedback) { setParamTag(param, TagFeedback, feedback); }
+    
     void setEnabled(bool v) { SetParam(enabled, v); }
     virtual void onEnabledChanged() {}
 
@@ -123,8 +168,6 @@ public:
     virtual void paramValueChangedInternal(void *param) {}
     virtual void childParamValueChanged(Component *caller, Component *comp, void *param);
     virtual bool checkParamsFeedback(void *param);
-    virtual bool checkParamsFeedbackInternal(void *param) { return false; }
-    // virtual void sendParamFeedback(void* param);
 
     virtual String getEnumString(void *param) const { return ""; }
 
@@ -133,16 +176,10 @@ public:
     bool checkCommand(const String &command, const String &ref, int numData, int expectedData);
 
     bool handleSetParam(const String &paramName, var *data, int numData);
-    virtual bool handleSetParamInternal(const String &paramName, var *data, int numData) { return false; }
 
-    void fillSettingsData(JsonObject o, bool showConfig = true);
-    virtual void fillSettingsParamsInternal(JsonObject o, bool showConfig = true) {}
-
-    // virtual void fillOSCQueryData(JsonObject o, bool includeConfig = true, bool recursive = true);
-    virtual void fillOSCQueryParamsInternal(JsonObject o, const String &fullPath, bool showConfig = true) {}
-    virtual void fillOSCQueryParam(JsonObject o, const String &fullPath, const String &pName, ParamType t, void *param,
-                                   bool showConfig = true, bool readOnly = false, const String *options = nullptr, int numOptions = 0,
-                                   float vMin = 0, float vMax = 0, float vMin2 = 0, float vMax2 = 0, float vMin3 = 0, float vMax3 = 0);
+    void fillSettingsData(JsonObject o);
+    void fillSettingsParam(JsonObject o, const String &pName, void *param);
+    virtual void fillOSCQueryParam(JsonObject o, const String &fullPath, void *param, bool showConfig = true);
 
     enum OSCQueryChunkType
     {

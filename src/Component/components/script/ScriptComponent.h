@@ -1,12 +1,6 @@
 #pragma once
 
-#if defined USE_DMX || defined USE_ARTNET
-#define DMXListenerActualDerive DMXListenerDerive
-#else
-#define DMXListenerActualDerive
-#endif
-
-DeclareComponentSingleton(Script, "script", DMXListenerActualDerive)
+DeclareComponentSingleton(Script, "script", DMXListenerDerive)
 
     Script script;
 DeclareStringParam(scriptAtLaunch, "");
@@ -28,22 +22,22 @@ virtual bool handleCommandInternal(const String &command, var *data, int numData
 DeclareComponentEventTypes(ScriptEvent, ScriptParamFeedback);
 DeclareComponentEventNames("scriptEvent", "scriptParamFeedback");
 
-HandleSetParamInternalStart
-CheckAndSetParam(scriptAtLaunch);
-CheckAndSetParam(universe);
-CheckAndSetParam(startChannel);
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+// CheckAndSetParam(scriptAtLaunch);
+// CheckAndSetParam(universe);
+// CheckAndSetParam(startChannel);
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-FillSettingsParam(scriptAtLaunch);
-FillSettingsParam(universe);
-FillSettingsParam(startChannel);
-FillSettingsInternalEnd;
+// FillSettingsInternalStart
+// FillSettingsParam(scriptAtLaunch);
+// FillSettingsParam(universe);
+// FillSettingsParam(startChannel);
+// FillSettingsInternalEnd;
 
-FillOSCQueryInternalStart
-FillOSCQueryStringParam(scriptAtLaunch);
-FillOSCQueryIntParam(universe);
-FillOSCQueryIntParam(startChannel);
-FillOSCQueryInternalEnd;
+// FillOSCQueryInternalStart
+// FillOSCQueryStringParam(scriptAtLaunch);
+// FillOSCQueryIntParam(universe);
+// FillOSCQueryIntParam(startChannel);
+// FillOSCQueryInternalEnd;
 
 EndDeclareComponent

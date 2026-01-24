@@ -73,10 +73,10 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
 
 #ifdef USE_SERVER
-                if (WebServerComponent::instance->sendFeedback)
+                if (server.sendFeedback)
                 {
 
-                    WebServerComponent::instance->sendParamFeedback(StringHelpers::serialPathToOSC(e.data[0].stringValue()), e.data[1].stringValue(), &e.data[2], e.numData - 2);
+                    server.sendParamFeedback(StringHelpers::serialPathToOSC(e.data[0].stringValue()), e.data[1].stringValue(), &e.data[2], e.numData - 2);
                 }
 #endif
             }
@@ -92,7 +92,7 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 void CommunicationComponent::sendParamFeedback(Component *c, void *param, const String &pName, Component::ParamType pType)
 {
     int numData = 1;
-    var data[3];
+    var data[4];
 
     switch (pType)
     {
@@ -131,6 +131,16 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
     }
     break;
 
+    case Component::ParamType::TypeColor:
+    {
+        numData = 4;
+        data[0] = ((float *)param)[0];
+        data[1] = ((float *)param)[1];
+        data[2] = ((float *)param)[2];
+        data[3] = ((float *)param)[3];
+    }
+    break;
+
     default:
         break;
     }
@@ -163,8 +173,8 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
 
 #ifdef USE_SERVER
     // maybe should find away so calls are not crossed with websocket ?
-    if (WebServerComponent::instance->sendFeedback)
-        WebServerComponent::instance->sendParamFeedback(c, pName, data, numData);
+    if (server.sendFeedback)
+        server.sendParamFeedback(c, pName, data, numData);
 #endif
 }
 
@@ -190,9 +200,9 @@ void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
 #endif
 
 #ifdef USE_SERVER
-    if (WebServerComponent::instance->sendFeedback)
+    if (server.sendFeedback)
     {
-        WebServerComponent::instance->sendParamFeedback(baseAddress, e.getName(), e.data, e.numData);
+        server.sendParamFeedback(baseAddress, e.getName(), e.data, e.numData);
     }
 #endif
 
@@ -235,9 +245,9 @@ void CommunicationComponent::sendDebug(const String &msg, const String &source, 
 #endif
 
 #ifdef USE_SERVER
-    if (WebServerComponent::instance->sendDebugLogs)
+    if (server.sendDebugLogs)
     {
-        WebServerComponent::instance->sendDebugLog(msg, source, type);
+        server.sendDebugLog(msg, source, type);
     }
 #endif
 }

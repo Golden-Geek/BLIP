@@ -93,46 +93,46 @@ DeclareComponentEventTypes(UploadStart, UploadProgress, UploadComplete, UploadCa
 DeclareComponentEventNames("uploadStart", "uploadProgress", "uploadComplete", "uploadCancel", "list", "info");
 
 // Macros for SD card parameter handling...
-HandleSetParamInternalStart
-#ifdef FILES_USE_SPI
-    CheckAndSetParam(sdSCK);
-CheckAndSetParam(sdMiso);
-CheckAndSetParam(sdMosi);
-CheckAndSetParam(sdCS);
-#endif
-#ifdef FILES_TYPE_SD
-CheckAndSetParam(sdEnPin);
-CheckAndSetParam(sdEnVal);
-CheckAndSetParam(sdSpeed);
-#endif
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+// #ifdef FILES_USE_SPI
+//     CheckAndSetParam(sdSCK);
+// CheckAndSetParam(sdMiso);
+// CheckAndSetParam(sdMosi);
+// CheckAndSetParam(sdCS);
+// #endif
+// #ifdef FILES_TYPE_SD
+// CheckAndSetParam(sdEnPin);
+// CheckAndSetParam(sdEnVal);
+// CheckAndSetParam(sdSpeed);
+// #endif
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-#ifdef FILES_USE_SPI
-    FillSettingsParam(sdSCK);
-FillSettingsParam(sdMiso);
-FillSettingsParam(sdMosi);
-FillSettingsParam(sdCS);
-#endif
-#ifdef FILES_TYPE_SD
-FillSettingsParam(sdEnPin);
-FillSettingsParam(sdEnVal);
-FillSettingsParam(sdSpeed);
-#endif
-FillSettingsInternalEnd;
+// FillSettingsInternalStart
+// #ifdef FILES_USE_SPI
+//     FillSettingsParam(sdSCK);
+// FillSettingsParam(sdMiso);
+// FillSettingsParam(sdMosi);
+// FillSettingsParam(sdCS);
+// #endif
+// #ifdef FILES_TYPE_SD
+// FillSettingsParam(sdEnPin);
+// FillSettingsParam(sdEnVal);
+// FillSettingsParam(sdSpeed);
+// #endif
+// FillSettingsInternalEnd;
 
-FillOSCQueryInternalStart
-#ifdef FILES_USE_SPI
-    FillOSCQueryIntParam(sdSCK);
-FillOSCQueryIntParam(sdMiso);
-FillOSCQueryIntParam(sdMosi);
-FillOSCQueryIntParam(sdCS);
-#endif
-#ifdef FILES_TYPE_SD
-FillOSCQueryIntParam(sdEnPin);
-FillOSCQueryBoolParam(sdEnVal);
-FillOSCQueryIntParam(sdSpeed);
-#endif
-FillOSCQueryInternalEnd;
+// FillOSCQueryInternalStart
+// #ifdef FILES_USE_SPI
+//     FillOSCQueryIntParam(sdSCK);
+// FillOSCQueryIntParam(sdMiso);
+// FillOSCQueryIntParam(sdMosi);
+// FillOSCQueryIntParam(sdCS);
+// #endif
+// #ifdef FILES_TYPE_SD
+// FillOSCQueryIntParam(sdEnPin);
+// FillOSCQueryBoolParam(sdEnVal);
+// FillOSCQueryIntParam(sdSpeed);
+// #endif
+// FillOSCQueryInternalEnd;
 
 EndDeclareComponent

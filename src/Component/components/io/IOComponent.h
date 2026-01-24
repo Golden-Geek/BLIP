@@ -54,36 +54,36 @@ void updatePin();
 
 void paramValueChangedInternal(void *param) override;
 
-HandleSetParamInternalStart
-    CheckAndSetParam(pin);
-CheckAndSetEnumParam(mode, modeOptions, PINMODE_MAX);
-CheckAndSetParam(inverted);
-CheckAndSetParam(value);
-HandleSetParamInternalEnd;
+// HandleSetParamInternalStart
+//     CheckAndSetParam(pin);
+// CheckAndSetEnumParam(mode, modeOptions, PINMODE_MAX);
+// CheckAndSetParam(inverted);
+// CheckAndSetParam(value);
+// HandleSetParamInternalEnd;
 
-CheckFeedbackParamInternalStart
-    CheckAndSendParamFeedback(value);
-CheckFeedbackParamInternalEnd;
+// CheckFeedbackParamInternalStart
+//     CheckAndSendParamFeedback(value);
+// CheckFeedbackParamInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(pin);
-FillSettingsParam(mode);
-FillSettingsParam(inverted);
-if (mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
-{
-    FillSettingsParam(value);
-}
-{
-    FillSettingsParam(value);
-}
-FillSettingsInternalEnd
+// FillSettingsInternalStart
+//     FillSettingsParam(pin);
+// FillSettingsParam(mode);
+// FillSettingsParam(inverted);
+// if (mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
+// {
+//     FillSettingsParam(value);
+// }
+// {
+//     FillSettingsParam(value);
+// }
+// FillSettingsInternalEnd
 
-    FillOSCQueryInternalStart
-        FillOSCQueryIntParam(pin);
-FillOSCQueryEnumParam(mode, modeOptions, PINMODE_MAX);
-FillOSCQueryBoolParam(inverted);
-FillOSCQueryRangeParam(value, 0, 1);
-FillOSCQueryInternalEnd
+//     FillOSCQueryInternalStart
+//         FillOSCQueryIntParam(pin);
+// FillOSCQueryEnumParam(mode, modeOptions, PINMODE_MAX);
+// FillOSCQueryBoolParam(inverted);
+// FillOSCQueryRangeParam(value, 0, 1);
+// FillOSCQueryInternalEnd
 
     EndDeclareComponent;
 

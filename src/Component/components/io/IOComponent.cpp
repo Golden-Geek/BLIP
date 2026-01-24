@@ -16,7 +16,7 @@ void IOComponent::setupInternal(JsonObject o)
     AddIntParamConfig(pin);
     AddIntParamConfig(mode);
     AddBoolParamConfig(inverted);
-
+    
     AddFloatParam(value);
 
     lastUpdateTime = millis();
@@ -67,6 +67,9 @@ void IOComponent::setupPin()
     }
 
     curPin = pin;
+
+    bool isInputMode = (mode == D_INPUT || mode == D_INPUT_PULLUP || mode == D_INPUT_PULLDOWN || mode == A_INPUT || mode == TOUCH_INPUT);
+    setParamFeedback(&value, isInputMode);
 
     if (curPin > 0)
     {

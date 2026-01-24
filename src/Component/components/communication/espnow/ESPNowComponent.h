@@ -15,13 +15,13 @@
 #define ESPNOW_DEFAULT_ENABLED false
 #endif
 
-#if (defined USE_DMX || defined USE_ARNET) && defined ESPNOW_BRIDGE
-#define DMXListenerActualDerive DMXListenerDerive
+#ifdef ESPNOW_BRIDGE
+#define BridgeDMXDerive DMXListenerDerive
 #else
-#define DMXListenerActualDerive
+#define BridgeDMXDerive
 #endif
 
-DeclareComponentSingletonEnabled(ESPNow, "espnow", DMXListenerActualDerive, ESPNOW_DEFAULT_ENABLED)
+DeclareComponentSingletonEnabled(ESPNow, "espnow", BridgeDMXDerive, ESPNOW_DEFAULT_ENABLED)
     DeclareBoolParam(pairingMode, false);
 DeclareBoolParam(longRange, false);
 DeclareBoolParam(optimalRange, false);
@@ -125,88 +125,88 @@ bool handleCommandInternal(const String &command, var *data, int numData) overri
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");
 
-HandleSetParamInternalStart
-    CheckAndSetParam(pairingMode);
-CheckAndSetParam(longRange);
-CheckAndSetParam(optimalRange);
-CheckAndSetParam(channel);
+// HandleSetParamInternalStart
+//     CheckAndSetParam(pairingMode);
+// CheckAndSetParam(longRange);
+// CheckAndSetParam(optimalRange);
+// CheckAndSetParam(channel);
 
-#ifdef ESPNOW_BRIDGE
-CheckAndSetParam(broadcastMode);
-CheckAndSetParam(broadcastStartID);
-CheckAndSetParam(broadcastEndID);
-CheckAndSetParam(streamUniverse);
-CheckAndSetParam(streamStartChannel);
-CheckAndSetParam(streamTestMode);
-CheckAndSetParam(testLedCount);
-CheckAndSetParam(streamTestRate);
-CheckAndSetParam(wakeUpMode);
-CheckTrigger(clearDevices);
-CheckAndSetParam(routeAll);
-CheckAndSetParam(acceptCommands);
+// #ifdef ESPNOW_BRIDGE
+// CheckAndSetParam(broadcastMode);
+// CheckAndSetParam(broadcastStartID);
+// CheckAndSetParam(broadcastEndID);
+// CheckAndSetParam(streamUniverse);
+// CheckAndSetParam(streamStartChannel);
+// CheckAndSetParam(streamTestMode);
+// CheckAndSetParam(testLedCount);
+// CheckAndSetParam(streamTestRate);
+// CheckAndSetParam(wakeUpMode);
+// CheckTrigger(clearDevices);
+// CheckAndSetParam(routeAll);
+// CheckAndSetParam(acceptCommands);
 
-for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
-{
-    CheckAndSetParam(remoteMacs[i]);
-}
-#else
-CheckAndSetParam(autoPairing);
-CheckAndSetParam(pairOnAnyData);
-CheckAndSetParam(sendFeedback);
-#endif
-HandleSetParamInternalEnd;
+// for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
+// {
+//     CheckAndSetParam(remoteMacs[i]);
+// }
+// #else
+// CheckAndSetParam(autoPairing);
+// CheckAndSetParam(pairOnAnyData);
+// CheckAndSetParam(sendFeedback);
+// #endif
+// HandleSetParamInternalEnd;
 
-FillSettingsInternalStart
-    FillSettingsParam(longRange);
-FillSettingsParam(optimalRange);
-FillSettingsParam(channel);
+// FillSettingsInternalStart
+//     FillSettingsParam(longRange);
+// FillSettingsParam(optimalRange);
+// FillSettingsParam(channel);
 
-#ifdef ESPNOW_BRIDGE
-FillSettingsParam(broadcastMode);
-FillSettingsParam(broadcastStartID);
-FillSettingsParam(broadcastEndID);
-FillSettingsParam(streamUniverse);
-FillSettingsParam(streamStartChannel);
-FillSettingsParam(testLedCount);
-FillSettingsParam(streamTestRate);
-FillSettingsParam(routeAll);
-FillSettingsParam(acceptCommands);
-for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
-{
-    FillSettingsParam(remoteMacs[i]);
-}
-#else
-FillSettingsParam(autoPairing);
-FillSettingsParam(pairOnAnyData);
-FillSettingsParam(sendFeedback);
-#endif
-FillSettingsInternalEnd;
+// #ifdef ESPNOW_BRIDGE
+// FillSettingsParam(broadcastMode);
+// FillSettingsParam(broadcastStartID);
+// FillSettingsParam(broadcastEndID);
+// FillSettingsParam(streamUniverse);
+// FillSettingsParam(streamStartChannel);
+// FillSettingsParam(testLedCount);
+// FillSettingsParam(streamTestRate);
+// FillSettingsParam(routeAll);
+// FillSettingsParam(acceptCommands);
+// for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
+// {
+//     FillSettingsParam(remoteMacs[i]);
+// }
+// #else
+// FillSettingsParam(autoPairing);
+// FillSettingsParam(pairOnAnyData);
+// FillSettingsParam(sendFeedback);
+// #endif
+// FillSettingsInternalEnd;
 
-FillOSCQueryInternalStart
-    FillOSCQueryBoolParam(pairingMode);
-FillOSCQueryBoolParam(longRange);
-FillOSCQueryBoolParam(optimalRange);
-FillOSCQueryIntParam(channel);
-#ifdef ESPNOW_BRIDGE
-FillOSCQueryBoolParam(wakeUpMode);
-FillOSCQueryBoolParam(broadcastMode);
-FillOSCQueryIntParam(broadcastStartID);
-FillOSCQueryIntParam(broadcastEndID);
-FillOSCQueryIntParam(streamUniverse);
-FillOSCQueryIntParam(streamStartChannel);
-FillOSCQueryBoolParam(streamTestMode);
-FillOSCQueryIntParam(testLedCount);
-FillOSCQueryIntParam(streamTestRate);
-FillOSCQueryTrigger(clearDevices);
-FillOSCQueryBoolParam(routeAll);
-FillOSCQueryBoolParam(acceptCommands);
-#else
-FillOSCQueryBoolParam(autoPairing);
-FillOSCQueryBoolParam(pairOnAnyData);
-FillOSCQueryBoolParam(sendFeedback);
+// FillOSCQueryInternalStart
+//     FillOSCQueryBoolParam(pairingMode);
+// FillOSCQueryBoolParam(longRange);
+// FillOSCQueryBoolParam(optimalRange);
+// FillOSCQueryIntParam(channel);
+// #ifdef ESPNOW_BRIDGE
+// FillOSCQueryBoolParam(wakeUpMode);
+// FillOSCQueryBoolParam(broadcastMode);
+// FillOSCQueryIntParam(broadcastStartID);
+// FillOSCQueryIntParam(broadcastEndID);
+// FillOSCQueryIntParam(streamUniverse);
+// FillOSCQueryIntParam(streamStartChannel);
+// FillOSCQueryBoolParam(streamTestMode);
+// FillOSCQueryIntParam(testLedCount);
+// FillOSCQueryIntParam(streamTestRate);
+// FillOSCQueryTrigger(clearDevices);
+// FillOSCQueryBoolParam(routeAll);
+// FillOSCQueryBoolParam(acceptCommands);
+// #else
+// FillOSCQueryBoolParam(autoPairing);
+// FillOSCQueryBoolParam(pairOnAnyData);
+// FillOSCQueryBoolParam(sendFeedback);
 
-#endif
+// #endif
 
-FillOSCQueryInternalEnd
+// FillOSCQueryInternalEnd
 
-    EndDeclareComponent;
+EndDeclareComponent;

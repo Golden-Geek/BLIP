@@ -7,6 +7,7 @@ void LedStripSystemLayer::setupInternal(JsonObject o)
     blendMode = BlendMode::Alpha;
 
     AddBoolParam(showBattery);
+    AddColorParam(espSyncColor);
 }
 
 void LedStripSystemLayer::updateInternal()
@@ -147,7 +148,7 @@ void LedStripSystemLayer::updateConnectionStatus()
             color = color.withMultipliedAlpha(constrain((relT - .05f) * 1 / animTime, 0, 1));
         }
 
-        fillAll(Color(0, 0, 0, alpha * 255)); // clear strip
+        fillAll(Color(0.f, 0.f, 0.f, alpha)); // clear strip
         point(color, pos, radius, false);
     }
 }
@@ -165,7 +166,7 @@ void LedStripSystemLayer::updateShutdown()
     {
         // reverse saw red animation
         float val = max(1 - fmodf(relT * 3, 1) * 1.5f, 0.f);
-        fillAll(Color(val * 255, 0, 0));
+        fillAll(Color(val, 0.f, 0.f));
         return; // battery animation has priority
     }
 #endif
