@@ -1,6 +1,8 @@
 #include "UnityIncludes.h"
 #include "WebServerComponent.h"
 
+#include <cstring>
+
 #include "FirstrunPage.h"
 
 namespace
@@ -122,13 +124,64 @@ bool WebServerComponent::initInternal()
             std::shared_ptr<bool> showConfig = std::make_shared<bool>(request->hasArg("config") ? request->arg("config") == "1" : true);
             std::shared_ptr<OSCQueryChunk> chunk = std::make_shared<OSCQueryChunk>(OSCQueryChunk(RootComponent::instance));
 
-            AsyncWebServerResponse *response = request->beginChunkedResponse("application/json", [chunk, showConfig](uint8_t *buffer, size_t maxLen, size_t index)
-                                                                             {
-                                                                                 if (chunk->nextComponent == nullptr)
-                                                                                     return 0;
-                                                                                 chunk->nextComponent->fillChunkedOSCQueryData(chunk.get(), *showConfig);
-                                                                                 sprintf((char *)buffer, chunk->data.c_str());
-                                                                                 return (int)chunk->data.length(); });
+            struct ChunkStreamState
+            {
+                size_t expectedIndex = 0;
+                size_t offsetInChunk = 0;
+                uint8_t emptyRefills = 0;
+                String current;
+            };
+            std::shared_ptr<ChunkStreamState> state = std::make_shared<ChunkStreamState>();
+
+            AsyncWebServerResponse *response = request->beginChunkedResponse(
+                "application/json",
+                [chunk, showConfig, state](uint8_t *buffer, size_t maxLen, size_t index)
+                {
+                    if (maxLen == 0)
+                    {
+                        return (size_t)0;
+                    }
+
+                    // Resync if the server calls us with an unexpected index.
+                    if (index != state->expectedIndex)
+                    {
+                        state->expectedIndex = index;
+                        state->offsetInChunk = 0;
+                        state->current = "";
+                    }
+
+                    // Refill chunk data when we've exhausted the current chunk.
+                    while (state->offsetInChunk >= state->current.length())
+                    {
+                        if (chunk->nextComponent == nullptr)
+                        {
+                            return (size_t)0;
+                        }
+
+                        chunk->nextComponent->fillChunkedOSCQueryData(chunk.get(), *showConfig);
+                        state->current = chunk->data;
+                        state->offsetInChunk = 0;
+
+                        if (state->current.length() == 0)
+                        {
+                            if (++state->emptyRefills >= 4)
+                            {
+                                return (size_t)0;
+                            }
+                        }
+                        else
+                        {
+                            state->emptyRefills = 0;
+                        }
+                    }
+
+                    const size_t remaining = state->current.length() - state->offsetInChunk;
+                    const size_t toCopy = remaining < maxLen ? remaining : maxLen;
+                    memcpy(buffer, state->current.c_str() + state->offsetInChunk, toCopy);
+                    state->offsetInChunk += toCopy;
+                    state->expectedIndex += toCopy;
+                    return toCopy;
+                });
 
             request->send(response);
         } });
