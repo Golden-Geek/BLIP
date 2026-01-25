@@ -1,10 +1,11 @@
 #include "UnityIncludes.h"
-#include "DistanceSensorComponent.h"
 
 ImplementManagerSingleton(DistanceSensor);
 
 void DistanceSensorComponent::setupInternal(JsonObject o)
 {
+    setCustomUpdateRate(60, o);
+
 #ifdef DISTANCE_SENSOR_HCSR04
     AddIntParamConfig(trigPin);
     AddIntParamConfig(echoPin);
@@ -12,13 +13,12 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
     AddBoolParam(isConnected);
 #endif
 
-    AddIntParamConfig(updateRate);
     AddIntParamConfig(distanceMax);
     AddIntParamConfig(debounceFrame);
-    AddFloatParam(value);
+    AddFloatParamFeedback(value);
     AddIntParamConfig(sendRate);
 
-    for(int i = 0; i < DEBOUNCE_MAX_FRAMES; i++)
+    for (int i = 0; i < DEBOUNCE_MAX_FRAMES; i++)
     {
         debounceBuffer[i] = 1.0f;
     }
@@ -26,8 +26,6 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 
 bool DistanceSensorComponent::initInternal()
 {
-    if(!enabled) return false;
-
 #ifdef DISTANCE_SENSOR_HCSR04
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
@@ -41,10 +39,13 @@ bool DistanceSensorComponent::initInternal()
     return true;
 }
 
-void DistanceSensorComponent::updateInternal()
+void DistanceSensorComponent::update()
 {
-    if(!enabled) return;
-    
+    // Override update() to handle updateRate custom inside the sensors functions
+
+    if (!enabled)
+        return;
+
 #ifdef DISTANCE_SENSOR_HCSR04
     updateHCSR04();
 #elif defined(DISTANCE_SENSOR_VL53L0X)
@@ -55,7 +56,7 @@ void DistanceSensorComponent::updateInternal()
 #ifdef DISTANCE_SENSOR_HCSR04
 void DistanceSensorComponent::updateHCSR04()
 {
-    int currentEchoState = digitalRead(echoPin);
+    int currentEchoState = gpio_get_level(echoPin);
 
     // --- State Machine ---
     switch (currentState)
@@ -65,9 +66,9 @@ void DistanceSensorComponent::updateHCSR04()
         if (millis() - stateStartTime >= max(1000 / updateRate, 60)) // Ensure at least 60ms between measurements
         {
             // Start Trigger sequence
-            digitalWrite(trigPin, LOW); // Ensure low before pulse
-            delayMicroseconds(2);       // Small delay for clean pulse
-            digitalWrite(trigPin, HIGH);
+            gpio_set_level(gpio_num_t(trigPin), LOW); // Ensure low before pulse
+            delayMicroseconds(2);                   // Small delay for clean pulse
+            gpio_set_level(gpio_num_t(trigPin), HIGH);
             stateStartTime = micros(); // Record the start time of the trigger pulse
             currentState = TRIGGERING;
             RootComponent::instance->strips.items[0]->doNotUpdate = true;
@@ -78,7 +79,7 @@ void DistanceSensorComponent::updateHCSR04()
         // Check if the 10 microsecond trigger pulse is complete
         if (micros() - stateStartTime >= TRIG_PULSE_DURATION)
         {
-            digitalWrite(trigPin, LOW);
+            gpio_set_level(gpio_num_t(trigPin), LOW);
             currentState = WAITING_ECHO;
             // stateStartTime now marks the beginning of the wait for echo
         }
@@ -195,29 +196,28 @@ void DistanceSensorComponent::updateVL53L0X()
         return;
     }
 
-    
     float distance = (float)range / 10.0f; // Convert mm to cm
 
-    // NDBG("Distance: " +String(distance)+ " cm");
+    // NDBG("Distance: " +std::string(distance)+ " cm");
 
     if (distance > distanceMax)
         distance = distanceMax; // Cap to max range
 
-    float val =distance / distanceMax;
+    float val = distance / distanceMax;
 
     // Debounce logic
     int frames = min(debounceFrame, DEBOUNCE_MAX_FRAMES);
-    
+
     debounceBuffer[debounceIndex] = val;
     debounceIndex = (debounceIndex + 1) % debounceFrame;
 
     float maxVal = 0.0f;
-    for (int i = 0; i < frames; i++)    
+    for (int i = 0; i < frames; i++)
     {
         if (debounceBuffer[i] > maxVal)
             maxVal = debounceBuffer[i];
     }
-    
+
     SetParam(value, maxVal);
 }
 #endif
@@ -240,7 +240,7 @@ void DistanceSensorComponent::paramValueChangedInternal(void *param)
     {
         if (isInit)
         {
-            NDBG("Updating VL53L0X update rate to " + String(updateRate) + " Hz");
+            NDBG("Updating VL53L0X update rate to " + std::to_string(updateRate) + " Hz");
             sensor.stopContinuous();
             sensor.startContinuous(1000 / updateRate);
         }

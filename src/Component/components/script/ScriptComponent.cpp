@@ -7,7 +7,6 @@ void ScriptComponent::setupInternal(JsonObject o)
 {
     script.localComponent = this;
 
-    AddIntParam(updateRate);
     AddStringParamConfig(scriptAtLaunch);
     AddIntParam(universe);
     AddIntParam(startChannel);
@@ -34,11 +33,6 @@ bool ScriptComponent::initInternal()
 
 void ScriptComponent::updateInternal()
 {
-    if (lastUpdateTime > 0 && updateRate > 0 && millis() - lastUpdateTime < (1000 / updateRate))
-        return;
-
-    lastUpdateTime = millis();
-
     script.update();
 }
 
@@ -50,7 +44,7 @@ void ScriptComponent::clearInternal()
     script.shutdown();
 }
 
-bool ScriptComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool ScriptComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (CheckCommand("load", 1))
     {
@@ -76,14 +70,14 @@ bool ScriptComponent::handleCommandInternal(const String &command, var *data, in
     return false;
 }
 
-void ScriptComponent::sendScriptEvent(String eventName)
+void ScriptComponent::sendScriptEvent(std::string eventName)
 {
     var data[1];
     data[0] = eventName;
     sendEvent(ScriptEvent, data, 1);
 }
 
-void ScriptComponent::sendScriptParamFeedback(String paramName, float value)
+void ScriptComponent::sendScriptParamFeedback(std::string paramName, float value)
 {
     var data[2];
     data[0] = paramName;

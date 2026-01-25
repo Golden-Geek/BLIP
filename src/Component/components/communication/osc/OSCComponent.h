@@ -25,13 +25,13 @@ void setupConnection();
 void receiveOSC();
 void processMessage(OSCMessage &m);
 
-void saveRemoteHost(String ip);
+void saveRemoteHost(std::string ip);
 
 void sendMessage(OSCMessage &m);
-void sendMessage(String address);
-void sendMessage(const String &source, const String &command, var *data, int numData);
+void sendMessage(std::string address);
+void sendMessage(const std::string &source, const std::string &command, var *data, int numData);
 
-static OSCMessage createMessage(const String &source, const String &command, const var *data, int numData, bool addID = true);
+static OSCMessage createMessage(const std::string &source, const std::string &command, const var *data, int numData, bool addID = true);
 static OSCMessage createMessage(const var* data, int numData, bool addID = true);
 
 // Helper
@@ -40,23 +40,5 @@ var OSCArgumentToVar(OSCMessage &m, int index);
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");
 
-    HandleSetParamInternalStart
-        CheckAndSetParam(remoteHost);
-        CheckAndSetParam(remotePort);
-        CheckAndSetParam(sendFeedback);
-    HandleSetParamInternalEnd;
-
-    FillSettingsInternalStart
-        FillSettingsParam(remoteHost);
-        FillSettingsParam(remotePort);
-        FillSettingsParam(sendFeedback);
-    FillSettingsInternalEnd;
-
-    FillOSCQueryInternalStart
-        FillOSCQueryStringParam(remoteHost);
-    FillOSCQueryIntParam(remotePort);
-    FillOSCQueryBoolParam(sendFeedback);
-    FillOSCQueryBoolParamReadOnly(isAlive);
-    FillOSCQueryInternalEnd
 
 EndDeclareComponent

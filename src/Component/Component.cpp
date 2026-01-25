@@ -3,8 +3,9 @@
 void Component::setup(JsonObject o)
 {
     NDBG("Setup");
-    AddBoolParam(enabled);
+    AddBoolParamConfig(enabled);
     setupInternal(o);
+    RootComponent::instance->registerComponent(this, getFullPath(false, true), isHighPriority);
 }
 
 bool Component::init()
@@ -14,34 +15,44 @@ bool Component::init()
 
     NDBG("Init");
 
-    for (int i = 0; i < numComponents; i++)
+    for (auto &c : components)
     {
-        // NDBG("> Init " + components[i]->name);
-        if (!components[i]->enabled)
+        if (!c->enabled)
             continue;
-        components[i]->init();
+        c->init();
     }
 
     isInit = initInternal();
 
     if (!isInit)
         NDBG("Init Error.");
-    // else
-    //     NDBG(F("Init OK"));
 
     return isInit;
 }
 
-void Component::update()
+void Component::update(bool inFastLoop)
 {
-    // NDBG("Looping");
     if (!enabled)
         return;
 
-    for (int i = 0; i < numComponents; i++)
-        components[i]->update();
+    long currentTime = millis();
+    if (updateRate > 0)
+    {
+        if (currentTime - lastUpdateTime < (1000 / updateRate))
+            return;
+    }
 
-    updateInternal();
+    lastUpdateTime = currentTime;
+
+    if (isHighPriority == inFastLoop)
+    {
+        for (auto &c : components)
+        {
+            c->update(inFastLoop);
+        }
+
+        updateInternal();
+    }
 }
 
 void Component::clear()
@@ -50,23 +61,54 @@ void Component::clear()
 
     clearInternal();
 
-    for (int i = 0; i < numComponents; i++)
+    for (auto &c : components)
     {
-        components[i]->clear();
-        // delete components[i];
+        c->clear();
     }
-
-    numComponents = 0;
+    components.clear();
 
     // for (int i = 0; i < numParameters; i++)
     // delete parameters[i];
-    numParams = 0;
+    params.clear();
+    RootComponent::instance->unregisterComponent(this);
 }
 
-bool Component::handleCommand(const String &command, var *data, int numData)
+void Component::setCustomUpdateRate(int defaultRate, JsonObject o)
 {
-    if (handleSetParam(command, data, numData))
-        return true;
+    if (updateRate < 0)
+        return;
+    updateRate = defaultRate;
+    AddIntParamConfig(updateRate);
+}
+
+void Component::setCustomFeedbackRate(float defaultRate, JsonObject o)
+{
+    if (feedbackRate < 0)
+        return;
+    feedbackRate = defaultRate;
+    AddFloatParamConfig(feedbackRate);
+}
+
+void Component::sendEvent(uint8_t type, var *data, int numData)
+{
+    EventBroadcaster::sendEvent(ComponentEvent(this, type, data, numData));
+}
+
+bool Component::handleCommand(const std::string &command, var *data, int numData)
+{
+    if (numData == 0)
+    {
+        if (triggersMap.contains(command))
+        {
+            triggersMap.at(command)();
+            return true;
+        }
+    }
+    else
+    {
+        if (handleSetParam(command, data, numData))
+            return true;
+    }
 
     if (handleCommandInternal(command, data, numData))
         return true;
@@ -74,13 +116,13 @@ bool Component::handleCommand(const String &command, var *data, int numData)
     return false;
 }
 
-bool Component::checkCommand(const String &command, const String &ref, int numData, int expectedData)
+bool Component::checkCommand(const std::string &command, const std::string &ref, int numData, int expectedData)
 {
     if (command != ref)
         return false;
     if (numData < expectedData)
     {
-        NDBG("Command " + command + " expects at least " + expectedData + " arguments");
+        NDBG("Command " + command + " expects at least " + std::to_string(expectedData) + " arguments");
         return false;
     }
     return true;
@@ -88,27 +130,84 @@ bool Component::checkCommand(const String &command, const String &ref, int numDa
 
 // Save / Load
 
-void Component::fillSettingsData(JsonObject o, bool showConfig)
+void Component::fillSettingsData(JsonObject o)
 {
-    if (saveEnabled)
-        FillSettingsParam(enabled);
-    fillSettingsParamsInternal(o, showConfig);
+    for (auto &param : params)
+    {
+        if (param == &enabled && !saveEnabled)
+            continue;
 
-    if (numComponents > 0)
+        bool isReadOnly = checkParamTag(param, TagFeedback);
+
+        if (isReadOnly)
+            continue;
+        fillSettingsParam(o, param);
+    }
+
+    if (components.size() > 0)
     {
         JsonObject comps = o.createNestedObject("components");
-        for (int i = 0; i < numComponents; i++)
+        for (auto &c : components)
         {
-            Component *c = components[i];
             JsonObject co = comps.createNestedObject(c->name);
-            c->fillSettingsData(co, showConfig);
+            c->fillSettingsData(co);
         }
+    }
+}
+
+void Component::fillSettingsParam(JsonObject o, void *param)
+{
+    ParamType t = getParamType(param);
+    const std::string pName = paramToNameMap.at(param);
+
+    switch (t)
+    {
+    case ParamType::Bool:
+        o[pName] = (*(bool *)param);
+        break;
+
+    case ParamType::Int:
+        o[pName] = (*(int *)param);
+        break;
+
+    case ParamType::Float:
+        o[pName] = (*(float *)param);
+        break;
+
+    case ParamType::Str:
+        o[pName] = (*(std::string *)param);
+        break;
+
+    case ParamType::P2D:
+        o[pName] = JsonArray();
+        o[pName][0] = ((float *)(param))[0];
+        o[pName][1] = ((float *)(param))[1];
+        break;
+
+    case ParamType::P3D:
+        o[pName] = JsonArray();
+        o[pName][0] = ((float *)(param))[0];
+        o[pName][1] = ((float *)(param))[1];
+        o[pName][2] = ((float *)(param))[2];
+        break;
+
+    case ParamType::TypeColor:
+        o[pName] = (*(uint32_t *)param);
+        break;
+
+    case ParamType::TypeEnum:
+        o[pName] = (*(int *)param);
+        break;
+
+    default:
+        DBG("Unsupported param type for saving settings: " + typeNames[t] + "(" + std::to_string((int)t) + ")");
+        break;
     }
 }
 
 void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
 {
-    const String fullPath = getFullPath(); // this == RootComponent::instance);
+    const std::string fullPath = getFullPath(); // this == RootComponent::instance);
 
     switch (chunk->nextType)
     {
@@ -119,19 +218,38 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
                       "\"ACCESS\":0," +
                       "\"CONTENTS\":";
 
-        if (numParams > 0)
-        {
+        int numParamsSaved = 0;
 
+        // iterates through trigger map
+
+        if (params.size() > 0 || triggersMap.size() > 0)
+        {
             StaticJsonDocument<6000> doc;
             JsonObject o = doc.to<JsonObject>();
 
-            if (exposeEnabled)
-                FillOSCQueryBoolParam(enabled);
-            fillOSCQueryParamsInternal(o, fullPath, showConfig);
+            if (triggersMap.size() > 0)
+            {
+                for (const auto &[triggerName, triggerFunc] : triggersMap)
+                {
+                    createBaseOSCQueryObject(o, fullPath, triggerName, "I", false);
+                    numParamsSaved++;
+                }
+            }
 
-            String str;
+            for (auto &param : params)
+            {
+                if (param == &enabled && !exposeEnabled)
+                    continue;
+
+                if (fillOSCQueryParam(o, fullPath, param, showConfig))
+                {
+                    numParamsSaved++;
+                }
+            }
+
+            std::string str;
             serializeJson(o, str);
-            str.remove(str.length() - 1);
+            str.erase(str.length() - 1);
             chunk->data += str;
         }
         else
@@ -139,11 +257,11 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
             chunk->data += "{";
         }
 
-        if (numComponents > 0)
+        if (components.size() > 0)
         {
             chunk->nextType = Start;
             chunk->nextComponent = components[0];
-            if (numParams > 0)
+            if (numParamsSaved > 0)
                 chunk->data += ",";
             chunk->data += "\"" + components[0]->name + "\":";
         }
@@ -172,96 +290,103 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
     }
 }
 
-void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, const String &pName, ParamType t, void *param,
-                                  bool showConfig, bool readOnly, const String *options, int numOptions,
-                                  float vMin1, float vMax1, float vMin2, float vMax2, float vMin3, float vMax3)
+bool Component::fillOSCQueryParam(JsonObject o, const std::string &fullPath, void *param, bool showConfig)
 {
-    ParamTag tag = getParamTag(param);
+    bool isConfig = checkParamTag(param, TagConfig);
 
-    if (!showConfig && tag == TagConfig)
-        return;
+    if (!showConfig && isConfig)
+        return false;
 
-    JsonObject po = o.createNestedObject(pName);
-    po["DESCRIPTION"] = StringHelpers::lowerCamelToTitleCase(pName);
-    po["ACCESS"] = readOnly ? 1 : 3;
-    const String pType = t == Bool ? (*(bool *)param) ? "T" : "F" : typeNames[t];
-    po["TYPE"] = pType;
-    po["FULL_PATH"] = fullPath + "/" + pName;
+    const std::string pName = paramToNameMap.at(param);
+    ParamType t = getParamType(param);
+    bool readOnly = checkParamTag(param, TagFeedback);
 
-    if (tag != TagNone)
-    {
-        JsonArray to = po.createNestedArray("TAGS");
-        to.add(tagNames[tag]);
-    }
+    JsonObject po = createBaseOSCQueryObject(o, fullPath, pName, t == Bool ? (*(bool *)param) ? "T" : "F" : typeNames[t], readOnly);
+
+    // if (isConfig)
+    // {
+    //     JsonArray to = po.createNestedArray("TAGS");
+    //     to.add("config");
+    // }
 
     if (t != ParamType::Trigger)
     {
         JsonArray vArr = po.createNestedArray("VALUE");
 
-        if (options != nullptr && numOptions > 0)
+        switch (t)
         {
-            JsonArray rArr = po.createNestedArray("RANGE");
-            JsonObject vals = rArr.createNestedObject();
-            JsonArray opt = vals.createNestedArray("VALS");
+        case ParamType::Bool:
+            vArr.add((*(bool *)param));
+            break;
 
-            for (int i = 0; i < numOptions; i++)
-            {
-                opt.add(options[i]);
-            }
+        case ParamType::Int:
+            vArr.add((*(int *)param));
+            break;
 
-            po["TYPE"] = "s"; // force string type
-            int index = *(int *)param;
-            if (index >= 0 && index < numOptions)
-                vArr.add(options[index]);
-        }
-        else
+        case ParamType::TypeEnum:
         {
-            switch (t)
+            int numOptions = enumOptionsCountMap.contains(param) ? enumOptionsCountMap.at(param) : 0;
+            const std::string *options = enumOptionsMap.contains(param) ? enumOptionsMap.at(param) : nullptr;
+            if (options != nullptr && numOptions > 0)
             {
-            case ParamType::Bool:
-                vArr.add((*(bool *)param));
-                break;
+                JsonArray rArr = po.createNestedArray("RANGE");
+                JsonObject vals = rArr.createNestedObject();
+                JsonArray opt = vals.createNestedArray("VALS");
 
-            case ParamType::Int:
-                vArr.add((*(int *)param));
-                break;
+                for (int i = 0; i < numOptions; i++)
+                {
+                    opt.add(options[i]);
+                }
 
-            case ParamType::TypeEnum:
-                vArr.add(getEnumString(param));
-                break;
-
-            case ParamType::Float:
-                vArr.add((*(float *)param));
-                break;
-
-            case ParamType::Str:
-                vArr.add((*(String *)param));
-                break;
-
-            case ParamType::P2D:
-                vArr.add(((float *)param)[0]);
-                vArr.add(((float *)param)[1]);
-                break;
-
-            case ParamType::P3D:
-                vArr.add(((float *)param)[0]);
-                vArr.add(((float *)param)[1]);
-                vArr.add(((float *)param)[2]);
-                break;
-
-            case ParamType::TypeColor:
-                vArr.add(((float *)param)[0]);
-                vArr.add(((float *)param)[1]);
-                vArr.add(((float *)param)[2]);
-                vArr.add(((float *)param)[3]);
-                break;
-
-            default:
-                break;
+                po["TYPE"] = "s"; // force string type
+                int index = *(int *)param;
+                if (index >= 0 && index < numOptions)
+                    vArr.add(options[index]);
             }
         }
+        break;
 
-        if (vMin1 != 0 || vMax1 != 0)
+        case ParamType::Float:
+            vArr.add((*(float *)param));
+            break;
+
+        case ParamType::Str:
+            vArr.add((*(std::string *)param));
+            break;
+
+        case ParamType::P2D:
+            vArr.add(((float *)param)[0]);
+            vArr.add(((float *)param)[1]);
+            break;
+
+        case ParamType::P3D:
+            vArr.add(((float *)param)[0]);
+            vArr.add(((float *)param)[1]);
+            vArr.add(((float *)param)[2]);
+            break;
+
+        case ParamType::TypeColor:
+            vArr.add(((float *)param)[0]);
+            vArr.add(((float *)param)[1]);
+            vArr.add(((float *)param)[2]);
+            vArr.add(((float *)param)[3]);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    if (paramRangesMap.contains(param))
+    {
+        ParamRange range = paramRangesMap.at(param);
+        float vMin1 = range.vMin;
+        float vMax1 = range.vMax;
+        float vMin2 = range.vMin2;
+        float vMax2 = range.vMax2;
+        float vMin3 = range.vMin3;
+        float vMax3 = range.vMax3;
+        if (vMin1 != vMax1)
         {
             JsonArray rArr = po.createNestedArray("RANGE");
             JsonObject r1 = rArr.createNestedObject();
@@ -283,12 +408,25 @@ void Component::fillOSCQueryParam(JsonObject o, const String &fullPath, const St
             }
         }
     }
+
+    return true;
+}
+
+JsonObject Component::createBaseOSCQueryObject(JsonObject o, const std::string &fullPath, const std::string &pName, const std::string &type, bool readOnly)
+{
+    JsonObject obj = o.createNestedObject(pName);
+    obj["DESCRIPTION"] = StringHelpers::lowerCamelToTitleCase(pName);
+    obj["ACCESS"] = readOnly ? 1 : 3;
+    obj["TYPE"] = type;
+    obj["FULL_PATH"] = fullPath + "/" + pName;
+    return obj;
 }
 
 void Component::setupChunkAfterComponent(OSCQueryChunk *chunk, const Component *c)
 {
-    int index = 0;
-    for (int i = 0; i < numComponents; i++)
+
+    int index = -1;
+    for (size_t i = 0; i < components.size(); i++)
     {
         if (components[i] == c)
         {
@@ -297,7 +435,7 @@ void Component::setupChunkAfterComponent(OSCQueryChunk *chunk, const Component *
         }
     }
 
-    if (index < numComponents - 1) // last one
+    if (index < components.size() - 1) // last one
     {
         chunk->data += ",\"" + components[index + 1]->name + "\":";
         chunk->nextComponent = components[index + 1];
@@ -311,13 +449,13 @@ void Component::setupChunkAfterComponent(OSCQueryChunk *chunk, const Component *
     }
 }
 
-String Component::getFullPath(bool includeRoot, bool scriptMode, bool serialMode) const
+std::string Component::getFullPath(bool includeRoot, bool scriptMode, bool serialMode) const
 {
     if (this == RootComponent::instance && !includeRoot)
         return "";
 
     Component *pc = parentComponent;
-    String s = name;
+    std::string s = name;
 
     char separator = '/';
     if (scriptMode)
@@ -349,98 +487,88 @@ void Component::linkScriptFunctions(IM3Module module, bool isLocal)
 
     linkScriptFunctionsInternal(module, tName);
 
-    for (int i = 0; i < numComponents; i++)
+    for (auto &c : components)
     {
-        if (components[i] == nullptr)
+        if (c == nullptr)
             continue;
-        components[i]->linkScriptFunctions(module);
+        c->linkScriptFunctions(module);
     }
 }
 #endif
 
 Component *Component::addComponent(Component *c, JsonObject o)
 {
-    if (numComponents >= MAX_CHILD_COMPONENTS)
-    {
-        NDBG("Component limit reached ! Trying to add " + c->name);
-        return nullptr;
-    }
-
-    components[numComponents] = (Component *)c;
+    components.push_back(c);
     c->parentComponent = this;
     AddDefaultComponentListener(c);
-    numComponents++;
 
     c->setup(o);
-    // DBG("Component added, size = " + String(sizeof(*c)) + " (" + String(sizeof(Component)) + ")");
+    // DBG("Component added, size = " + std::to_string(sizeof(*c)) + " (" + std::to_string(sizeof(Component)) + ")");
     return c;
 }
 
-Component *Component::getComponentWithName(const String &name)
-{
-    if (name == this->name)
-        return this;
-
-    int subCompIndex = name.indexOf('.');
-
-    if (subCompIndex > 0)
-    {
-        String n = name.substring(0, subCompIndex);
-        for (int i = 0; i < numComponents; i++)
-        {
-            if (components[i]->name == n)
-                return components[i]->getComponentWithName(name.substring(subCompIndex + 1));
-        }
-    }
-    else
-    {
-        for (int i = 0; i < numComponents; i++)
-        {
-            if (components[i]->name == name)
-                return components[i];
-        }
-    }
-
-    return NULL;
-}
-
-// Parameter *Component::getParameterWithName(const String &name)
+// Component *Component::getComponentWithName(const std::string &name)
 // {
-//     for (int i = 0; i < numParameters; i++)
-//         if (parameters[i]->name == name)
-//             return parameters[i];
+//     if (name == this->name)
+//         return this;
+
+//     int subCompIndex = name.indexOf('.');
+
+//     if (subCompIndex > 0)
+//     {
+//         std::string n = name.substring(0, subCompIndex);
+//         for (int i = 0; i < numComponents; i++)
+//         {
+//             if (components[i]->name == n)
+//                 return components[i]->getComponentWithName(name.substring(subCompIndex + 1));
+//         }
+//     }
+//     else
+//     {
+//         for (int i = 0; i < numComponents; i++)
+//         {
+//             if (components[i]->name == name)
+//                 return components[i];
+//         }
+//     }
 
 //     return NULL;
 // }
 
-void Component::addParam(void *param, ParamType type, ParamTag tag)
+void Component::addParam(void *param, ParamType type, const std::string &paramName, uint8_t tags)
 {
-    if (numParams >= MAX_CHILD_PARAMS)
-    {
-        NDBG("Param limit reached !");
-        return;
-    }
+    params.push_back(param);
+    paramTypesMap.insert(std::make_pair(param, (int)type));
+    paramTagsMap.insert(std::make_pair(param, tags));
+    nameToParamMap.insert(std::make_pair(paramName, param));
+    paramToNameMap.insert(std::make_pair(param, paramName));
+}
 
-    params[numParams] = param;
-    paramTypes[numParams] = type;
-    paramTags[numParams] = tag;
-    numParams++;
+void Component::setParamTag(void *param, ParamTag tag, bool enable)
+{
+    uint8_t currentTags = paramTagsMap[param];
+    if (enable)
+        currentTags |= tag;
+    else
+        currentTags &= ~tag;
+    paramTagsMap[param] = currentTags;
+}
+
+void Component::setParamRange(void *param, ParamRange range)
+{
+    paramRangesMap.emplace(param, range);
+}
+
+void Component::setEnumOptions(void *param, const std::string *enumOptions, int numOptions)
+{
+    enumOptionsMap.emplace(param, enumOptions);
+    enumOptionsCountMap.emplace(param, numOptions);
 }
 
 void Component::setParam(void *param, var *value, int numData)
 {
     bool hasChanged = false;
     ParamType t = getParamType(param);
-
-    // NDBG("Set Param " + String(t));
-
-    if (numData == 0 && t != Trigger)
-    {
-        // Send current value feedback
-        SendParamFeedback(param);
-        // NDBG("Expecting at least 1 parameter");
-        return;
-    }
 
     if (numData < 2 && t == P2D)
     {
@@ -463,13 +591,14 @@ void Component::setParam(void *param, var *value, int numData)
     switch (t)
     {
     case ParamType::Trigger:
+
         break;
 
     case ParamType::Bool:
 
         hasChanged = *((bool *)param) != value[0].boolValue();
 
-        // DBG("Set bool " + String(value[0].boolValue()) + " / " + String(*((bool *)param)) +" has Changed ? "+String(hasChanged));
+        // DBG("Set bool " + std::to_string(value[0].boolValue()) + " / " + std::to_string(*((bool *)param)) +" has Changed ? "+String(hasChanged));
         if (hasChanged)
             *((bool *)param) = value[0].boolValue();
         break;
@@ -493,9 +622,9 @@ void Component::setParam(void *param, var *value, int numData)
         break;
 
     case ParamType::Str:
-        hasChanged = *((String *)param) != value[0].stringValue();
+        hasChanged = *((std::string *)param) != value[0].stringValue();
         if (hasChanged)
-            *((String *)param) = value[0].stringValue();
+            *((std::string *)param) = value[0].stringValue();
         break;
 
     case ParamType::P2D:
@@ -546,12 +675,21 @@ void Component::setParam(void *param, var *value, int numData)
         }
         else if (numData == 1)
         {
-            // convert rgba uint32_t to 4 floats
-            uint32_t rgba = value[0].intValue();
-            float r = ((rgba >> 24) & 0xFF) / 255.0f;
-            float g = ((rgba >> 16) & 0xFF) / 255.0f;
-            float b = ((rgba >> 8) & 0xFF) / 255.0f;
-            float a = (rgba & 0xFF) / 255.0f;
+            Color c;
+
+            if (value[0].type == 's')
+            {
+                c = Color(value[0].stringValue());
+            }
+            else
+            {
+                c = Color(value[0].intValue());
+            }
+
+            float r = c.getFloatRed();
+            float g = c.getFloatGreen();
+            float b = c.getFloatBlue();
+            float a = c.getFloatAlpha();
 
             hasChanged = ((float *)param)[0] != r || ((float *)param)[1] != g || ((float *)param)[2] != b || ((float *)param)[3] != a;
             if (hasChanged)
@@ -577,21 +715,24 @@ void Component::setParam(void *param, var *value, int numData)
     }
 }
 
-bool Component::handleSetParam(const String &paramName, var *data, int numData)
+bool Component::handleSetParam(const std::string &paramName, var *data, int numData)
 {
-    CheckAndSetParam(enabled);
+    if (nameToParamMap.contains(paramName))
+    {
+        setParam(nameToParamMap.at(paramName), data, numData);
+        return true;
+    }
 
-    return handleSetParamInternal(paramName, data, numData);
+    return false;
 }
 
 void Component::paramValueChanged(void *param)
 {
-    // DBG("Param value changed " + getParamString(param));
-
     if (param == &enabled)
         onEnabledChanged();
 
     paramValueChangedInternal(param);
+
     checkParamsFeedback(param);
 
     if (parentComponent != nullptr)
@@ -607,60 +748,35 @@ void Component::childParamValueChanged(Component *caller, Component *comp, void 
 
 bool Component::checkParamsFeedback(void *param)
 {
-    CheckAndSendParamFeedback(enabled);
-    return checkParamsFeedbackInternal(param);
+    if (feedbackRate < 0)
+        return false;
+
+    if (!checkParamTag(param, TagFeedback))
+        return false;
+
+    bool shouldSend = false;
+    long currentTime = millis();
+    if (lastFeedbackTime > 0 && feedbackRate > 0 && (currentTime - lastFeedbackTime) < (1000.0f / feedbackRate))
+    {
+        return false;
+    }
+
+    CommunicationComponent::instance->sendParamFeedback(this, param, paramToNameMap.at(param), getParamType(param));
+    return true;
 }
 
 Component::ParamType Component::getParamType(void *param) const
 {
-    for (int i = 0; i < numParams; i++)
-        if (params[i] == param)
-            return paramTypes[i];
-
-    return ParamType::ParamTypeMax;
+    return (ParamType)paramTypesMap.at(param);
 }
 
-Component::ParamTag Component::getParamTag(void *param) const
+bool Component::checkParamTag(void *param, ParamTag tag) const
 {
-    for (int i = 0; i < numParams; i++)
-        if (params[i] == param)
-            return paramTags[i];
-
-    return ParamTag::TagNone;
+    return (paramTagsMap.at(param) & tag) != 0;
 }
 
-String Component::getParamString(void *param) const
+
+void Component::addTrigger(const std::string &name, std::function<void(void)> func)
 {
-    ParamType t = getParamType(param);
-    switch (t)
-    {
-    case ParamType::Bool:
-        return String(*((bool *)param));
-
-    case ParamType::Int:
-        return String(*((int *)param));
-
-    case ParamType::TypeEnum:
-        return getEnumString(param);
-
-    case ParamType::Float:
-        return String(*((float *)param));
-
-    case ParamType::Str:
-        return *((String *)param);
-
-    case ParamType::P2D:
-        return String(((float *)param)[0]) + ", " + String(((float *)param)[1]);
-
-    case ParamType::P3D:
-        return String(((float *)param)[0]) + ", " + String(((float *)param)[1]) + ", " + String(((float *)param)[2]);
-
-    case ParamType::TypeColor:
-        return String(((float *)param)[0]) + ", " + String(((float *)param)[1]) + ", " + String(((float *)param)[2]) + ", " + String(((float *)param)[3]);
-
-    default:
-        break;
-    }
-
-    return String("[unknown]");
+    triggersMap.emplace(name, func);
 }

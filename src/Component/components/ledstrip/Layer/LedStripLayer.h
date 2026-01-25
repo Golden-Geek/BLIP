@@ -23,7 +23,7 @@ public:
         BlendModeMax
     };
 
-    LedStripLayer(const String &name, Type t, LedStripComponent *strip);
+    LedStripLayer(const std::string &name, Type t, LedStripComponent *strip);
     ~LedStripLayer();
 
     virtual void setupInternal(JsonObject o) override;
@@ -32,7 +32,7 @@ public:
     Type type;
 
     DeclareIntParam(blendMode, Add);
-    const String blendModeOptions[BlendModeMax] = {"Add", "Multiply", "Max", "Min", "Alpha"};
+    const std::string blendModeOptions[BlendModeMax] = {"Add", "Multiply", "Max", "Min", "Alpha"};
 
     Color colors[LED_MAX_COUNT];
 
@@ -46,15 +46,5 @@ public:
 
     void setBlendMode(BlendMode b);
 
-    HandleSetParamInternalStart
-        CheckAndSetEnumParam(blendMode, blendModeOptions, BlendModeMax);
-    HandleSetParamInternalEnd;
 
-    FillSettingsInternalStart
-        FillSettingsParam(blendMode);
-    FillSettingsInternalEnd;
-
-    FillOSCQueryInternalStart
-            FillOSCQueryEnumParam(blendMode, blendModeOptions, BlendModeMax);
-    FillOSCQueryInternalEnd
 };

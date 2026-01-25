@@ -19,15 +19,4 @@ public:
     void updateConnectionStatus();
     void updateShutdown();
 
-    HandleSetParamInternalStart
-        HandleSetParamInternalMotherClass(LedStripLayer);
-    CheckAndSetParam(espSyncColor);
-    CheckAndSetParam(showBattery);
-    HandleSetParamInternalEnd;
-
-    FillOSCQueryInternalStart
-        FillOSCQueryInternalMotherClass(LedStripLayer);
-    FillOSCQueryBoolParam(showBattery);
-    FillOSCQueryColorParam(espSyncColor);
-    FillOSCQueryInternalEnd;
 };

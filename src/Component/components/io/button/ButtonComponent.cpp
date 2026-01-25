@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 ImplementManagerSingleton(Button);
 
 void ButtonComponent::setupInternal(JsonObject o)
@@ -6,24 +8,24 @@ void ButtonComponent::setupInternal(JsonObject o)
     // SetParam(value,false);
 
     mode = BUTTON_DEFAULT_MODE;
-     if(index == 0) 
-     {
+    if (index == 0)
+    {
         pin = BUTTON_DEFAULT_PIN;
         inverted = BUTTON_DEFAULT_INVERTED;
-     }
-     
+    }
+
     IOComponent::setupInternal(o);
 
     debounceCount = 0;
     timeAtPress = 0;
 
-    AddIntParam(multiPressCount);
+    AddIntParamFeedback(multiPressCount);
     // multiPressCount.readOnly = true;
 
-    AddIntParam(longPress);
+    AddBoolParamFeedback(longPress);
     // longPress.readOnly = true;
 
-    AddIntParam(veryLongPress);
+    AddBoolParamFeedback(veryLongPress);
 
     AddBoolParamConfig(canShutDown);
 }
@@ -34,7 +36,8 @@ void ButtonComponent::updateInternal()
 
     if (value)
     {
-        if(millis() < 1000 && !wasPressedAtBoot) {
+        if (millis() < 1000 && !wasPressedAtBoot)
+        {
             wasPressedAtBoot = true;
             NDBG("Button was pressed at boot");
         }
@@ -48,8 +51,11 @@ void ButtonComponent::updateInternal()
         {
             SetParam(veryLongPress, true);
         }
-    }else{
-        if(wasPressedAtBoot && !releasedAfterBootPress) {
+    }
+    else
+    {
+        if (wasPressedAtBoot && !releasedAfterBootPress)
+        {
             releasedAfterBootPress = true;
             NDBG("Button was released after boot press");
         }
@@ -83,7 +89,7 @@ void ButtonComponent::paramValueChangedInternal(void *param)
         {
             if (millis() < timeAtPress + SHORTPRESS_TIME)
             {
-                //sendEvent(ShortPress); //should be trigger
+                // sendEvent(ShortPress); //should be trigger
             }
         }
     }

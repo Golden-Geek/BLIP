@@ -1,6 +1,7 @@
 
 #include "UnityIncludes.h"
-
+#include "main.cpp"
+#include "RootComponent.cpp"
 #include "Common/Settings.cpp"
 #include "Common/StringHelpers.cpp"
 

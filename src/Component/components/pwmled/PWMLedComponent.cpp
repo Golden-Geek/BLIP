@@ -150,7 +150,7 @@ void PWMLedComponent::clearInternal()
 
 void PWMLedComponent::setupPins()
 {
-    // NDBG("Setting up pin " + String(pins[i]));
+    // NDBG("Setting up pin " + std::to_string(pins[i]));
 
     for (int i = 0; i < 4; i++)
     {
@@ -168,7 +168,7 @@ void PWMLedComponent::setupPins()
         if (pins[i] == -1)
             continue;
 
-        // NDBG("Setting up pin " + String(pins[i])+ " with frequency " + String(pwmFrequency * 1000) + " and resolution " + String(pwmResolution));
+        // NDBG("Setting up pin " + std::to_string(pins[i])+ " with frequency " + std::to_string(pwmFrequency * 1000) + " and resolution " + std::to_string(pwmResolution));
         ledcAttach(pins[i], pwmFrequency * 1000, pwmResolution); // pwmChannels[i]);
     }
 }
@@ -254,7 +254,7 @@ void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *d
     if (!isInit || RootComponent::instance->isShuttingDown() || !RootComponent::instance->isInit)
         return;
 
-    // NDBG("Received stream data for universe " + String(dmxUniverse) + " with " + String(len) + " bytes");
+    // NDBG("Received stream data for universe " + std::to_string(dmxUniverse) + " with " + std::to_string(len) + " bytes");
 #ifdef PWMLED_USE_STREAMING
 
     int numChannels = useAlpha ? 4 : 3;
@@ -266,7 +266,7 @@ void PWMLedComponent::onLedStreamReceived(uint16_t dmxUniverse, const uint8_t *d
     int start = (dmxUniverse - universe) * maxCount + ledIndex;
     int index = start * numChannels;
 
-    // NDBG("Received stream data with " + String(len) + " bytes, start = " + String(start) + " index = " + String(index));
+    // NDBG("Received stream data with " + std::to_string(len) + " bytes, start = " + std::to_string(start) + " index = " + std::to_string(index));
     if (index >= 0 && index + numChannels <= len)
     {
         if (use16bit)

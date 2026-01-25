@@ -17,7 +17,6 @@
 #define DISTANCE_DEFAULT_ECHO_PIN -1
 #endif
 
-
 #define TRIG_PULSE_DURATION 10 // 10 microseconds
 #elif defined(DISTANCE_SENSOR_VL53L0X)
 #include <VL53L0X_mod.h>
@@ -34,14 +33,13 @@ DeclareIntParam(echoPin, DISTANCE_DEFAULT_ECHO_PIN);
     DeclareBoolParam(isConnected, false);
 #endif
 
-float debounceBuffer[ DEBOUNCE_MAX_FRAMES ] = {0};
+float debounceBuffer[DEBOUNCE_MAX_FRAMES] = {0};
 int debounceIndex = 0;
 
-DeclareIntParam(updateRate, 50); // in Hz
 DeclareIntParam(debounceFrame, 6);
 DeclareIntParam(distanceMax, 100);
 DeclareFloatParam(value, 1.0f); // Normalized 0.0 - 1.0
-DeclareIntParam(sendRate, 10); // in Hz, 0 = send every update, -1 = never
+DeclareIntParam(sendRate, 10);  // in Hz, 0 = send every update, -1 = never
 
 #ifdef DISTANCE_SENSOR_HCSR04
 // Variables for the state machine
@@ -65,13 +63,11 @@ int lastEchoState = LOW;
 unsigned long lastConnectTime = 0;
 VL53L0X_mod sensor;
 unsigned long lastMeasurementTime = 0;
-unsigned long lastSendTime = 0;
-
 #endif
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
-void updateInternal() override;
+void update() override;
 
 #ifdef DISTANCE_SENSOR_HCSR04
 void updateHCSR04();
@@ -82,54 +78,8 @@ void updateVL53L0X();
 
 void paramValueChangedInternal(void *param) override;
 
-HandleSetParamInternalStart
-#ifdef DISTANCE_SENSOR_HCSR04
-    CheckAndSetParam(trigPin);
-CheckAndSetParam(echoPin);
-#endif
-CheckAndSetParam(updateRate);
-CheckAndSetParam(distanceMax);
-CheckAndSetParam(sendRate);
-HandleSetParamInternalEnd;
+;
 
-CheckFeedbackParamInternalStart;
-CheckAndSendParamFeedback(isConnected);
-if (sendRate < 0)
-    return false;
-if (sendRate > 0 && millis() - lastSendTime < (1000 / sendRate))
-    return false;
-
-lastSendTime = millis();
-CheckAndSendParamFeedback(value);
-CheckFeedbackParamInternalEnd;
-
-FillSettingsInternalStart
-#ifdef DISTANCE_SENSOR_HCSR04
-    FillSettingsParam(trigPin);
-FillSettingsParam(echoPin);
-#endif
-FillSettingsParam(updateRate);
-FillSettingsParam(debounceFrame);
-FillSettingsParam(distanceMax);
-FillSettingsParam(sendRate);
-FillSettingsInternalEnd
-
-    FillOSCQueryInternalStart
-#ifdef DISTANCE_SENSOR_HCSR04
-        FillOSCQueryIntParam(trigPin);
-FillOSCQueryIntParam(echoPin);
-#elif defined(DISTANCE_SENSOR_VL53L0X)
-        FillOSCQueryBoolParamReadOnly(isConnected);
-#endif
-FillOSCQueryIntParam(updateRate);
-FillOSCQueryIntParam(debounceFrame);
-FillOSCQueryIntParam(distanceMax);
-FillOSCQueryRangeParamReadOnly(value, 0, 1);
-FillOSCQueryIntParam(sendRate);
-FillOSCQueryInternalEnd
-
+// Manager
+DeclareComponentManager(DistanceSensor, DISTANCE, distances, distance, DISTANCE_MAX_COUNT)
     EndDeclareComponent
-
-    // Manager
-    DeclareComponentManager(DistanceSensor, DISTANCE, distances, distance, DISTANCE_MAX_COUNT)
-        EndDeclareComponent

@@ -21,5 +21,5 @@ public:
     var * data;
     int numData;
 
-    String getName() const;
+    std::string getName() const;
 };

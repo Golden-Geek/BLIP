@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 Preferences Settings::prefs;
 JsonDoc Settings::settings;
 
@@ -12,12 +14,12 @@ bool Settings::loadSettings()
     DeserializationError err = deserializeMsgPack(settings, bytes);
     if (err)
     {
-        DBG("Loading settings.json error : " + String(err.c_str()));
+        DBG("Loading settings.json error : " + std::string(err.c_str()));
         return false;
     }
 
     settings["test"] = "super";
-    DBG("Settings loaded "+String(settingsSize));
+    DBG("Settings loaded " + std::to_string(settingsSize));
 
     return true;
 }
@@ -40,7 +42,7 @@ bool Settings::saveSettings()
 
     DBG("Settings saved.");
     free(bytes);
-    
+
     return true;
 }
 

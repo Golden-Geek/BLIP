@@ -12,8 +12,29 @@ DeclareComponent(Motion, "motion", )
 double lastUpdateTime;
 #endif
 
+enum SendLevel
+{
+    SendLevelNone,
+    SendLevelOrientation,
+    SendLevelAll,
+    SendLevelMax
+};
+const std::string sendLevelOptions[3]{"None", "Orientation", "All"};
+
+enum ThrowState
+{
+    ThrowStateNone,
+    ThrowStateFlat,
+    ThrowStateSingle,
+    ThrowStateDouble,
+    ThrowStateFlatFront,
+    ThrowStateLoftie,
+    ThrowStateMax
+};
+const std::string throwStateOptions[6]{"None", "Flat", "Single", "Double", "Flat Front", "Loftie"};
+
 DeclareBoolParam(connected, false);
-DeclareIntParam(sendLevel, 0);
+DeclareEnumParam(sendLevel, 0);
 DeclareIntParam(orientationSendRate, 50);
 
 #ifdef IMU_TYPE_BNO055
@@ -31,7 +52,7 @@ DeclareP3DParam(gyro, 0, 0, 0);
 DeclareP3DParam(linearAccel, 0, 0, 0);
 DeclareFloatParam(orientationXOffset, 0);
 
-DeclareIntParam(throwState, 0); // 0 = none, 1 = flat, 2 = single, 3 = double+, 4 = flat-front, 5 = loftie
+DeclareEnumParam(throwState, ThrowStateNone);
 DeclareFloatParam(activity, 0);
 float prevActivity;
 float debug[4];
@@ -49,7 +70,6 @@ DeclareFloatParam(angleOffset, 0);
 DeclareFloatParam(projectedAngle, 0);
 DeclareFloatParam(xOnCalibration, 0);
 
-
 // Spin Compute
 DeclareIntParam(spinCount, 0);
 DeclareFloatParam(spin, 0);
@@ -64,9 +84,6 @@ float currentSpinLastUpdate;
 bool hasNewData;
 bool imuLock;
 bool shouldStopRead;
-
-const String sendLevelOptions[3]{"None", "Orientation", "All"};
-const String throwStateOptions[6]{"None", "Flat", "Single", "Double", "Flat Front", "Loftie"};
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -90,8 +107,9 @@ void setOrientationXOffset(float offset);
 void setProjectAngleOffset(float yaw, float angle);
 
 void onEnabledChanged() override;
+void paramValueChangedInternal(void *param) override;
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 DeclareComponentEventTypes(OrientationUpdate, AccelUpdate, GyroUpdate, LinearAccelUpdate, ThrowState, CalibrationStatus, ActivityUpdate, Debug, ProjectedAngleUpdate);
 DeclareComponentEventNames("orientation", "accel", "gyro", "linearAccel", "throwState", "calibration", "activity", "debug", "projectedAngle");
@@ -122,91 +140,4 @@ DeclareComponentEventNames("orientation", "accel", "gyro", "linearAccel", "throw
 // DeclareScriptFunctionReturn0(MotionComponent, getThrowState, uint32_t) { return throwState; }
 #endif
 
-// CheckFeedbackParamInternalStart
-//     CheckAndSendParamFeedback(orientation);
-// CheckAndSendParamFeedback(accel);
-// CheckAndSendParamFeedback(gyro);
-// CheckAndSendParamFeedback(linearAccel);
-// CheckAndSendParamFeedback(gravity);
-// CheckAndSendParamFeedback(projectedAngle);
-// CheckFeedbackParamInternalEnd;
-
-GetEnumStringStart
-    GetEnumStringParam(sendLevel, sendLevelOptions, SendLevel);
-GetEnumStringParam(throwState, throwStateOptions, 6);
-GetEnumStringEnd;
-
-
-HandleSetParamInternalStart
-    CheckAndSetEnumParam(sendLevel, sendLevelOptions, 3);
-CheckAndSetParam(orientationSendRate);
-#ifdef IMU_TYPE_BNO055
-CheckAndSetParam(sdaPin);
-CheckAndSetParam(sclPin);
-CheckAndSetParam(intPin);
-#endif
-CheckAndSetParam(orientationXOffset);
-CheckAndSetParam(flatThresholds);
-CheckAndSetParam(accelThresholds);
-CheckAndSetParam(diffThreshold);
-CheckAndSetParam(semiFlatThreshold);
-CheckAndSetParam(loftieThreshold);
-CheckAndSetParam(singleThreshold);
-CheckAndSetParam(angleOffset);
-CheckAndSetParam(xOnCalibration);
-HandleSetParamInternalEnd;
-
-CheckFeedbackParamInternalStart;
-CheckAndSendParamFeedback(connected);
-CheckFeedbackParamInternalEnd;
-
-FillSettingsInternalStart
-    FillSettingsParam(sendLevel);
-FillSettingsParam(orientationSendRate);
-#ifdef IMU_TYPE_BNO055
-FillSettingsParam(sdaPin);
-FillSettingsParam(sclPin);
-FillSettingsParam(intPin);
-#endif
-FillSettingsParam(orientationXOffset);
-FillSettingsParam2(flatThresholds);
-FillSettingsParam3(accelThresholds);
-FillSettingsParam(diffThreshold);
-FillSettingsParam(semiFlatThreshold);
-FillSettingsParam(loftieThreshold);
-FillSettingsParam(singleThreshold);
-FillSettingsParam(angleOffset);
-FillSettingsParam(xOnCalibration);
-FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart
-    FillOSCQueryBoolParamReadOnly(connected);
-FillOSCQueryEnumParam(sendLevel, sendLevelOptions, 3);
-FillOSCQueryIntParam(orientationSendRate);
-#ifdef IMU_TYPE_BNO055
-FillOSCQueryIntParam(sdaPin);
-FillOSCQueryIntParam(sclPin);
-FillOSCQueryIntParam(intPin);
-#endif
-FillOSCQueryP3DRangeParamReadOnly(orientation, -180, 180, -90, 90, -180, 180);
-FillOSCQueryP3DParamReadOnly(accel);
-FillOSCQueryP3DParamReadOnly(gyro);
-FillOSCQueryP3DParamReadOnly(linearAccel);
-FillOSCQueryFloatParam(orientationXOffset);
-FillOSCQueryEnumParamReadOnly(throwState, throwStateOptions, 6);
-FillOSCQueryFloatParamReadOnly(activity);
-FillOSCQueryP2DParam(flatThresholds);
-FillOSCQueryP3DParam(accelThresholds);
-FillOSCQueryFloatParam(diffThreshold);
-FillOSCQueryFloatParam(semiFlatThreshold);
-FillOSCQueryFloatParam(loftieThreshold);
-FillOSCQueryFloatParam(singleThreshold);
-FillOSCQueryFloatParam(angleOffset);
-FillOSCQueryFloatParamReadOnly(projectedAngle);
-FillOSCQueryFloatParam(xOnCalibration);
-FillOSCQueryIntParamReadOnly(spinCount);
-FillOSCQueryFloatParamReadOnly(spin);
-
-FillOSCQueryInternalEnd
-
-    EndDeclareComponent
+EndDeclareComponent

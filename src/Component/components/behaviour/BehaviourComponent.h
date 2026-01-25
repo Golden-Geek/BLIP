@@ -15,7 +15,7 @@ DeclareComponent(Behaviour, "behaviour", )
         OPERATOR_MAX
     };
 
-const String operatorOptions[OPERATOR_MAX] = {
+const std::string operatorOptions[OPERATOR_MAX] = {
     "Equal",
     "Greater",
     "Greater or Equal",
@@ -39,14 +39,14 @@ enum Action
     ActionMax
 };
 
-const String triggerActionOptions[ActionMax] = {
+const std::string triggerActionOptions[ActionMax] = {
     "None",
     "Shutdown",
     "Launch Sequence",
     "Launch Script",
     "Launch Command"};
 
-DeclareIntParam(triggerAction, None);
+DeclareEnumParam(triggerAction, None);
 DeclareStringParam(triggerValue, "");
 
 void *targetParam;
@@ -69,37 +69,6 @@ void trigger();
 DeclareComponentEventTypes(CommandLaunched);
 DeclareComponentEventNames("CommandLaunched");
 
-HandleSetParamInternalStart
-    CheckAndSetParam(paramName);
-CheckAndSetEnumParam(comparator, operatorOptions, OPERATOR_MAX);
-CheckAndSetParam(compareValue);
-CheckAndSetParam(validationTime);
-CheckAndSetParam(alwaysTrigger);
-CheckAndSetEnumParam(triggerAction, triggerActionOptions, ActionMax);
-CheckAndSetParam(triggerValue);
-HandleSetParamInternalEnd;
-
-FillSettingsInternalStart
-    FillSettingsParam(paramName);
-FillSettingsParam(comparator);
-FillSettingsParam(compareValue);
-FillSettingsParam(validationTime);
-FillSettingsParam(alwaysTrigger);
-FillSettingsParam(triggerAction);
-FillSettingsParam(triggerValue);
-FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart
-    FillOSCQueryStringParam(paramName);
-FillOSCQueryEnumParam(comparator, operatorOptions, OPERATOR_MAX);
-FillOSCQueryFloatParam(compareValue);
-FillOSCQueryFloatParam(validationTime);
-FillOSCQueryBoolParam(alwaysTrigger);
-FillOSCQueryBoolParamReadOnly(valid);
-FillOSCQueryEnumParam(triggerAction, triggerActionOptions, ActionMax);
-FillOSCQueryStringParam(triggerValue);
-FillOSCQueryInternalEnd;
-}
 ;
 
 DeclareComponentManager(Behaviour, BEHAVIOUR, behaviours, behaviour, BEHAVIOUR_MAX_COUNT)

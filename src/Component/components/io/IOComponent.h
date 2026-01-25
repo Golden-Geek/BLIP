@@ -30,9 +30,8 @@ DeclareComponent(IO, "io", )
                    PINMODE_MAX };
 
 DeclareIntParam(pin, -1);
-DeclareIntParam(mode, IOComponent::D_OUTPUT);
+DeclareEnumParam(mode, IOComponent::D_OUTPUT);
 DeclareBoolParam(inverted, false);
-DeclareIntParam(updateRate, 60);
 
 bool ledCAttached;
 int curPin;
@@ -43,7 +42,7 @@ float prevValue;
 
 int debounceCount = 0;
 
-const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator", "Touch"};
+const std::string modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator", "Touch"};
 
 virtual void setupInternal(JsonObject o) override;
 virtual bool initInternal() override;
@@ -54,40 +53,6 @@ virtual void setupPin();
 void updatePin();
 
 void paramValueChangedInternal(void *param) override;
-
-HandleSetParamInternalStart
-    CheckAndSetParam(pin);
-CheckAndSetEnumParam(mode, modeOptions, PINMODE_MAX);
-CheckAndSetParam(inverted);
-CheckAndSetParam(updateRate);
-CheckAndSetParam(value);
-HandleSetParamInternalEnd;
-
-CheckFeedbackParamInternalStart
-    CheckAndSendParamFeedback(value);
-CheckFeedbackParamInternalEnd;
-
-FillSettingsInternalStart
-    FillSettingsParam(pin);
-FillSettingsParam(mode);
-FillSettingsParam(inverted);
-FillSettingsParam(updateRate);
-if (mode == D_OUTPUT || mode == A_OUTPUT || mode == A_OSC || mode == D_OSC)
-{
-    FillSettingsParam(value);
-}
-{
-    FillSettingsParam(value);
-}
-FillSettingsInternalEnd
-
-    FillOSCQueryInternalStart
-        FillOSCQueryIntParam(pin);
-FillOSCQueryEnumParam(mode, modeOptions, PINMODE_MAX);
-FillOSCQueryBoolParam(inverted);
-FillOSCQueryIntParam(updateRate);
-FillOSCQueryRangeParam(value, 0, 1);
-FillOSCQueryInternalEnd
 
     EndDeclareComponent;
 

@@ -21,7 +21,6 @@
 #define WIFI_DEFAULT_MODE MODE_STA
 #endif
 
-
 DeclareComponentSingleton(Wifi, "wifi", )
 
     enum ConnectionState { Off,
@@ -34,7 +33,7 @@ DeclareComponentSingleton(Wifi, "wifi", )
                            PingDead,
                            CONNECTION_STATES_MAX };
 
-const String connectionStateNames[CONNECTION_STATES_MAX]{"Off", "Connecting", "Connected", "ConnectionError", "Disabled", "Hotspot", "PingAlive", "PingDead"};
+const std::string connectionStateNames[CONNECTION_STATES_MAX]{"Off", "Connecting", "Connected", "ConnectionError", "Disabled", "Hotspot", "PingAlive", "PingDead"};
 
 const long timeBetweenTries = 500;    // ms
 const long connectionTimeout = 20000; // ms
@@ -56,7 +55,7 @@ enum WifiMode
 #endif
     MODE_MAX
 };
-const String wifiModeNames[MODE_MAX]{
+const std::string wifiModeNames[MODE_MAX]{
     "Wifi",
     "AP",
     "Wifi+AP",
@@ -74,7 +73,7 @@ const wifi_power_t txPowerLevels[4] = {
     WIFI_POWER_19_5dBm,
     WIFI_POWER_20_5dBm};
 
-const String txPowerLevelNames[4] = {
+const std::string txPowerLevelNames[4] = {
     "15dBm",
     "17dBm",
     "19.5dBm",
@@ -89,7 +88,7 @@ enum WifiPhyMode
     WIFI_MODE_MAX
 };
 
-const String wifiProtocolNames[WIFI_MODE_MAX]{
+const std::string wifiProtocolNames[WIFI_MODE_MAX]{
     "11B",
     "11BG",
     "11BGN",
@@ -102,11 +101,11 @@ DeclareIntParam(channel, 0);
 DeclareStringParam(manualIP, "");
 DeclareStringParam(manualGateway, "");
 DeclareBoolParam(channelScanMode, true);
-DeclareIntParam(txPower, 2); // Index into txPowerLevels
-DeclareIntParam(wifiProtocol, WIFI_11BGN);
+DeclareEnumParam(txPower, 2); // Index into txPowerLevels
+DeclareEnumParam(wifiProtocol, WIFI_11BGN);
 
-DeclareFloatParam(signal, 0)
-    DeclareIntParam(mode, WIFI_DEFAULT_MODE);
+DeclareFloatParam(signal, 0);
+DeclareEnumParam(mode, WIFI_DEFAULT_MODE);
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -120,7 +119,7 @@ void setAP();
 void disable();
 void setState(ConnectionState s);
 
-bool handleCommandInternal(const String &cmd, var *val, int numData) override;
+bool handleCommandInternal(const std::string &cmd, var *val, int numData) override;
 
 #ifdef USE_ETHERNET
 void WiFiEvent(WiFiEvent_t event);
@@ -129,47 +128,10 @@ void WiFiEvent(WiFiEvent_t event);
 bool isUsingEthernet() const;
 bool isUsingWiFi() const;
 
-String getIP() const;
+std::string getIP() const;
 int getChannel() const;
 uint8_t getWifiProtocol() const;
 
-HandleSetParamInternalStart
-    CheckAndSetParam(mode);
-CheckAndSetParam(ssid);
-CheckAndSetParam(pass);
-CheckAndSetParam(channel);
-CheckAndSetParam(manualIP);
-CheckAndSetParam(manualGateway);
-CheckAndSetParam(channelScanMode);
-CheckAndSetEnumParam(txPower, txPowerLevelNames, 4);
-CheckAndSetEnumParam(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
-
-HandleSetParamInternalEnd;
-
-FillSettingsInternalStart
-    FillSettingsParam(mode);
-FillSettingsParam(ssid);
-FillSettingsParam(pass);
-FillSettingsParam(channel);
-FillSettingsParam(manualIP);
-FillSettingsParam(manualGateway);
-FillSettingsParam(channelScanMode);
-FillSettingsParam(txPower);
-FillSettingsParam(wifiProtocol);
-FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart
-    FillOSCQueryEnumParam(mode, wifiModeNames, MODE_MAX);
-FillOSCQueryStringParam(ssid);
-FillOSCQueryStringParam(pass);
-FillOSCQueryIntParam(channel);
-FillOSCQueryFloatParamReadOnly(signal);
-FillOSCQueryStringParam(manualIP);
-FillOSCQueryStringParam(manualGateway);
-FillOSCQueryBoolParam(channelScanMode);
-FillOSCQueryEnumParam(txPower, txPowerLevelNames, 4);
-FillOSCQueryEnumParam(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
-FillOSCQueryInternalEnd;
 
 DeclareComponentEventTypes(ConnectionStateChanged);
 DeclareComponentEventNames("ConnectionStateChanged");

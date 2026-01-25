@@ -20,7 +20,7 @@ void HWSerialComponent::updateInternal()
         if (c == '\n')
         {
             bufferIndex = 0;
-            processMessage(buffer);
+            processMessage(std::string(buffer));
             memset(buffer, 0, 512);
         }
         else
@@ -36,13 +36,14 @@ void HWSerialComponent::clearInternal()
 {
 }
 
-void HWSerialComponent::processMessage(String buffer)
+void HWSerialComponent::processMessage(const std::string& buffer)
 {
     RootComponent::instance->timeAtLastSignal = millis();
    
-    if (buffer.substring(0, 2) == "yo")
+    if (buffer.substr(0, 2) == "yo")
     {
-        Serial.println("wassup " + DeviceID + " \"" + String(DeviceType) + "\" \"" + String(DeviceName) + "\" \"" + String(BLIP_VERSION) + "\"");
+        const std::string msg = std::string("wassup ") + DeviceID.c_str() + " \"" + DeviceType.c_str() + "\" \"" + DeviceName.c_str() + "\" \"" + BLIP_VERSION + "\"";
+        Serial.println(msg.c_str());
         return;
     }
 
@@ -52,25 +53,26 @@ void HWSerialComponent::processMessage(String buffer)
     // free(data);
 }
 
-void HWSerialComponent::sendMessage(String source, String command, var *data, int numData)
+void HWSerialComponent::sendMessage(const std::string& source, const std::string& command, var *data, int numData)
 {
-    if(!enabled) return;
-    
-    String msg = (source == "" ? "" : source + ".") + command;
+    if (!enabled) return;
+
+    std::string msg = (source.empty() ? "" : source + ".") + command;
     for (int i = 0; i < numData; i++)
     {
-        msg += " " + data[i].stringValue();
+        msg += ' ';
+        msg += data[i].stringValue().c_str();
     }
 
-    Serial.println(msg);
+    Serial.println(msg.c_str());
 }
 
-void HWSerialComponent::send(const String &message)
+void HWSerialComponent::send(const std::string &message)
 {
-    Serial.println(message);
+    Serial.println(message.c_str());
 #ifdef USE_DISPLAY
 #ifdef DISPLAY_SHOW_DBG
-    RootComponent::instance->display.log(message);
+    RootComponent::instance->display.log(message.c_str());
 #endif
 #endif
 }

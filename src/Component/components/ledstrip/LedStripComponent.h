@@ -22,7 +22,7 @@
 class LedStripComponent : public Component
 {
 public:
-    LedStripComponent(const String &name = "strip", bool enabled = true, int index = 0) : Component(name, enabled, index)
+    LedStripComponent(const std::string &name = "strip", bool enabled = true, int index = 0) : Component(name, enabled, index)
 #if USE_BAKELAYER
                                                                                           ,
                                                                                           bakeLayer(this)
@@ -45,17 +45,21 @@ public:
 #endif
 
     {
+        #if defined(LED_USE_FASTLED) && defined(CONFIG_IDF_TARGET_ESP32C6)
+        isHighPriority = false;
+        #else
+        isHighPriority = true;
+        #endif
     }
 
     ~LedStripComponent() {}
-    virtual String getTypeString() const override { return "ledstrip"; }
+    virtual std::string getTypeString() const override { return "ledstrip"; }
 
     DeclareIntParam(count, LED_DEFAULT_COUNT);
     DeclareIntParam(dataPin, LED_DEFAULT_DATA_PIN);
     DeclareIntParam(clkPin, LED_DEFAULT_CLK_PIN);
     DeclareIntParam(enPin, LED_DEFAULT_EN_PIN);
 
-    DeclareIntParam(updateRate, 60);
     DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
     DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
@@ -71,12 +75,12 @@ public:
         MultiLedModeMax
     };
 
-    const String multiLedModeOptions[MultiLedModeMax] = {
+    const std::string multiLedModeOptions[MultiLedModeMax] = {
         "Full Color",
         "Single Color",
         "Two Colors"};
 
-    DeclareIntParam(multiLedMode, LED_DEFAULT_MULTILED_MODE);
+    DeclareEnumParam(multiLedMode, LED_DEFAULT_MULTILED_MODE);
 
     int numColors = 0;
 
@@ -146,53 +150,13 @@ public:
     uint8_t getDitheredBrightness(uint8_t brightness, uint8_t frame);
 
     int ledMap(int index) const;
-
-    HandleSetParamInternalStart
-
-        CheckAndSetParam(count);
-    CheckAndSetParam(dataPin);
-    CheckAndSetParam(clkPin);
-    CheckAndSetParam(enPin);
-    CheckAndSetParam(updateRate);
-    CheckAndSetParam(brightness);
-    CheckAndSetParam(invertStrip);
-    CheckAndSetEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
-    CheckAndSetParam(maxPower);
-    CheckAndSetParam(colorCorrection);
-    HandleSetParamInternalEnd;
-
-    FillSettingsInternalStart
-        FillSettingsParam(count);
-    FillSettingsParam(dataPin);
-    FillSettingsParam(clkPin);
-    FillSettingsParam(enPin);
-    FillSettingsParam(updateRate);
-    FillSettingsParam(brightness);
-    FillSettingsParam(invertStrip);
-    FillSettingsParam(maxPower);
-    FillSettingsParam(multiLedMode);
-    FillSettingsParam(colorCorrection);
-    FillSettingsInternalEnd
-
-        FillOSCQueryInternalStart
-            FillOSCQueryIntParam(count);
-    FillOSCQueryIntParam(dataPin);
-    FillOSCQueryIntParam(clkPin);
-    FillOSCQueryIntParam(enPin);
-    FillOSCQueryIntParam(updateRate);
-    FillOSCQueryRangeParam(brightness, 0, 2);
-    FillOSCQueryBoolParam(invertStrip);
-    FillOSCQueryEnumParam(multiLedMode, multiLedModeOptions, MultiLedModeMax);
-    FillOSCQueryIntParam(maxPower);
-    FillOSCQueryBoolParam(colorCorrection);
-    FillOSCQueryInternalEnd
 };
 
 DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 
 #ifdef USE_SCRIPT
 
-    // LinkScriptFunctionsStart
+// LinkScriptFunctionsStart
 //     LinkScriptFunction(LedStripManagerComponent, clear, v, );
 // LinkScriptFunction(LedStripManagerComponent, fillAll, v, i);
 // LinkScriptFunction(LedStripManagerComponent, fillRange, v, iff);
@@ -235,7 +199,7 @@ DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
 // DeclareScriptFunctionVoid3(LedStripManagerComponent, setBlendMode, uint32_t, uint32_t, uint32_t) { return items[0]->userLayers[(int)arg2]->setBlendMode((LedStripLayer::BlendMode)arg3); }
 #endif
 
-void shutdown()
+    void shutdown()
 {
     for (int i = 0; i < count; i++)
     {

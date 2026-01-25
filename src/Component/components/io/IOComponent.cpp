@@ -13,12 +13,12 @@ void IOComponent::setupInternal(JsonObject o)
         mode = IO_DEFAULT_MODE;
     }
 
-    AddIntParamConfig(updateRate);
     AddIntParamConfig(pin);
-    AddIntParamConfig(mode);
+    AddEnumParamConfig(mode, modeOptions, PINMODE_MAX);
     AddBoolParamConfig(inverted);
 
     AddFloatParam(value);
+    SetParamRange(value, 0.0f, 1.0f);
 
     lastUpdateTime = millis();
 
@@ -62,12 +62,15 @@ void IOComponent::setupPin()
 {
     if (curPin != -1) // prevPin was a PWM pin
     {
-        // NDBG("Detach Pin " + String(curPin));
+        // NDBG("Detach Pin " + std::to_string(curPin));
         if (ledCAttached)
             ledcDetach(curPin);
     }
 
     curPin = pin;
+
+    bool isInputMode = (mode == D_INPUT || mode == D_INPUT_PULLUP || mode == D_INPUT_PULLDOWN || mode == A_INPUT || mode == TOUCH_INPUT);
+    setParamFeedback(&value, isInputMode);
 
     if (curPin > 0)
     {
@@ -110,10 +113,10 @@ void IOComponent::setupPin()
         {
             if (m == A_OUTPUT || m == A_OSC)
             {
-                // NDBG("Attach pin " + String(curPin) + " to PWM");
+                // NDBG("Attach pin " + std::to_string(curPin) + " to PWM");
                 bool result = ledcAttach(curPin, 5000, 10);
                 if (!result)
-                    NDBG("Failed to attach pin " + String(curPin) + " to PWM");
+                    NDBG("Failed to attach pin " + std::to_string(curPin) + " to PWM");
 
                 ledCAttached = result;
             }
@@ -126,12 +129,6 @@ void IOComponent::updatePin()
     if (pin == -1)
         return;
 
-    long currentTime = millis();
-    if (lastUpdateTime > 0 && updateRate > 0 && currentTime - lastUpdateTime < (1000 / updateRate))
-        return;
-
-    lastUpdateTime = currentTime;
-
     int m = mode;
     switch (m)
     {
@@ -139,7 +136,7 @@ void IOComponent::updatePin()
     case D_INPUT_PULLUP:
     case D_INPUT_PULLDOWN:
     {
-        bool val = digitalRead(pin);
+        bool val = gpio_get_level(gpio_num_t(pin));
 
         if (inverted)
             val = !val;
@@ -156,7 +153,7 @@ void IOComponent::updatePin()
             int newDebounceCount = min(max(debounceCount + (val ? 1 : -1), 0), IO_PULL_DEBOUNCE);
             if (newDebounceCount != debounceCount)
             {
-                // DBG("Debounce count changed to " + String(newDebounceCount) + " val : " + String(val));
+                // DBG("Debounce count changed to " + std::to_string(newDebounceCount) + " val : " + std::to_string(val));
                 debounceCount = newDebounceCount;
                 if (debounceCount == IO_PULL_DEBOUNCE)
                 {
@@ -178,14 +175,14 @@ void IOComponent::updatePin()
         {
             if (m == D_OUTPUT)
             {
-                digitalWrite(pin, inverted ? !value : value);
+                gpio_set_level(gpio_num_t(pin), inverted ? !value : value);
             }
             else
             {
                 if (pin != -1)
                 {
                     uint32_t v = value * 1024;
-                    // NDBG("Set PWM with value " + String(v));
+                    // NDBG("Set PWM with value " + std::to_string(v));
                     ledcWrite(pin, v);
                 }
             }
@@ -214,7 +211,7 @@ void IOComponent::updatePin()
 
         if (inverted)
             v = !v;
-        digitalWrite(pin, v);
+        gpio_set_level(gpio_num_t(pin), v);
     }
     break;
 
@@ -224,7 +221,7 @@ void IOComponent::updatePin()
         {
             float sv = sin(millis() * value) * 0.5f + 0.5f;
             uint32_t v = sv * 1024;
-            // NDBG("Set PWM with value " + String(v));
+            // NDBG("Set PWM with value " + std::to_string(v));
             ledcWrite(pin, v);
         }
     }

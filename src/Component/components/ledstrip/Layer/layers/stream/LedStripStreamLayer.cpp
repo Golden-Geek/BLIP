@@ -65,7 +65,7 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
 
     int actualLedCount = ledEnd - ledStart;
 
-    // DBG("Received Artnet, incoming universe : " + String(dmxUniverse) + ", strip universe : " + String(universe) + ", startChannel : " + String(startChannel) + ", ledStart : " + String(ledStart) + ", ledEnd : " + String(ledEnd) + ", actualLedCount : " + String(actualLedCount));
+    // DBG("Received Artnet, incoming universe : " + std::to_string(dmxUniverse) + ", strip universe : " + std::to_string(universe) + ", startChannel : " + std::to_string(startChannel) + ", ledStart : " + std::to_string(ledStart) + ", ledEnd : " + std::to_string(ledEnd) + ", actualLedCount : " + std::to_string(actualLedCount));
 
     if (use16Bits)
     {
@@ -86,16 +86,17 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
         {
 
             int channelIndex = dataStartIndex + i * colorDataSize;
+            uint8_t alpha = includeAlpha ? data[channelIndex + 3] : 255;
             Color c = Color(data[channelIndex],
                             data[channelIndex + 1],
                             data[channelIndex + 2],
-                            includeAlpha ? data[channelIndex + 3] : 255);
+                            alpha);
 
             colors[ledStart + i] = c;
 
             // if (i < 3)
             // {
-            //     DBG("Data for LED " + String(ledStart + i) + ": R " + String(c.r) + " G " + String(c.g) + " B " + String(c.b) + " A " + String(c.a));
+            //     DBG("Data for LED " + std::to_string(ledStart + i) + ": R " + std::to_string(c.r) + " G " + std::to_string(c.g) + " B " + std::to_string(c.b) + " A " + std::to_string(c.a));
             // }
         }
 

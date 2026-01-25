@@ -1,16 +1,14 @@
 #include "UnityIncludes.h"
-#include "WifiComponent.h"
 
-ImplementSingleton(WifiComponent)
+ImplementSingleton(WifiComponent);
 
-    void WifiComponent::setupInternal(JsonObject o)
+void WifiComponent::setupInternal(JsonObject o)
 {
+    updateRate = 2; // 2 Hz update rate, only for wifi connection checking
+
     state = Off;
 
-    // AddAndSetParameter(ssid);
-    // AddAndSetParameter(pass);
-    // AddAndSetParameter(apOnNoWifi);
-    AddIntParamConfig(mode);
+    AddEnumParamConfig(mode, wifiModeNames, MODE_MAX);
 
 #ifdef USE_ETHERNET
     WiFi.onEvent(std::bind(&WifiComponent::WiFiEvent, this, std::placeholders::_1));
@@ -21,16 +19,16 @@ ImplementSingleton(WifiComponent)
     AddStringParamConfig(manualIP);
     AddStringParamConfig(manualGateway);
     AddBoolParamConfig(channelScanMode);
-    AddIntParamConfig(txPower);
-    AddIntParamConfig(wifiProtocol);
+    AddEnumParamConfig(txPower, txPowerLevelNames, MAX_POWER_LEVELS);
+    AddEnumParamConfig(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
     AddFloatParam(signal);
 
 #ifdef WIFI_C6_USE_EXTERNAL_ANTENNA
     pinMode(3, OUTPUT);
-    digitalWrite(3, LOW);
+    gpio_set_level(gpio_num_t(3), LOW);
     delay(100);
     pinMode(14, OUTPUT);
-    digitalWrite(14, HIGH);
+    gpio_set_level(gpio_num_t(14), HIGH);
 #endif
 }
 
@@ -122,8 +120,8 @@ void WifiComponent::setState(ConnectionState s)
     {
     case Connected:
     {
-        String modeStr = isUsingEthernet() ? "Ethernet" : "Wifi";
-        NDBG("Connected to " + modeStr + " " + ssid + " : " + pass + " with IP " + getIP() + " on channel " + String(WiFi.channel()));
+        std::string modeStr = isUsingEthernet() ? "Ethernet" : "Wifi";
+        NDBG("Connected to " + modeStr + " " + ssid + " : " + pass + " with IP " + getIP() + " on channel " + std::to_string(WiFi.channel()));
     }
     break;
 
@@ -179,7 +177,7 @@ void WifiComponent::connect()
 #endif
     }
 
-    NDBG("Setting WiFi mode to " + String(wMode));
+    NDBG("Setting WiFi mode to " + std::to_string(wMode));
     esp_wifi_set_protocol(WIFI_IF_STA, getWifiProtocol());
 #ifdef ESP32
 #endif
@@ -192,14 +190,14 @@ void WifiComponent::connect()
     {
         NDBG("Starting Ethernet...");
         ETH.begin();
-        
+
         if (manualIP != "" && manualGateway != "" && manualIP != "0.0.0.0" && manualGateway != "0.0.0.0")
         {
             IPAddress ip, gateway, subnet(255, 255, 255, 0);
 
-            ip.fromString(manualIP);
-            gateway.fromString(manualGateway);
-            NDBG("Using manual IP configuration for Ethernet : " + ip.toString() + " with gateway " + gateway.toString());
+            ip.fromString(manualIP.c_str());
+            gateway.fromString(manualGateway.c_str());
+            NDBG("Using manual IP configuration for Ethernet : " + manualIP + " with gateway " + manualGateway);
             ETH.config(ip, gateway, subnet, IPAddress(8, 8, 8, 8), IPAddress(1, 1, 1, 1));
         }
         else
@@ -232,10 +230,10 @@ void WifiComponent::connect()
         if (manualIP != "" && manualGateway != "" && manualIP != "0.0.0.0" && manualGateway != "0.0.0.0")
         {
             IPAddress ip, gateway, subnet(255, 255, 255, 0);
-            ip.fromString(manualIP);
-            gateway.fromString(manualGateway);
+            ip.fromString(manualIP.c_str());
+            gateway.fromString(manualGateway.c_str());
             WiFi.config(ip, gateway, subnet);
-            NDBG("Using manual IP configuration for Wifi : " + ip.toString() + " with gateway " + gateway.toString());
+            NDBG("Using manual IP configuration for Wifi : " + manualIP + " with gateway " + manualGateway);
         }
         else
         {
@@ -320,33 +318,33 @@ bool WifiComponent::isUsingWiFi() const
     return (mode == MODE_STA || mode == MODE_AP || mode == MODE_AP_STA);
 }
 
-String WifiComponent::getIP() const
+std::string WifiComponent::getIP() const
 {
     if (state == Connected)
     {
         bool showEth = false;
-        String ethIP = "";
+        std::string ethIP = "";
 #ifdef USE_ETHERNET
-        ethIP = ETH.localIP().toString();
+        ethIP = ETH.localIP().toString().c_str();
 #endif
 
         if (isUsingEthernet())
             return ethIP;
         else
-            return WiFi.localIP().toString();
+            return WiFi.localIP().toString().c_str();
     }
     else if (state == Hotspot)
-        return WiFi.softAPIP().toString();
+        return WiFi.softAPIP().toString().c_str();
 
     return "[noip]";
 }
-bool WifiComponent::handleCommandInternal(const String &cmd, var *val, int numData)
+bool WifiComponent::handleCommandInternal(const std::string &cmd, var *val, int numData)
 {
     if (cmd == "info")
     {
-        String s = connectionStateNames[state] + " to " + ssid;
+        std::string s = connectionStateNames[state] + " to " + ssid;
         s += "\nIP : " + getIP();
-        s += "\nRSSI : " + String(WiFi.RSSI());
+        s += "\nRSSI : " + std::to_string(WiFi.RSSI());
         NDBG(s);
         return true;
     }
@@ -361,16 +359,16 @@ int WifiComponent::getChannel() const
 
 uint8_t WifiComponent::getWifiProtocol() const
 {
-    switch(wifiProtocol)
+    switch (wifiProtocol)
     {
-        case WIFI_11B:
-            return WIFI_PROTOCOL_11B;
-        case WIFI_11BG:
-            return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G;
-        case WIFI_11BGN:
-            return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
-        case WIFI_AX:
-            return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11AX;
+    case WIFI_11B:
+        return WIFI_PROTOCOL_11B;
+    case WIFI_11BG:
+        return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G;
+    case WIFI_11BGN:
+        return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
+    case WIFI_AX:
+        return WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11AX;
     }
 
     return WIFI_PROTOCOL_11B;

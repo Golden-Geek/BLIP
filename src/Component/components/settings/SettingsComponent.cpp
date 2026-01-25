@@ -4,8 +4,11 @@ ImplementSingleton(SettingsComponent);
 
 void SettingsComponent::setupInternal(JsonObject o)
 {
-    AddIntParam(propID);
-    AddStringParam(deviceName);
+    AddFunctionTrigger(saveSettings);
+    AddFunctionTrigger(clearSettings);
+    AddFunctionTrigger(factoryReset);
+    AddIntParamConfig(propID);
+    AddStringParamConfig(deviceName);
     AddStringParamConfig(deviceType);
     AddStringParamConfig(firmwareVersion);
 #ifdef USE_POWER
@@ -18,7 +21,7 @@ void SettingsComponent::updateInternal()
 {
 }
 
-bool SettingsComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool SettingsComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (command == "save")
     {
@@ -27,14 +30,15 @@ bool SettingsComponent::handleCommandInternal(const String &command, var *data, 
     }
     else if (command == "show")
     {
-        String test;
+        std::string test;
         serializeJson(Settings::settings, test);
         DBG(test);
         return true;
     }
     else if (command == "clear")
     {
-        clearSettings();
+        bool keepWifi = numData > 0 ? data[0].boolValue() : true;
+        clearSettings(keepWifi);
         return true;
     }
 
@@ -45,20 +49,30 @@ void SettingsComponent::saveSettings()
 {
     Settings::settings.clear();
     JsonObject o = Settings::settings.to<JsonObject>();
-    RootComponent::instance->fillSettingsData(o, true);
+    RootComponent::instance->fillSettingsData(o);
     Settings::saveSettings();
     NDBG("Settings saved");
 }
 
-void SettingsComponent::clearSettings()
+void SettingsComponent::clearSettings(bool keepWifiSettings)
 {
+
     Settings::clearSettings();
+
+    if (keepWifiSettings)
+    {
+        JsonObject o = Settings::settings.to<JsonObject>();
+        JsonObject comps = o.createNestedObject("components");
+        RootComponent::instance->wifi.fillSettingsData(comps.createNestedObject(RootComponent::instance->wifi.name));
+        Settings::saveSettings();
+    }
+
     NDBG("Settings cleared, will reboot now.");
     delay(200);
     RootComponent::instance->restart();
 }
 
-String SettingsComponent::getDeviceID() const
+std::string SettingsComponent::getDeviceID() const
 {
     byte mac[6]{0, 0, 0, 0, 0, 0};
 
@@ -73,11 +87,10 @@ String SettingsComponent::getDeviceID() const
 #endif
 #endif
 
-    String d = "";
+    std::string d = "";
     for (int i = 0; i < 6; i++)
-        d += (i > 0 ? ":" : "") + String(mac[i], HEX);
+        d += (i > 0 ? ":" : "") + StringHelpers::byteToHexString(mac[i]);
 
-    d.toUpperCase();
+    d = StringHelpers::toUpperCase(d);
     return d;
 }
-

@@ -32,45 +32,13 @@ DeclareBoolParam(wakeUpState, POWER_WAKEUP_BUTTON_STATE);
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 void saveSettings();
-void clearSettings();
+void clearSettings(bool keepWifiSettings = true);
+void factoryReset() { clearSettings(false); }
 
-String getDeviceID() const;
-
-HandleSetParamInternalStart
-    CheckTrigger(saveSettings);
-CheckTrigger(clearSettings);
-CheckAndSetParam(deviceName);
-CheckAndSetParam(propID);
-#ifdef USE_POWER
-CheckAndSetParam(wakeUpButton);
-CheckAndSetParam(wakeUpState);
-#endif
-HandleSetParamInternalEnd;
-
-FillSettingsInternalStart
-    FillSettingsParam(deviceName);
-FillSettingsParam(propID);
-#ifdef USE_POWER
-FillSettingsParam(wakeUpButton);
-FillSettingsParam(wakeUpState);
-#endif
-FillSettingsInternalEnd
-
-    FillOSCQueryInternalStart
-        FillOSCQueryTrigger(saveSettings);
-FillOSCQueryTrigger(clearSettings);
-FillOSCQueryIntParam(propID);
-FillOSCQueryStringParam(deviceName);
-FillOSCQueryStringParamReadOnly(deviceType);
-FillOSCQueryStringParamReadOnly(firmwareVersion);
-#ifdef USE_POWER
-FillOSCQueryIntParam(wakeUpButton);
-FillOSCQueryBoolParam(wakeUpState);
-#endif
-FillOSCQueryInternalEnd
+std::string getDeviceID() const;
 
     EndDeclareComponent
 

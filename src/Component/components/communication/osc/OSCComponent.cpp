@@ -32,7 +32,7 @@ void OSCComponent::clearInternal()
         }
         else
         {
-            DBG(String("Failed to remove all services: ") + String(esp_err_to_name(err)));
+            DBG(std::string("Failed to remove all services: ") + esp_err_to_name(err));
             // Handle error
         }
         MDNS.end();
@@ -52,18 +52,18 @@ void OSCComponent::setupConnection()
     udpIsInit = false;
     if (shouldConnect)
     {
-        NDBG("Start OSC Receiver on " + String(OSC_LOCAL_PORT));
+        NDBG("Start OSC Receiver on " + std::to_string(OSC_LOCAL_PORT));
         udp.begin(OSC_LOCAL_PORT);
         udp.clear();
         SetParam(isAlive, true);
 
-        String mdnsName = DeviceName;
-        mdnsName.toLowerCase();
-        mdnsName.replace(" ", "_");
+        std::string mdnsName = StringHelpers::toLowerCase(DeviceName);
+        StringHelpers::replaceAll(mdnsName, " ", "");
 
         if (MDNS.begin(mdnsName.c_str()))
         {
-            MDNS.setInstanceName("BLIP - " + DeviceName);
+            std::string instanceName = DeviceName + " (" + DeviceID + ")";
+            MDNS.setInstanceName(instanceName.c_str());
             NDBG("OSC Zeroconf started");
             MDNS.addService("osc", "udp", 9000);
             MDNS.addServiceTxt("osc", "udp", "deviceID", DeviceID.c_str());
@@ -122,7 +122,7 @@ void OSCComponent::processMessage(OSCMessage &msg)
         char hostData[32];
         msg.getString(0, hostData, 32);
 
-        NDBG("Yo received from : " + String(hostData));
+        NDBG("Yo received from : " + std::string(hostData));
 
         SetParam(remoteHost, hostData);
 
@@ -156,11 +156,11 @@ void OSCComponent::processMessage(OSCMessage &msg)
     {
         char addr[64];
         msg.getAddress(addr);
-        String addrStr = String(addr).substring(1);
-        addrStr.replace('/', '.');
-        int tcIndex = addrStr.lastIndexOf('.');
-        String tc = tcIndex == -1 ? "root" : addrStr.substring(0, tcIndex); // component name
-        String cmd = addrStr.substring(tcIndex + 1);
+        std::string addrStr = std::string(addr).substr(1);
+        StringHelpers::replaceAll(addrStr, "/", ".");
+        int tcIndex = addrStr.rfind('.');
+        std::string tc = tcIndex == -1 ? "root" : addrStr.substr(0, tcIndex); // component name
+        std::string cmd = addrStr.substr(tcIndex + 1);
 
         const int numData = 10; // max 10-2 = 8 arguments
         var data[numData];
@@ -179,8 +179,8 @@ void OSCComponent::processMessage(OSCMessage &msg)
 
 void OSCComponent::sendMessage(OSCMessage &msg)
 {
-    NDBG("Sending OSC message to " + remoteHost + " : " + String(msg.getAddress()));
-    
+    NDBG("Sending OSC message to " + remoteHost + " : " + msg.getAddress());
+
     if (!udpIsInit || !enabled || remoteHost.length() == 0)
         return;
 
@@ -195,7 +195,7 @@ void OSCComponent::sendMessage(OSCMessage &msg)
     msg.empty();
 }
 
-void OSCComponent::sendMessage(String address)
+void OSCComponent::sendMessage(std::string address)
 {
     if (!udpIsInit || !enabled || remoteHost.length() == 0)
         return;
@@ -207,7 +207,7 @@ void OSCComponent::sendMessage(String address)
     sendMessage(m);
 }
 
-void OSCComponent::sendMessage(const String &source, const String &command, var *data, int numData)
+void OSCComponent::sendMessage(const std::string &source, const std::string &command, var *data, int numData)
 {
     if (!udpIsInit || !enabled || remoteHost.length() == 0)
         return;
@@ -219,7 +219,7 @@ void OSCComponent::sendMessage(const String &source, const String &command, var 
     sendMessage(msg);
 }
 
-OSCMessage OSCComponent::createMessage(const String &source, const String &command, const var *data, int numData, bool addID)
+OSCMessage OSCComponent::createMessage(const std::string &source, const std::string &command, const var *data, int numData, bool addID)
 {
     OSCMessage msg((source + "/" + command).c_str());
     if (addID)
@@ -265,15 +265,13 @@ OSCMessage OSCComponent::createMessage(const String &source, const String &comma
     return msg;
 }
 
-
-OSCMessage OSCComponent::createMessage(const var* data, int numData, bool addID)
+OSCMessage OSCComponent::createMessage(const var *data, int numData, bool addID)
 {
-    if(numData < 2)
+    if (numData < 2)
         return OSCMessage();
 
-    
-    String source = StringHelpers::serialPathToOSC(data[0].stringValue());
-    String command = data[1].stringValue();
+    std::string source = StringHelpers::serialPathToOSC(data[0].stringValue());
+    std::string command = data[1].stringValue();
     return createMessage(source, command, data + 2, numData - 2, addID);
 }
 
@@ -294,7 +292,7 @@ var OSCComponent::OSCArgumentToVar(OSCMessage &m, int index)
     else if (m.isRgba(index))
     {
         oscrgba_t rgba = m.getRgba(index);
-        // DBG(String(rgba.r) + " " + String(rgba.g) + " " + String(rgba.b) + " " + String(rgba.a));
+        // DBG(std::string(rgba.r) + " " + std::to_string(rgba.g) + " " + std::to_string(rgba.b) + " " + std::to_string(rgba.a));
         int col = (rgba.a << 24) | (rgba.b << 16) | (rgba.g << 8) | rgba.r;
         return col;
     }

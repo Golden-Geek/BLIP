@@ -4,7 +4,7 @@ ImplementSingleton(DMXReceiverComponent);
 
 void DMXReceiverComponent::setupInternal(JsonObject o)
 {
-    AddIntParam(receiveRate);
+    setCustomUpdateRate(60, o);
 
 #ifdef USE_ARTNET
     artnetIsInit = false;
@@ -41,26 +41,16 @@ bool DMXReceiverComponent::initInternal()
 void DMXReceiverComponent::updateInternal()
 {
 #ifdef USE_ARTNET
-
-#if defined USE_ESPNOW && not defined ESPNOW_BRIDGE
-    if (ESPNowComponent::instance->enabled)
-        return;
-#endif
-
     if (!artnetIsInit)
         return;
 
-    long curTime = millis();
-    if (curTime > lastReceiveTime + (1000 / max(receiveRate, 1)))
+    int r = -1;
+    while (r != 0)
     {
-        lastReceiveTime = curTime;
-        int r = -1;
-        while (r != 0)
-        {
-            r = artnet.read();
-            // DBG("Receiving artnet, returned " + String(r));
-        }
+        r = artnet.read();
+        // DBG("Receiving artnet, returned " + std::to_string(r));
     }
+
 #endif
 }
 
@@ -134,7 +124,7 @@ void DMXReceiverComponent::onStreamReceived(const uint8_t *data, int len)
     uint16_t universe = (data[0] << 8) | data[1];
     uint16_t startChannel = (data[2] << 8) | data[3];
 
-    // DBG("Received stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len - 4) + " bytes");
+    // DBG("Received stream data for universe " + std::to_string(universe) + " starting at channel " + std::to_string(startChannel) + " with " + std::to_string(len - 4) + " bytes");
 
     if (len <= 4)
     {
@@ -165,7 +155,7 @@ void DMXReceiverComponent::unregisterDMXListener(DMXListener *listener)
 
 void DMXReceiverComponent::dispatchDMXData(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
-    // DBG("Dispatching stream data for universe " + String(universe) + " starting at channel " + String(startChannel) + " with " + String(len) + " bytes to " + String(dmxListeners.size()) + " listeners");
+    // DBG("Dispatching stream data for universe " + std::to_string(universe) + " starting at channel " + std::to_string(startChannel) + " with " + std::to_string(len) + " bytes to " + std::to_string(dmxListeners.size()) + " listeners");
     for (auto &listener : dmxListeners)
     {
         listener->onDMXReceived(universe, data, startChannel, len);

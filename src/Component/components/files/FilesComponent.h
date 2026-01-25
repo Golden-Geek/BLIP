@@ -30,34 +30,25 @@
 #endif
 
 // Forward declaration of the component
-DeclareComponentSingleton(Files, "files", )
+DeclareComponentSingleton(Files, "files", );
 
-    //================================================================================
-    // Public Methods
-    //================================================================================
-    void setupInternal(JsonObject o) override;
+void setupInternal(JsonObject o) override;
 bool initInternal() override;
 
-File openFile(String fileName, bool forWriting = false, bool deleteIfExists = true);
-bool deleteFolder(String path);
-void deleteFileIfExists(String path);
+File openFile(std::string fileName, bool forWriting = false, bool deleteIfExists = true);
+bool deleteFolder(std::string path);
+void deleteFileIfExists(std::string path);
 
-void createFolderIfNotExists(String path);
+void createFolderIfNotExists(std::string path);
 
-String listDir(const char *dirname, uint8_t levels);
-String getFileSystemInfo();
+std::string listDir(const char *dirname, uint8_t levels);
+std::string getFileSystemInfo();
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 fs::FS &getFS() const { return *_fs; }
 
-
 private:
-//================================================================================
-// Private Members
-//================================================================================
-
-// The single pointer to the active filesystem. This is the core of the refactor.
 fs::FS *_fs = nullptr;
 
 #ifdef FILES_USE_SPI
@@ -70,9 +61,6 @@ SPIClass spiSD;
 wl_handle_t _wl_handle = WL_INVALID_HANDLE;
 #endif
 
-//================================================================================
-// Component Parameters
-//================================================================================
 #ifdef FILES_USE_SPI
 DeclareIntParam(sdSCK, FILES_DEFAULT_SCK);
 DeclareIntParam(sdMiso, FILES_DEFAULT_MISO);
@@ -86,53 +74,7 @@ DeclareBoolParam(sdEnVal, FILES_DEFAULT_POWER_VALUE);
 DeclareIntParam(sdSpeed, FILES_DEFAULT_SPEED);
 #endif
 
-//================================================================================
-// Component Events and Settings
-//================================================================================
 DeclareComponentEventTypes(UploadStart, UploadProgress, UploadComplete, UploadCancel, FileList, FilesInfo);
 DeclareComponentEventNames("uploadStart", "uploadProgress", "uploadComplete", "uploadCancel", "list", "info");
-
-// Macros for SD card parameter handling...
-HandleSetParamInternalStart
-#ifdef FILES_USE_SPI
-    CheckAndSetParam(sdSCK);
-CheckAndSetParam(sdMiso);
-CheckAndSetParam(sdMosi);
-CheckAndSetParam(sdCS);
-#endif
-#ifdef FILES_TYPE_SD
-CheckAndSetParam(sdEnPin);
-CheckAndSetParam(sdEnVal);
-CheckAndSetParam(sdSpeed);
-#endif
-HandleSetParamInternalEnd;
-
-FillSettingsInternalStart
-#ifdef FILES_USE_SPI
-    FillSettingsParam(sdSCK);
-FillSettingsParam(sdMiso);
-FillSettingsParam(sdMosi);
-FillSettingsParam(sdCS);
-#endif
-#ifdef FILES_TYPE_SD
-FillSettingsParam(sdEnPin);
-FillSettingsParam(sdEnVal);
-FillSettingsParam(sdSpeed);
-#endif
-FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart
-#ifdef FILES_USE_SPI
-    FillOSCQueryIntParam(sdSCK);
-FillOSCQueryIntParam(sdMiso);
-FillOSCQueryIntParam(sdMosi);
-FillOSCQueryIntParam(sdCS);
-#endif
-#ifdef FILES_TYPE_SD
-FillOSCQueryIntParam(sdEnPin);
-FillOSCQueryBoolParam(sdEnVal);
-FillOSCQueryIntParam(sdSpeed);
-#endif
-FillOSCQueryInternalEnd;
 
 EndDeclareComponent

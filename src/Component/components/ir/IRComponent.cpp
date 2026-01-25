@@ -10,6 +10,9 @@ void IRComponent::setupInternal(JsonObject o)
     AddIntParamConfig(pin1);
     AddIntParamConfig(pin2);
     AddFloatParam(value);
+    SetParamRange(value, 0.0f, 1.0f);
+    AddBoolParamConfig(keepValueOnReboot);
+    setParamConfig(&value, keepValueOnReboot);
 
     prevValue = -1;
 }
@@ -37,6 +40,8 @@ void IRComponent::paramValueChangedInternal(void *param)
         setupPins();
     if (param == &value)
         updatePins();
+    if (param == &keepValueOnReboot)
+        setParamConfig(&value, keepValueOnReboot);
 }
 
 void IRComponent::setupPins()
@@ -53,7 +58,7 @@ void IRComponent::setupPins()
     {
         bool result = ledcAttach(curPin1, 5000, 10);
         if (!result)
-            NDBG("Failed to attach pin1 " + String(curPin1) + " to PWM");
+            NDBG("Failed to attach pin1 " + std::to_string(curPin1) + " to PWM");
 
         ledCAttached1 = result;
     }
@@ -62,7 +67,7 @@ void IRComponent::setupPins()
     {
         bool result = ledcAttach(curPin2, 5000, 10);
         if (!result)
-            NDBG("Failed to attach pin2 " + String(curPin2) + " to PWM");
+            NDBG("Failed to attach pin2 " + std::to_string(curPin2) + " to PWM");
 
         ledCAttached2 = result;
     }
@@ -76,8 +81,10 @@ void IRComponent::updatePins()
         return;
 
     uint32_t v = value * 1024;
-    if (curPin1 > 0 && ledCAttached1)ledcWrite(curPin1, v);
-    if (curPin2 > 0 && ledCAttached2)ledcWrite(curPin2, v);
+    if (curPin1 > 0 && ledCAttached1)
+        ledcWrite(curPin1, v);
+    if (curPin2 > 0 && ledCAttached2)
+        ledcWrite(curPin2, v);
 
     prevValue = value;
 }

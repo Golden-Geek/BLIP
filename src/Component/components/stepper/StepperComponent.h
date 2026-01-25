@@ -34,30 +34,5 @@ void clearInternal() override;
 void onEnabledChanged() override;
 void paramValueChangedInternal(void *param) override;
 
-HandleSetParamInternalStart
-    CheckAndSetParam(stepPin);
-CheckAndSetParam(dirPin);
-CheckAndSetParam(enPin);
-CheckAndSetParam(accel);
-CheckAndSetParam(speed);
-CheckAndSetParam(position);
-HandleSetParamInternalEnd;
-
-FillSettingsInternalStart
-    FillSettingsParam(stepPin);
-FillSettingsParam(dirPin);
-FillSettingsParam(enPin);
-FillSettingsParam(accel);
-FillSettingsParam(speed);
-FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart
-    FillOSCQueryIntParam(stepPin);
-FillOSCQueryIntParam(dirPin);
-FillOSCQueryIntParam(enPin);
-FillOSCQueryFloatParam(accel);
-FillOSCQueryFloatParam(speed);
-FillOSCQueryFloatParam(position);
-FillOSCQueryInternalEnd
 
     EndDeclareComponent

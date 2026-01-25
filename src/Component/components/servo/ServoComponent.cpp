@@ -1,12 +1,15 @@
+#include "UnityIncludes.h"
+
 void ServoComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(pin);
-    AddFloatParam(position);
+    AddFloatParamConfig(position);
 }
 
 bool ServoComponent::initInternal()
 {
-    if (pin > 0) servo.attach(pin);
+    if (pin > 0)
+        servo.attach(pin);
     return true;
 }
 

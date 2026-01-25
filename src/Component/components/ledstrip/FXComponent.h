@@ -26,9 +26,9 @@ public:
         Roll,
         IsoAxisMax
     };
-    const String isoOptions[IsoAxisMax]{"Projected Angle", "Yaw", "Pitch", "Roll"};
+    const std::string isoOptions[IsoAxisMax]{"Projected Angle", "Yaw", "Pitch", "Roll"};
 
-    DeclareIntParam(isolationAxis, ProjectedAngle); // 0 = projectedAngle, 1 = yaw, 2 = pitch, 3 = roll
+    DeclareEnumParam(isolationAxis, ProjectedAngle); // 0 = projectedAngle, 1 = yaw, 2 = pitch, 3 = roll
 
     DeclareBoolParam(swapOnFlip, false); // this is a hack to make the flip work with the current implementation of the isolation axis, using quaternions should be better for that
     bool boardIsFlipped = false;
@@ -46,40 +46,7 @@ public:
     void process(Color* sourcColors);
     void reset();
 
-    HandleSetParamInternalStart
-        CheckAndSetParam(staticOffset);
-    CheckAndSetParam(offsetSpeed);
-    CheckAndSetParam(isolationSpeed);
-    CheckAndSetParam(isolationSmoothing);
-    CheckAndSetEnumParam(isolationAxis, isoOptions, IsoAxisMax);
-    CheckAndSetParam(swapOnFlip);
-    CheckAndSetParam(showCalibration);
-    HandleSetParamInternalEnd;
-
-    // CheckFeedbackParamInternalStart
-    // CheckFeedbackParamInternalEnd;
-
-    FillSettingsInternalStart
-        FillSettingsParam(staticOffset);
-    FillSettingsParam(offsetSpeed);
-    FillSettingsParam(isolationSpeed);
-    FillSettingsParam(isolationSmoothing);
-    FillSettingsParam(isolationAxis);
-    FillSettingsParam(swapOnFlip);
-    FillSettingsParam(showCalibration);
-    FillSettingsInternalEnd;
-
-    FillOSCQueryInternalStart
-        FillOSCQueryFloatParam(staticOffset);
-    FillOSCQueryFloatParam(offsetSpeed);
-    FillOSCQueryFloatParam(isolationSpeed);
-    FillOSCQueryFloatParam(isolationSmoothing);
-    FillOSCQueryEnumParam(isolationAxis, isoOptions, IsoAxisMax);
-    FillOSCQueryBoolParam(swapOnFlip);
-    FillOSCQueryBoolParam(showCalibration);
-    FillOSCQueryInternalEnd;
-
-    String getTypeString() const override { return "fx"; }
+    std::string getTypeString() const override { return "fx"; }
 };
 
 #endif

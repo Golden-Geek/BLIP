@@ -7,6 +7,7 @@ void LedStripSystemLayer::setupInternal(JsonObject o)
     blendMode = BlendMode::Alpha;
 
     AddBoolParam(showBattery);
+    AddColorParam(espSyncColor);
 }
 
 void LedStripSystemLayer::updateInternal()
@@ -56,7 +57,7 @@ void LedStripSystemLayer::updateConnectionStatus()
 
         if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
         {
-            // NDBG("Show espnow pairing mode " + String(ESPNowComponent::instance->pairingMode) + " bridge init " + String(ESPNowComponent::instance->bridgeInit));
+            // NDBG("Show espnow pairing mode " + std::to_string(ESPNowComponent::instance->pairingMode) + " bridge init " + std::to_string(ESPNowComponent::instance->bridgeInit));
             float t = millis() / 1000.0f;
             float val = (cos(t * 2 * PI / 5 + PI) * .5f + .5f) * .5f + .3f;
 
@@ -100,7 +101,7 @@ void LedStripSystemLayer::updateConnectionStatus()
         Color color = Color(100, 100, 100);
 #endif
 
-        // NDBG("Wifi status : " + String(connectionState) + " " + String(relT));
+        // NDBG("Wifi status : " + std::to_string(connectionState) + " " + std::to_string(relT));
 
         // default behavior (connecting) on which we will add animation for connected behavior
         float t = (time - RootComponent::instance->timeAtStart) / 1000.0f;
@@ -143,11 +144,11 @@ void LedStripSystemLayer::updateConnectionStatus()
         }
         else
         {
-            // DBG("Rel T " + String(relT));
+            // DBG("Rel T " + std::to_string(relT));
             color = color.withMultipliedAlpha(constrain((relT - .05f) * 1 / animTime, 0, 1));
         }
 
-        fillAll(Color(0, 0, 0, alpha * 255)); // clear strip
+        fillAll(Color(0.f, 0.f, 0.f, alpha)); // clear strip
         point(color, pos, radius, false);
     }
 }
@@ -165,7 +166,7 @@ void LedStripSystemLayer::updateShutdown()
     {
         // reverse saw red animation
         float val = max(1 - fmodf(relT * 3, 1) * 1.5f, 0.f);
-        fillAll(Color(val * 255, 0, 0));
+        fillAll(Color(val, 0.f, 0.f));
         return; // battery animation has priority
     }
 #endif

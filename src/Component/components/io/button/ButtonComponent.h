@@ -32,7 +32,7 @@
 class ButtonComponent : public IOComponent
 {
 public:
-    ButtonComponent(const String &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
+    ButtonComponent(const std::string &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
 
     long timeAtPress = 0;
     bool wasPressedAtBoot = false;
@@ -61,31 +61,6 @@ public:
 
     // DeclareScriptFunctionReturn0(ButtonComponent, getMultipress, uint32_t) { return multiPressCount; }
 #endif
-
-    HandleSetParamInternalStart
-        HandleSetParamInternalMotherClass(IOComponent);
-    CheckAndSetParam(canShutDown);
-    HandleSetParamInternalEnd;
-
-    FillSettingsInternalStart
-        FillSettingsInternalMotherClass(IOComponent);
-    FillSettingsParam(canShutDown);
-    FillSettingsInternalEnd;
-
-    CheckFeedbackParamInternalStart
-        CheckFeedbackParamInternalMotherClass(IOComponent);
-    CheckAndSendParamFeedback(multiPressCount);
-    CheckAndSendParamFeedback(longPress);
-    CheckAndSendParamFeedback(veryLongPress);
-    CheckFeedbackParamInternalEnd;
-
-    FillOSCQueryInternalStart
-        FillOSCQueryInternalMotherClass(IOComponent);
-    FillOSCQueryIntParamReadOnly(multiPressCount);
-    FillOSCQueryBoolParamReadOnly(longPress);
-    FillOSCQueryBoolParamReadOnly(veryLongPress);
-    FillOSCQueryBoolParam(canShutDown);
-    FillOSCQueryInternalEnd;
 };
 
 DeclareComponentManager(Button, BUTTON, buttons, button, BUTTON_MAX_COUNT)

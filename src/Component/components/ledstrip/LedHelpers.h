@@ -6,8 +6,7 @@
 #define BLUE_MILLIAMP 15
 #define DARK_MILLIAMP 1
 
-
-//NEO PIXEL - FAST LED CONVERSION
+// NEO PIXEL - FAST LED CONVERSION
 #ifdef LED_USE_FASTLED
 #define NEO_RGB RGB
 #define NEO_RBG RBG
@@ -21,8 +20,6 @@
 #define GBR NEO_GBR
 #define BRG NEO_BRG
 #endif
-
-
 
 #ifndef LED_DEFAULT_CHANNELS
 #define LED_DEFAULT_CHANNELS 3
@@ -40,10 +37,6 @@
 #define LED_DEFAULT_CORRECTION true
 #endif
 
-#ifndef LED_MAX_COUNT
-#define LED_MAX_COUNT 100
-#endif
-
 #ifndef LEDSTRIP_MAX_COUNT
 #define LEDSTRIP_MAX_COUNT 1
 #endif
@@ -56,7 +49,7 @@
 #define LED_DEFAULT_COUNT 60
 #endif
 #ifndef LED_MAX_COUNT
-#define LED_MAX_COUNT 1024
+#define LED_MAX_COUNT 300
 #endif
 #endif
 

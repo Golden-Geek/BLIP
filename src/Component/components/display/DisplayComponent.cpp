@@ -55,7 +55,7 @@ void DisplayComponent::clearDisplay()
 #endif
 }
 
-bool DisplayComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool DisplayComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (command == "log")
     {
@@ -66,18 +66,18 @@ bool DisplayComponent::handleCommandInternal(const String &command, var *data, i
     return false;
 }
 
-void DisplayComponent::log(const String &text)
+void DisplayComponent::log(const std::string &text)
 {
     canvas.printf("%s\r\n", text.c_str());
     shouldUpdateDisplay = true;
 }
 
-void DisplayComponent::logWarning(const String &text)
+void DisplayComponent::logWarning(const std::string &text)
 {
     log("Warning: " + text);
 }
 
-void DisplayComponent::logError(const String &text)
+void DisplayComponent::logError(const std::string &text)
 {
     log("Error: " + text);
 }

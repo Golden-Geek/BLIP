@@ -15,7 +15,7 @@ public:
     static bool clearSettings();
 
     template<class T>
-    static T getVal(JsonObject o, const String &name, T defaultVal)
+    static T getVal(JsonObject o, const std::string &name, T defaultVal)
     {
         if (o.containsKey(name))
         {

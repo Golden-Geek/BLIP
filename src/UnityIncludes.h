@@ -14,7 +14,8 @@
 #include <FS.h>
 #include <SPI.h>
 #include <arduino-timer.h>
-
+#include <map>
+#include <ostream>
 #ifdef USE_ARTNET
 #include <ArtnetWifi.h>
 #endif

@@ -16,10 +16,6 @@
 #define WASM_MEMORY_LIMIT 4096
 #endif
 
-#ifndef WASM_ASYNC
-#define WASM_ASYNC 0
-#endif
-
 #ifndef WASM_VARIABLES_MAX
 #define WASM_VARIABLES_MAX 20
 #endif
@@ -45,21 +41,21 @@ public:
 
     // struct ScriptVariable
     // {
-    // String name;
-    // String niceName;
+    // std::string name;
+    // std::string niceName;
     // float min;
     // float max;
     // };
 
-    String variableNames[WASM_VARIABLES_MAX];
+    std::string variableNames[WASM_VARIABLES_MAX];
     float mins[WASM_VARIABLES_MAX];
     float maxs[WASM_VARIABLES_MAX];
     int variableCount;
 
-    String functionNames[WASM_FUNCTIONS_MAX];
+    std::string functionNames[WASM_FUNCTIONS_MAX];
     int functionCount;
 
-    String eventNames[WASM_EVENTS_MAX];
+    std::string eventNames[WASM_EVENTS_MAX];
     int eventCount;
 
     long scriptSize;
@@ -78,7 +74,7 @@ public:
     bool isInUpdateFunc;
     static float timeAtLaunch;
 
-    void load(const String &name);
+    void load(const std::string &name);
 
     long tstart;
     long tend;
@@ -89,19 +85,16 @@ public:
     void shutdown();
     void stop();
 
-    void logWasm(String funcName, M3Result r);
+    void logWasm(std::string funcName, M3Result r);
 
-    void setScriptParam(String paramName, float value);
-    void triggerFunction(String funcName);
+    void setScriptParam(std::string paramName, float value);
+    void triggerFunction(std::string funcName);
 
     void sendScriptEvent(int eventId);
     void sendScriptParamFeedback(int paramId, float value);
 
     void setParamsFromDMX(const uint8_t *data, uint16_t len);
 
-#if WASM_ASYNC
-    static void launchWasmTaskStatic(void *);
-#endif
     void launchWasmTask();
 
     M3Result LinkArduino(IM3Runtime runtime);

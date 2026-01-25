@@ -52,7 +52,7 @@ void RootComponent::setupInternal(JsonObject)
     {
         comm.init();
 
-        NDBG("Waiting for wake up " + String(millis() - timeAtStart));
+        NDBG("Waiting for wake up " + std::to_string(millis() - timeAtStart));
         while (!comm.espNow.wakeUpReceived)
         {
             comm.update();
@@ -152,6 +152,30 @@ void RootComponent::setupInternal(JsonObject)
 #ifdef USE_SEQUENCE
     AddOwnedComponent(&sequence);
 #endif
+
+    AddFunctionTrigger(shutdown);
+    AddFunctionTrigger(restart);
+    AddFunctionTrigger(standby);
+#if defined USE_WIFI && defined USE_ESPNOW
+    AddFunctionTrigger(switchToWifi);
+    AddFunctionTrigger(switchToESPNow);
+#endif
+}
+
+bool RootComponent::initInternal()
+{
+    int fastTaskCore = 1;
+#if defined(CONFIG_FREERTOS_UNICORE)
+    fastTaskCore = 0;
+#elif defined(SOC_CPU_CORES_NUM)
+#if SOC_CPU_CORES_NUM == 1
+    fastTaskCore = 0;
+#endif
+#elif defined(ARDUINO_RUNNING_CORE)
+    fastTaskCore = ARDUINO_RUNNING_CORE;
+#endif
+    xTaskCreatePinnedToCore(RootComponent::fastTaskLoop, "FastTask", 10000, this, 1, &fastTask, fastTaskCore);
+    return true;
 }
 
 void RootComponent::updateInternal()
@@ -159,12 +183,24 @@ void RootComponent::updateInternal()
     timer.tick();
 }
 
+// Fast task loop for high priority components
+void RootComponent::fastTaskLoop(void *ctx)
+{
+    RootComponent *root = (RootComponent *)ctx;
+    for (;;)
+    {
+        for (auto comp : root->highPriorityComponents)
+            comp->update(true);
+        vTaskDelay(1);
+    }
+}
+
 void RootComponent::shutdown(bool restarting)
 {
     NDBG("Sleep now, baby.");
 
-    comm.sendMessage(this, "bye", String(restarting ? "restart" : "shutdown"));
-    comm.server.sendBye(String(restarting ? "restart" : "shutdown"));
+    comm.sendMessage(this, "bye", restarting ? "restart" : "shutdown");
+    comm.server.sendBye(restarting ? "restart" : "shutdown");
 
 #ifdef USE_LEDSTRIP
     strips.shutdown();
@@ -198,8 +234,8 @@ void RootComponent::standby()
 {
     NDBG("Standby !");
 
-    comm.sendMessage(this, "bye", String("standby"));
-    comm.server.sendBye(String("standby"));
+    comm.sendMessage(this, "bye", "standby");
+    comm.server.sendBye("standby");
 
     clear();
     esp_sleep_enable_timer_wakeup(3 * 1000000); // Set wakeup timer for 3 seconds
@@ -257,14 +293,23 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
         )
         {
-
-            String address = e.data[0].stringValue();
+            std::string address = e.data[0].stringValue();
 #ifdef ESPNOW_BRIDGE
-            if (address.startsWith("dev")) // routing message
+            if (address.starts_with("dev")) // routing message
                 return;
 #endif
 
-            if (Component *targetComponent = getComponentWithName(e.data[0].stringValue()))
+            Component *targetComponent = nullptr;
+            if (pathComponentMap.contains(address))
+            {
+                targetComponent = pathComponentMap[address];
+            }
+            else if (address == "" || address == "root")
+            {
+                targetComponent = this;
+            }
+
+            if (targetComponent != nullptr)
             {
                 bool handled = targetComponent->handleCommand(e.data[1], &e.data[2], e.numData - 2);
                 if (!handled)
@@ -325,7 +370,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
     if (caller == &buttons)
     {
         ButtonComponent *bc = (ButtonComponent *)comp;
-        // DBG("Root param value changed " + bc->name+" > "+String(param == &bc->veryLongPress) + " / " + String(bc->veryLongPress)+" can sd : "+String(bc->canShutDown)+" / "+String(buttons.items[0]->canShutDown));
+        // DBG("Root param value changed " + bc->name+" > "+String(param == &bc->veryLongPress) + " / " + std::to_string(bc->veryLongPress)+" can sd : "+String(bc->canShutDown)+" / "+String(buttons.items[0]->canShutDown));
         if (param == &bc->veryLongPress && bc->veryLongPress && bc->canShutDown && (!bc->wasPressedAtBoot || bc->releasedAfterBootPress))
         {
             NDBG("Shutdown from button");
@@ -342,7 +387,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
 
                     const int maxDemoCount = 4;
                     demoIndex = (demoIndex + 1) % maxDemoCount;
-                    script.script.load("demo" + String(demoIndex));
+                    script.script.load("demo" + std::to_string(demoIndex));
                 }
             }
 #endif
@@ -357,7 +402,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
                 NDBG("Toggle demo mode");
                 demoMode = !demoMode;
                 demoIndex = 0;
-                // script.script.load("demo" + String(demoIndex));
+                // script.script.load("demo" + std::to_string(demoIndex));
             }
 #endif
 
@@ -381,7 +426,7 @@ void RootComponent::childParamValueChanged(Component *caller, Component *comp, v
 #endif
 }
 
-bool RootComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool RootComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (command == "shutdown")
         shutdown();
@@ -392,14 +437,14 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
         uint32_t freeHeap = ESP.getFreeHeap();
         uint32_t heapSize = ESP.getHeapSize();
 
-        String stats = DeviceName +
-                       "\nID " + String(settings.propID) +
-                       "\n " + DeviceType +
-                       "\nVersion " + settings.firmwareVersion +
-                       "\n \"DeviceID\": " + settings.getDeviceID() +
-                       "\nHeap Size: " + String(heapSize / 1024) + " kb, Free Heap: " + String(freeHeap / 1024) + " kb  (" + (freeHeap * 100 / heapSize) + "%)" +
-                       "\n Min Free Heap: " + String(ESP.getMinFreeHeap() / 1024) + " kb " +
-                       "\n Max Alloc Heap: " + String(ESP.getMaxAllocHeap() / 1024) + " kb";
+        std::string stats = DeviceName +
+                            "\nID " + std::to_string(settings.propID) +
+                            "\n " + DeviceType +
+                            "\nVersion " + settings.firmwareVersion +
+                            "\n \"DeviceID\": " + settings.getDeviceID() +
+                            "\nHeap Size: " + std::to_string(heapSize / 1024) + " kb, Free Heap: " + std::to_string(freeHeap / 1024) + " kb  (" + std::to_string(freeHeap * 100 / heapSize) + "%)" +
+                            "\n Min Free Heap: " + std::to_string(ESP.getMinFreeHeap() / 1024) + " kb " +
+                            "\n Max Alloc Heap: " + std::to_string(ESP.getMaxAllocHeap() / 1024) + " kb";
 
 #ifdef USE_FILES
         stats += "\n" + files.getFileSystemInfo();
@@ -409,7 +454,7 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
     }
     else if (command == "log")
     {
-        NDBG("Logging " + String(numData) + " values");
+        NDBG("Logging " + std::to_string(numData) + " values");
         for (int i = 0; i < numData; i++)
             NDBG("> " + data[i].stringValue());
     }
@@ -418,4 +463,37 @@ bool RootComponent::handleCommandInternal(const String &command, var *data, int 
         return false;
     }
     return true;
+}
+
+void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
+{
+    NDBG("Register component " + path + " (" + comp->getTypeString() + ")");
+    pathComponentMap.insert(std::make_pair(path, comp));
+    if (highPriority)
+        highPriorityComponents.push_back(comp);
+}
+
+void RootComponent::unregisterComponent(Component *comp)
+{
+    NDBG("Unregister component (" + comp->getTypeString() + ")");
+
+    for (auto it = pathComponentMap.begin(); it != pathComponentMap.end();)
+    {
+        if (it->second == comp)
+        {
+            NDBG(" - remove path " + it->first);
+            it = pathComponentMap.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (highPriorityComponents.size() > 0)
+    {
+        auto it = std::find(highPriorityComponents.begin(), highPriorityComponents.end(), comp);
+        if (it != highPriorityComponents.end())
+            highPriorityComponents.erase(it);
+    }
 }

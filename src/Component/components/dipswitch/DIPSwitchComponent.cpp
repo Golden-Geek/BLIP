@@ -2,7 +2,7 @@
 
 void DIPSwitchComponent::setupInternal(JsonObject o)
 {
-    AddIntParam(value);
+    AddIntParamFeedback(value);
 }
 
 bool DIPSwitchComponent::initInternal()

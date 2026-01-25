@@ -1,17 +1,18 @@
-ImplementManagerSingleton(Behaviour)
+#include "UnityIncludes.h"
 
+ImplementManagerSingleton(Behaviour);
 
 void BehaviourComponent::setupInternal(JsonObject o)
 {
     AddStringParamConfig(paramName);
-    AddIntParamConfig(comparator);
+    AddEnumParamConfig(comparator, operatorOptions, OPERATOR_MAX);
 
     AddFloatParamConfig(compareValue);
     AddFloatParamConfig(validationTime);
     AddBoolParamConfig(alwaysTrigger);
     AddBoolParam(valid);
 
-    AddIntParamConfig(triggerAction);
+    AddEnumParamConfig(triggerAction, triggerActionOptions, ActionMax);
     AddStringParamConfig(triggerValue);
 }
 
@@ -37,11 +38,11 @@ void BehaviourComponent::updateTargetParameter()
 {
     // DBG("Update target");
     // Parameter *newTarget = nullptr;
-    // String pName = paramName;
+    // std::string pName = paramName;
     // int tcIndex = pName.lastIndexOf('.');
 
-    // String tc = pName.substring(0, tcIndex);  // component name
-    // String pn = pName.substring(tcIndex + 1); // parameter name
+    // std::string tc = pName.substring(0, tcIndex);  // component name
+    // std::string pn = pName.substring(tcIndex + 1); // parameter name
 
     // DBG("Target component: " + tc + " parameter: " + pn);
 
@@ -143,8 +144,8 @@ void BehaviourComponent::trigger()
 
     case LaunchCommand:
     {
-        String cmd = triggerValue;
-        cmd.replace("{value}", getParamString(targetParam));
+        std::string cmd = triggerValue;
+        cmd.replace("{value}", getParamstd::string(targetParam));
         StringHelpers::processStringMessage(cmd, [this](var *data, int numData)
                                             { sendEvent(CommandLaunched, data, numData); });
     }

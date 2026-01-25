@@ -89,6 +89,9 @@ DistanceSensorManagerComponent distances;
 DIPSwitchComponent dipswitch;
 #endif
 
+//High Priority Components
+TaskHandle_t fastTask;
+
 // Behaviour
 Timer<5> timer;
 unsigned long timeAtStart;
@@ -98,8 +101,13 @@ unsigned long timeAtLastSignal = 0;
 bool demoMode = false;
 int demoIndex = 0;
 
+std::map<std::string, Component*> pathComponentMap;
+std::vector<Component*> highPriorityComponents;
+
 void setupInternal(JsonObject o) override;
+bool initInternal() override;
 void updateInternal() override;
+static void fastTaskLoop(void* ctx);
 
 void shutdown(bool restarting = false);
 void restart();
@@ -114,37 +122,12 @@ void switchToESPNow();
 void onChildComponentEvent(const ComponentEvent &e) override;
 void childParamValueChanged(Component *caller, Component *comp, void *param);
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
+
+void registerComponent(Component *comp, const std::string &path, bool highPriority = false);
+void unregisterComponent(Component *comp);
+
 
 bool isShuttingDown() const { return timeAtShutdown > 0; }
 
-HandleSetParamInternalStart
-    CheckTrigger(shutdown);
-CheckTrigger(restart);
-CheckTrigger(standby);
-#if defined USE_WIFI && defined USE_ESPNOW
-CheckTrigger(switchToWifi);
-CheckTrigger(switchToESPNow);
-#endif
-HandleSetParamInternalEnd;
-
-FillSettingsInternalStart
-
-    FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart
-
-    FillOSCQueryTrigger(shutdown);
-FillOSCQueryTrigger(restart);
-FillOSCQueryTrigger(standby);
-
-#if defined USE_WIFI && defined USE_ESPNOW
-FillOSCQueryTrigger(switchToWifi);
-FillOSCQueryTrigger(switchToESPNow);
-#endif
-
-// FillOSCQueryBoolParam(testMode);
-
-FillOSCQueryInternalEnd
-
-    EndDeclareComponent
+EndDeclareComponent

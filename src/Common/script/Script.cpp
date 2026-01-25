@@ -52,7 +52,7 @@ void Script::update()
     }
 }
 
-void Script::load(const String &path)
+void Script::load(const std::string &path)
 {
     if (isRunning)
     {
@@ -85,7 +85,7 @@ void Script::load(const String &path)
                 if (variableCount >= WASM_VARIABLES_MAX)
                     break;
                 JsonObject varObj = v.as<JsonObject>();
-                variableNames[variableCount] = varObj["name"].as<String>();
+                variableNames[variableCount] = varObj["name"].as<std::string>();
                 if (varObj.containsKey("min"))
                     mins[variableCount] = varObj["min"].as<float>();
                 else
@@ -98,7 +98,7 @@ void Script::load(const String &path)
                 variableCount++;
             }
 
-            DBG("[script] Loaded " + String(variableCount) + " variable names from metadata");
+            DBG("[script] Loaded " + std::to_string(variableCount) + " variable names from metadata");
 
             JsonArray funcNames = obj["functions"].as<JsonArray>();
             functionCount = 0;
@@ -108,11 +108,11 @@ void Script::load(const String &path)
                     break;
 
                 JsonObject varObj = v.as<JsonObject>();
-                functionNames[functionCount] = varObj["name"].as<String>();
+                functionNames[functionCount] = varObj["name"].as<std::string>();
                 functionCount++;
             }
 
-            DBG("[script] Loaded " + String(functionCount) + " function names from metadata");
+            DBG("[script] Loaded " + std::to_string(functionCount) + " function names from metadata");
 
             JsonArray evNames = obj["events"].as<JsonArray>();
             eventCount = 0;
@@ -120,14 +120,14 @@ void Script::load(const String &path)
             {
                 if (eventCount >= WASM_EVENTS_MAX)
                     break;
-                eventNames[eventCount] = v.as<String>();
+                eventNames[eventCount] = v.as<std::string>();
                 eventCount++;
             }
-            DBG("[script] Loaded " + String(eventCount) + " event names from metadata");
+            DBG("[script] Loaded " + std::to_string(eventCount) + " event names from metadata");
         }
         else
         {
-            DBG("[script] !Error parsing metadata json : " + String(error.c_str()));
+            DBG("[script] !Error parsing metadata json : " + std::string(error.c_str()));
         }
     }
     else
@@ -145,7 +145,7 @@ void Script::load(const String &path)
 
     f.read(scriptData, scriptSize);
 
-    DBG("[script] Script read " + String(scriptSize) + " bytes");
+    DBG("[script] Script read " + std::to_string(scriptSize) + " bytes");
     launchWasm();
 #else
     DBG("[script] Script loading not supported, USE_FILES not defined");
@@ -158,20 +158,8 @@ void Script::launchWasm()
     if (isRunning)
         stop();
 
-#if WASM_ASYNC
-    xTaskCreate(&Script::launchWasmTaskStatic, "wasm3", SCRIPT_NATIVE_STACK_SIZE, this, 5, NULL);
-    DBG("[script] Wasm task launched");
-#else
     launchWasmTask();
-#endif
 }
-
-#if WASM_ASYNC
-void Script::launchWasmTaskStatic(void *v)
-{
-    ((Script *)v)->launchWasmTask();
-}
-#endif
 
 void Script::launchWasmTask()
 {
@@ -208,7 +196,7 @@ void Script::launchWasmTask()
         FATAL("LinkArduino", result);
 
     DBG("[script] Finding functions");
-    String foundFunc;
+    std::string foundFunc;
     result = m3_FindFunction(&initFunc, runtime, "init");
     if (initFunc != NULL)
         foundFunc += "init";
@@ -246,10 +234,6 @@ void Script::launchWasmTask()
     {
         DBG("[script] No init function found");
     }
-
-#if WASM_ASYNC
-    vTaskDelete(NULL);
-#endif
 }
 
 M3Result Script::LinkArduino(IM3Runtime runtime)
@@ -371,18 +355,18 @@ void Script::stop()
     }
 }
 
-void Script::logWasm(String funcName, M3Result r)
+void Script::logWasm(std::string funcName, M3Result r)
 {
     if (!r)
         return;
     M3ErrorInfo info;
     m3_GetErrorInfo(runtime, &info);
-    DBG(String("[m3] Calling ") + funcName + " failed: " + info.message);
+    DBG(std::string("[m3] Calling ") + funcName + " failed: " + info.message);
     if (info.file && info.function)
-        DBG(String(" @ ") + String(info.file) + " :: " + String(info.function->names[0]) + " (line " + String(info.line) + ")");
+        DBG(std::string(" @ ") + info.file + " :: " + info.function->names[0] + " (line " + std::to_string(info.line) + ")");
 }
 
-void Script::setScriptParam(String paramName, float value)
+void Script::setScriptParam(std::string paramName, float value)
 {
     int paramIndex = -1;
     for (int i = 0; i < variableCount; i++)
@@ -396,14 +380,14 @@ void Script::setScriptParam(String paramName, float value)
 
     if (paramIndex != -1 && setScriptParamFunc != NULL)
     {
-        // DBG("Setting script param " + paramName + " to value " + String(value));
+        // DBG("Setting script param " + paramName + " to value " + std::to_string(value));
         while (isInUpdateFunc)
             delay(1);
         m3_CallV(setScriptParamFunc, paramIndex, value);
     }
 }
 
-void Script::triggerFunction(String funcName)
+void Script::triggerFunction(std::string funcName)
 {
     int funcIndex = -1;
     for (int i = 0; i < functionCount; i++)
@@ -429,7 +413,7 @@ void Script::sendScriptEvent(int eventId)
     if (eventId < 0 || eventId >= eventCount)
         return;
 
-    String eventName = eventNames[eventId];
+    std::string eventName = eventNames[eventId];
     localComponent->sendScriptEvent(eventName);
 }
 
@@ -438,7 +422,7 @@ void Script::sendScriptParamFeedback(int paramId, float value)
     if (paramId < 0 || paramId >= variableCount)
         return;
 
-    String paramName = variableNames[paramId];
+    std::string paramName = variableNames[paramId];
 
     localComponent->sendScriptParamFeedback(paramName, value);
 }

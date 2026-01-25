@@ -22,12 +22,6 @@ void ESPNowComponent::setupInternal(JsonObject o)
     AddBoolParam(wakeUpMode);
     AddBoolParamConfig(routeAll);
     AddBoolParamConfig(acceptCommands);
-
-    for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
-    {
-        AddStringParamConfig(remoteMacs[i]);
-    }
-
 #else
     AddBoolParamConfig(autoPairing);
     AddBoolParamConfig(pairOnAnyData);
@@ -99,7 +93,7 @@ void ESPNowComponent::initESPNow()
     }
 #endif // END USE_WIFI
 
-    NDBG("Init ESPNow on channel " + String(channel));
+    NDBG("Init ESPNow on channel " + std::to_string(channel));
     if (esp_now_init() != ESP_OK)
     {
         NDBG("Error initializing ESP-NOW");
@@ -137,7 +131,7 @@ void ESPNowComponent::initESPNow()
         }
     }
 
-    NDBG("Registered " + String(numConnectedDevices) + " devices");
+    NDBG("Registered " + std::to_string(numConnectedDevices) + " devices");
 
 #endif
 
@@ -196,7 +190,7 @@ void ESPNowComponent::updateInternal()
 #else
     if (!pairingMode && currentTime - lastCheck > 500)
     {
-        // NDBG("Checking ESPNow connection : " + String(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + String(pairingMode));
+        // NDBG("Checking ESPNow connection : " + std::to_string(currentTime - lastReceiveTime) + " ms since last receive, pairing Mode ? " + std::to_string(pairingMode));
 
         if (RootComponent::instance->remoteWakeUpMode || (autoPairing && currentTime - lastReceiveTime > 2000))
         {
@@ -210,7 +204,7 @@ void ESPNowComponent::updateInternal()
     {
         if (currentTime - lastSendTime >= 100)
         {
-            // DBG("Channel Hopping " + String(channel));
+            // DBG("Channel Hopping " + std::to_string(channel));
             lastSendTime = currentTime;
             channel = (channel + 1) % 16;
             initESPNow();
@@ -234,7 +228,7 @@ void ESPNowComponent::onDataSent(const esp_now_send_info_t *tx_info, esp_now_sen
     }
     return;
 
-    DBG("[ESPNow] Error sending to " + StringHelpers::macToString(tx_info->des_addr) + " : " + String(status));
+    DBG("[ESPNow] Error sending to " + StringHelpers::macToString(tx_info->des_addr) + " : " + std::to_string((int)status));
 }
 
 void ESPNowComponent::onDataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len)
@@ -245,7 +239,7 @@ void ESPNowComponent::onDataReceived(const esp_now_recv_info_t *info, const uint
 void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len)
 {
     const uint8_t *mac = info->src_addr;
-    // DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + String(len) + " bytes");
+    // DBG("[ESPNow] Data received from " + StringHelpers::macToString(mac) + " : " + std::to_string(len) + " bytes");
 
     lastReceiveTime = millis();
 
@@ -268,7 +262,7 @@ void ESPNowComponent::dataReceived(const esp_now_recv_info_t *info, const uint8_
 
     case 1: // Stream
     {
-        // DBG("[ESPNow] Stream data received: " + String(len - 1) + " bytes");
+        // DBG("[ESPNow] Stream data received: " + std::to_string(len - 1) + " bytes");
         for (int i = 0; i < ESPNOW_MAX_STREAM_RECEIVERS; i++)
         {
             if (ESPNowComponent::streamReceivers[i] != nullptr)
@@ -319,7 +313,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
     uint8_t startID = incomingData[1];
     uint8_t endID = incomingData[2];
 
-    // NDBG("Processing message for IDs " + String(startID) + " to " + String(endID));
+    // NDBG("Processing message for IDs " + std::to_string(startID) + " to " + std::to_string(endID));
 
     if (startID == 255 || endID == 255)
     {
@@ -330,7 +324,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
 #ifndef ESPNOW_BRIDGE
         if (SettingsComponent::instance->propID < startID || SettingsComponent::instance->propID > endID)
         {
-            NDBG("Message not for us, Id " + String(SettingsComponent::instance->propID));
+            NDBG("Message not for us, Id " + std::to_string(SettingsComponent::instance->propID));
             // not for us
             return;
         }
@@ -345,7 +339,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
         return;
     }
 
-    String address = String((char *)(incomingData + 4), addressLength);
+    std::string address = std::string((char *)(incomingData + 4), addressLength);
 
     // convert from OSC style to internal
     address = StringHelpers::oscPathToSerial(address);
@@ -353,8 +347,8 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
 #ifdef ESPNOW_BRIDGE
     if (startID == endID && startID != -1)
     {
-        // DBG("Message from device ID " + String(startID));
-        address = "dev." + String(startID) + "." + address;
+        // DBG("Message from device ID " + std::to_string(startID));
+        address = "dev." + std::to_string(startID) + "." + address;
     }
 #endif
 
@@ -365,13 +359,13 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
         return;
     }
 
-    String command = String((char *)(incomingData + 5 + addressLength), commandLength);
+    std::string command = std::string((char *)(incomingData + 5 + addressLength), commandLength);
 
     var data[10];
     data[0] = address;
     data[1] = command;
 
-    // NDBG("Message received with  " + address + ", " + command + " : " + String(len) + " bytes");
+    // NDBG("Message received with  " + address + ", " + command + " : " + std::to_string(len) + " bytes");
 
     int dataIndex = 5 + addressLength + commandLength;
 
@@ -391,7 +385,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
         {
             uint8_t strLen = incomingData[dataIndex];
             dataIndex++;
-            data[dataCount] = String((char *)(incomingData + dataIndex), strLen);
+            data[dataCount] = std::string((char *)(incomingData + dataIndex), strLen);
         }
         else if (data[dataCount].type == 'p')
         {
@@ -416,7 +410,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
         dataCount++;
     }
 
-    // NDBG("[ESPNow] Message received from " + address + " : " + command + " : " + String(dataCount - 2) + " arguments : ");
+    // NDBG("[ESPNow] Message received from " + address + " : " + command + " : " + std::to_string(dataCount - 2) + " arguments : ");
     // for (int i = 0; i < dataCount; i++)
     // {
     //     NDBG(" > " + data[i].stringValue());
@@ -430,7 +424,7 @@ void ESPNowComponent::processMessage(const uint8_t *incomingData, int len)
         sendEvent(MessageReceived, data, dataCount);
 }
 
-void ESPNowComponent::sendMessage(int id, const String &address, const String &command, var *data, int numData)
+void ESPNowComponent::sendMessage(int id, const std::string &address, const std::string &command, var *data, int numData)
 {
 
     if (!enabled || !espNowInitialized)
@@ -467,7 +461,7 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
         endID = id;
     }
 
-    // NDBG("Sending message to IDs " + String(startID) + " to " + String(endID) + " : " + address + " : " + command);
+    // NDBG("Sending message to IDs " + std::to_string(startID) + " to " + std::to_string(endID) + " : " + address + " : " + command);
 
     sendPacketData[0] = 0; // Message
     sendPacketData[1] = startID;
@@ -518,12 +512,12 @@ void ESPNowComponent::sendMessage(int id, const String &address, const String &c
 #ifdef ESPNOW_BRIDGE
 void ESPNowComponent::routeMessage(var *data, int numData)
 {
-    String targetAddress = StringHelpers::serialPathToOSC(data[0].stringValue());
+    std::string targetAddress = StringHelpers::serialPathToOSC(data[0].stringValue());
 
     bool shouldSend = false;
     int id = -1;
 
-    if (targetAddress.startsWith("/dev/"))
+    if (targetAddress.starts_with("/dev/"))
     {
         int idEnd = targetAddress.indexOf('/', 5);
         if (idEnd != -1)
@@ -536,7 +530,7 @@ void ESPNowComponent::routeMessage(var *data, int numData)
     else if (routeAll)
     {
         // remove all settings and comm to routeAll
-        if (!targetAddress.startsWith("/settings") && !targetAddress.startsWith("/comm") && !targetAddress.startsWith("/wifi"))
+        if (!targetAddress.starts_with("/settings") && !targetAddress.starts_with("/comm") && !targetAddress.starts_with("/wifi"))
             shouldSend = true;
     }
 
@@ -560,7 +554,7 @@ void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numCo
     const int headerSize = 5;
 
     int colorsSent = 0;
-    DBG("Streaming now, numColors : " + String(numColors) + ", universe : " + String(universe));
+    DBG("Streaming now, numColors : " + std::to_string(numColors) + ", universe : " + std::to_string(universe));
 
     while (colorsSent < numColors)
     {
@@ -568,7 +562,7 @@ void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numCo
         int startColorIndex = colorsSent % colorsPerUniverse;
         int startDmxChannel = 1 + startColorIndex * 3;
 
-        // DBG("Preparing to send stream packet, colorsSent : " + String(colorsSent) + ", currentUniverse : " + String(currentUniverse) + ", startColorIndex : " + String(startColorIndex) + ", startDmxChannel : " + String(startDmxChannel));
+        // DBG("Preparing to send stream packet, colorsSent : " + std::to_string(colorsSent) + ", currentUniverse : " + std::to_string(currentUniverse) + ", startColorIndex : " + std::to_string(startColorIndex) + ", startDmxChannel : " + std::to_string(startDmxChannel));
 
         int remainingInUniverse = colorsPerUniverse - startColorIndex;
         int remainingToSend = numColors - colorsSent;
@@ -588,7 +582,7 @@ void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numCo
         sendPacketData[3] = (startDmxChannel >> 8) & 0xFF;
         sendPacketData[4] = startDmxChannel & 0xFF;
 
-        // DBG("Sending stream to ID " + String(id) + ", universe " + String(currentUniverse) + ", start channel " + String(startDmxChannel) + ", start color index : " + String(startColorIndex) + ", colors " + String(colorsInThisPacket));
+        // DBG("Sending stream to ID " + std::to_string(id) + ", universe " + std::to_string(currentUniverse) + ", start channel " + std::to_string(startDmxChannel) + ", start color index : " + std::to_string(startColorIndex) + ", colors " + std::to_string(colorsInThisPacket));
         memcpy(sendPacketData + headerSize, colors + colorsSent, colorsInThisPacket * 3);
 
         sendPacket(id, sendPacketData, dataLen);
@@ -706,7 +700,7 @@ void ESPNowComponent::setupBroadcast()
 
 void ESPNowComponent::sendPairingRequest()
 {
-    // DBG("Sending pairing request on channel " + String(WiFi.channel()));
+    // DBG("Sending pairing request on channel " + std::to_string(WiFi.channel()));
     sendPacketData[0] = 2; // Pairing request
     sendPacketData[1] = WiFi.channel();
     esp_now_send(broadcastMac, sendPacketData, 2);
@@ -714,7 +708,7 @@ void ESPNowComponent::sendPairingRequest()
 
 void ESPNowComponent::sendPing()
 {
-    // NDBG("Sending ping on channel " + String(WiFi.channel()));
+    // NDBG("Sending ping on channel " + std::to_string(WiFi.channel()));
     sendPacketData[0] = 2; // Pairing request
     sendPacketData[1] = WiFi.channel();
     sendPacket(-1, sendPacketData, 2);
@@ -722,7 +716,7 @@ void ESPNowComponent::sendPing()
 
 void ESPNowComponent::sendWakeUp()
 {
-    // NDBG("Sending ping on channel " + String(WiFi.channel()));
+    // NDBG("Sending ping on channel " + std::to_string(WiFi.channel()));
     sendPacketData[0] = 4; // Pairing request
     sendPacketData[1] = WiFi.channel();
     esp_now_send(broadcastMac, sendPacketData, 2);
@@ -730,7 +724,7 @@ void ESPNowComponent::sendWakeUp()
 
 void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
 {
-    String address = StringHelpers::macToString(deviceMac);
+    std::string address = StringHelpers::macToString(deviceMac);
 
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
@@ -830,7 +824,7 @@ void ESPNowComponent::registerBridgeMac(const uint8_t *_bridgeMac, int chan, boo
     if (pairingMode)
     {
         SetParam(pairingMode, false);
-        DBG("Found bridge on channel " + String(channel));
+        DBG("Found bridge on channel " + std::to_string(channel));
     }
 
     if (bridgeInit)
@@ -891,7 +885,7 @@ void ESPNowComponent::setupLongRange(const uint8_t *deviceMac)
         if (pResult == ESP_OK)
             NDBG("Long range protocol set");
         else
-            NDBG("Error setting long range protocol : " + String(pResult));
+            NDBG("Error setting long range protocol : " + std::to_string(pResult));
 
         esp_now_rate_config_t cfg = {};
         cfg.rate = WIFI_PHY_RATE_LORA_250K; // or WIFI_PHY_RATE_LORA_500K, or WIFI_PHY_RATE_1M_L
@@ -899,7 +893,7 @@ void ESPNowComponent::setupLongRange(const uint8_t *deviceMac)
         if (lrResult == ESP_OK)
             NDBG("Long range mode set for device");
         else
-            NDBG("Error setting long range mode for device : " + String(lrResult));
+            NDBG("Error setting long range mode for device : " + std::to_string(lrResult));
     }
 }
 
@@ -912,9 +906,9 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
     if (param == &pairingMode || param == &wakeUpMode)
     {
         if (param == &pairingMode)
-            NDBG("Pairing mode " + String(pairingMode));
+            NDBG("Pairing mode " + std::to_string(pairingMode));
         else
-            NDBG("Wake up mode " + String(wakeUpMode));
+            NDBG("Wake up mode " + std::to_string(wakeUpMode));
 
         setupBroadcast();
 
@@ -922,7 +916,7 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
         {
             esp_now_peer_num_t peerCount;
             esp_now_get_peer_num(&peerCount);
-            NDBG("Finished pairing, got " + String(numConnectedDevices) + " devices (peer count : " + String(peerCount.total_num) + ")");
+            NDBG("Finished pairing, got " + std::to_string(numConnectedDevices) + " devices (peer count : " + std::to_string(peerCount.total_num) + ")");
             SettingsComponent::instance->saveSettings();
         }
     }
@@ -930,7 +924,7 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
 #else
     if (param == &pairingMode)
     {
-        DBG("Pairing mode changed " + String(pairingMode));
+        DBG("Pairing mode changed " + std::to_string(pairingMode));
         if (pairingMode)
             bridgeInit = false;
     }
@@ -944,7 +938,7 @@ void ESPNowComponent::paramValueChangedInternal(void *param)
 #endif
 }
 
-bool ESPNowComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool ESPNowComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
 #ifdef ESPNOW_BRIDGE
     if (command == "clear")

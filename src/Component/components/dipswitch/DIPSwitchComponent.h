@@ -14,18 +14,5 @@ bool initInternal() override;
 void updateInternal() override;
 void updateValue();
 
-HandleSetParamInternalStart
-    HandleSetParamInternalEnd;
-
-CheckFeedbackParamInternalStart;
-CheckAndSendParamFeedback(value);
-CheckFeedbackParamInternalEnd;
-
-FillSettingsInternalStart;
-FillSettingsInternalEnd;
-
-FillOSCQueryInternalStart;
-FillOSCQueryIntParamReadOnly(value);
-FillOSCQueryInternalEnd;
 
 EndDeclareComponent

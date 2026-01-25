@@ -12,7 +12,7 @@ public:
 
     File curFile;
     File metaDataFile;
-    String curFilename;
+    std::string curFilename;
 
     int frameSize;
 
@@ -39,7 +39,7 @@ public:
 
 #ifdef USE_SCRIPT
     int numScripts;
-    String scripts[PLAYBACK_MAX_SCRIPTS];
+    std::string scripts[PLAYBACK_MAX_SCRIPTS];
     float scriptStartTimes[PLAYBACK_MAX_SCRIPTS];
     float scriptEndTimes[PLAYBACK_MAX_SCRIPTS];
     int activeScriptIndex;
@@ -57,7 +57,7 @@ public:
     void playScripts();
 
     // play control
-    void load(String path, bool force = false);
+    void load(const std::string& path, bool force = false);
     void unload();
     void play(float atTime = 0);
     void seek(float t, bool doSendEvent = true);
@@ -68,7 +68,7 @@ public:
     void onEnabledChanged() override;
     void paramValueChangedInternal(void *param) override;
 
-    bool handleCommandInternal(const String &command, var *data, int numData) override;
+    bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
     // Time computation helpers
     int64_t msToBytePos(int64_t timeMs) const { return msToFrame(timeMs) * (int64_t)frameSize; } // rgba
@@ -85,21 +85,4 @@ public:
     DeclareComponentEventTypes(Loaded, LoadError, Playing, Paused, Stopped, Seek, Looped);
     DeclareComponentEventNames("Loaded", "LoadError", "Playing", "Paused", "Stopped", "Seek", "Looped");
 
-    HandleSetParamInternalStart
-        HandleSetParamInternalMotherClass(LedStripLayer)
-            CheckAndSetParam(idMode);
-    CheckAndSetParam(loop);
-    HandleSetParamInternalEnd;
-
-    FillSettingsInternalStart
-        FillSettingsInternalMotherClass(LedStripLayer)
-            FillSettingsParam(idMode);
-    FillSettingsParam(loop);
-    FillSettingsInternalEnd;
-
-    FillOSCQueryInternalStart
-        FillOSCQueryInternalMotherClass(LedStripLayer)
-            FillOSCQueryBoolParam(idMode);
-    FillOSCQueryBoolParam(loop);
-    FillOSCQueryInternalEnd
 };
