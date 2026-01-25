@@ -25,7 +25,9 @@ void BatteryComponent::setupInternal(JsonObject o)
 
     AddFloatParamConfig(lowBatteryThreshold);
 
-    AddRangeParamFeedback(batteryLevel);
+    ParamInfo* levelInfo = AddRangeParamFeedback(batteryLevel);
+    levelInfo->setRange(&defaultRange);
+    
     AddRangeParamFeedback(voltage);
     AddBoolParamFeedback(charging);
 

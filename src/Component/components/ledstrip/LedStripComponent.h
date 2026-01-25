@@ -60,7 +60,7 @@ public:
     DeclareIntParam(clkPin, LED_DEFAULT_CLK_PIN);
     DeclareIntParam(enPin, LED_DEFAULT_EN_PIN);
 
-    DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
+    DeclareRangeParam(brightness, LED_DEFAULT_BRIGHTNESS, 0, 2);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
     DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
 
