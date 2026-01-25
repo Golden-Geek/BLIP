@@ -12,6 +12,10 @@
 #define SCRIPT_NATIVE_STACK_SIZE (16 * 1024)
 #endif
 
+#ifndef SCRIPT_MIN_STACK_WORDS
+#define SCRIPT_MIN_STACK_WORDS 256
+#endif
+
 #ifndef WASM_MEMORY_LIMIT
 #define WASM_MEMORY_LIMIT 4096
 #endif

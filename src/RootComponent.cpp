@@ -5,10 +5,11 @@
 #ifndef POWER_EXT
 #ifndef C6_BOARD
 #define POWER_EXT 0
-#endif
+#else
 #define POWER_EXT 1
-#endif
-#endif
+#endif // C6_BOARD
+#endif // POWER_EXT
+#endif // USE_POWER
 
 #ifndef DEMO_MODE_COUNT
 #define DEMO_MODE_COUNT 3
@@ -32,8 +33,8 @@ void RootComponent::setupInternal(JsonObject)
         esp_sleep_enable_ext0_wakeup((gpio_num_t)settings.wakeUpButton, settings.wakeUpState);
 #else
         esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
-#endif
-#endif
+#endif 
+#endif // USE_POWER
 
     // parameters.clear(); // remove enabled in root component
     Settings::loadSettings();
@@ -467,7 +468,6 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
 
 void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
 {
-    NDBG("Register component " + path + " (" + comp->getTypeString() + ")");
     pathComponentMap.insert(std::make_pair(path, comp));
     if (highPriority)
         highPriorityComponents.push_back(comp);
@@ -475,13 +475,10 @@ void RootComponent::registerComponent(Component *comp, const std::string &path, 
 
 void RootComponent::unregisterComponent(Component *comp)
 {
-    NDBG("Unregister component (" + comp->getTypeString() + ")");
-
     for (auto it = pathComponentMap.begin(); it != pathComponentMap.end();)
     {
         if (it->second == comp)
         {
-            NDBG(" - remove path " + it->first);
             it = pathComponentMap.erase(it);
         }
         else

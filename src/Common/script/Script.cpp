@@ -1,5 +1,10 @@
 #include "UnityIncludes.h"
 
+#if defined(ESP32)
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#endif
+
 #define FATAL(func, msg)                  \
     {                                     \
         Serial.print("Fatal: " func " "); \
@@ -40,6 +45,15 @@ void Script::update()
 {
     if (isRunning)
     {
+#if defined(ESP32)
+        const UBaseType_t stackWords = uxTaskGetStackHighWaterMark(NULL);
+        if (stackWords < SCRIPT_MIN_STACK_WORDS)
+        {
+            DBG("[script] Low stack while running wasm, stopping script");
+            stop();
+            return;
+        }
+#endif
         // TSTART()
         if (updateFunc != NULL)
         {

@@ -87,7 +87,7 @@ bool WebServerComponent::initInternal()
 
         if (request->hasArg("HOST_INFO"))
             {
-            DynamicJsonDocument doc(1000);
+            StaticJsonDocument<1000> doc;
             JsonObject o = doc.to<JsonObject>();
             JsonObject eo = o.createNestedObject("EXTENSIONS");
             eo["ACCESS"] = true;

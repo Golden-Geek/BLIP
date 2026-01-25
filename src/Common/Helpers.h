@@ -82,27 +82,29 @@
 #define AddStaticOrDynamicComponent(name, Type, enabled, index) AddComponent(items[i], name, Type, enabled, index);
 #endif
 
-#define DeclareComponentManagerDefaultMax(Type, MType, mName, itemName) DeclareComponentManagerWithMax(Type, MType, mName, itemName, 8)
-
-#define DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, DefaultCount) \
-    DeclareComponentSingleton(Type##Manager, #mName, )                                     \
-        DeclareIntParam(count, DefaultCount);                                              \
-                                                                                           \
-    DefineStaticItems(Type, MType);                                                        \
-    void setupInternal(JsonObject o) override                                              \
-    {                                                                                      \
-        AddIntParam(count);                                                                \
-        for (int i = 0; i < count && i < MaxCount; i++)                                    \
-        {                                                                                  \
-            std::string n = #itemName + std::to_string(i + 1);                             \
-            AddStaticOrDynamicComponent(n, Type, i == 0, i);                               \
-            addItemInternal(i);                                                            \
-        }                                                                                  \
-    }                                                                                      \
+#define DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, DefaultCount, Fixed) \
+    DeclareComponentSingleton(Type##Manager, #mName, )                                            \
+        DeclareIntParam(count, DefaultCount);                                                     \
+                                                                                                  \
+    DefineStaticItems(Type, MType);                                                               \
+    void setupInternal(JsonObject o) override                                                     \
+    {                                                                                             \
+        if (!Fixed)                                                                               \
+            AddIntParamConfig(count);                                                             \
+        for (int i = 0; i < count && i < MaxCount; i++)                                           \
+        {                                                                                         \
+            std::string n = #itemName + std::to_string(i + 1);                                    \
+            AddStaticOrDynamicComponent(n, Type, i == 0, i);                                      \
+            addItemInternal(i);                                                                   \
+        }                                                                                         \
+    }                                                                                             \
     virtual void addItemInternal(int index) {}
 
+#define DeclareComponentMaybeFixedManager(Type, MType, mName, itemName, MaxCount, Fixed) \
+    DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, 1, Fixed)
+
 #define DeclareComponentManager(Type, MType, mName, itemName, MaxCount) \
-    DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, 1)
+    DeclareComponentManagerCount(Type, MType, mName, itemName, MaxCount, 1, false)
 
 // > Events
 #define DeclareComponentEventTypes(...) enum ComponentEventTypes \

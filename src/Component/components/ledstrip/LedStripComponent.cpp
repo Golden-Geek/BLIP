@@ -123,15 +123,15 @@ void LedStripComponent::setupLeds()
         neoPixelStrip = NULL;
     }
 
+#ifdef NEOPIXEL_CLOCKED
     if (clkPin >= 0)
     {
-        // neoPixelStrip = new NeoPixelBus<LED_DEFAULT_COLOR_ORDER, NeoPixelMethod>((uint16_t)count, (uint8_t)clkPin, (uint8_t)dataPin);
+        neoPixelStrip = new NeoPixelBus<NeoPixelFeature, NeoPixelMethod>((uint16_t)count, (uint8_t)clkPin, (uint8_t)dataPin);
+        NDBG("Setting up clocked NeoPixelBus on data pin " + std::to_string(dataPin) + " clk pin " + std::to_string(clkPin) + " with " + std::to_string(count) + " pixels.");
     }
-    else
-    {
-        neoPixelStrip = new NeoPixelBus<LED_DEFAULT_COLOR_ORDER, LED_DEFAULT_TYPE>((uint16_t)count, (uint8_t)dataPin);
-    }
-    NDBG("Using NeoPixel strip on data pin " + std::to_string(dataPin));
+#else
+    neoPixelStrip = new NeoPixelBus<NeoPixelFeature, NeoPixelMethod>((uint16_t)count, (uint8_t)dataPin);
+#endif
 
     if (neoPixelStrip != NULL)
     {
@@ -403,12 +403,8 @@ void LedStripComponent::showLeds()
         for (int i = 0; i < count; i++)
         {
             float bri = colors[i].a * targetBrightness;
-            Rgb48Color linearColor = Rgb48Color(colors[i].r * bri, colors[i].g * bri, colors[i].b * bri);
-            Rgb48Color correctedColor = colorCorrection ? colorGamma.Correct(linearColor) : linearColor;
-            if (i == 0)
-            {
-                // DBG(" Led 0 color before correction: " + std::to_string((int)(colors[0].r * bri)) + ", " + std::to_string((int)(colors[0].g * bri)) + ", " + std::to_string((int)(colors[0].b * bri)) + ", after correction: " + std::to_string((int)correctedColor.R) + ", " + std::to_string((int)correctedColor.G) + ", " + std::to_string((int)correctedColor.B));
-            }
+            NeoPixelColor linearColor = NeoPixelColor(colors[i].r * bri / NeoPixelColorDivider, colors[i].g * bri / NeoPixelColorDivider, colors[i].b * bri / NeoPixelColorDivider);
+            NeoPixelColor correctedColor = colorCorrection ? colorGamma.Correct(linearColor) : linearColor;
             neoPixelStrip->SetPixelColor(ledMap(i), correctedColor);
         }
         neoPixelStrip->Show();

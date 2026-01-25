@@ -6,42 +6,37 @@
 #define BLUE_MILLIAMP 15
 #define DARK_MILLIAMP 1
 
-// NEO PIXEL - FAST LED CONVERSION
+// NEO PIXEL / FAST LED CONVERSION
 #ifdef LED_USE_FASTLED
-#define NEO_RGB RGB
-#define NEO_RBG RBG
-#define NEO_GRB GRB
-#define NEO_GBR GBR
-#define NEO_BRG BRG
+
+#ifdef LED_MODEL_WS2816
+#define LED_DEFAULT_TYPE WS2812B
+#elif defined LED_MODEL_SK9822
+#define LED_DEFAULT_TYPE SK9822
 #else
-#define WS2816 NeoWs2816Method
-#define WS2812 Neo800KbpsMethod
-#if LED_DEFAULT_TYPE == WS2816
-#undef GRB
-#define RGB NeoGrbWs2816Feature
-#define RBG NeoGrbWs2816Feature
-#define GRB NeoGrbWs2816Feature
-#define GBR NeoGrbWs2816Feature
-#define BRG NeoGrbWs2816Feature
-#define RGBW NeoGrbWs2816Feature
-#define RBGW NeoGrbWs2816Feature
-#define GRBW NeoGrbWs2816Feature
-#define GBRW NeoGrbWs2816Feature
-#define BRGW NeoGrbWs2816Feature
-#define WRGB NeoGrbWs2816Feature
+#define LED_DEFAULT_TYPE WS2812B
+#endif
+
 #else
-#define RGB NeoRgbFeature
-#define RBG NeoRbgFeature
-#define GRB NeoGrbFeature
-#define GBR NeoGbrFeature
-#define BRG NeoBrgFeature
-#define RGBW NeoRgbwFeature
-#define RBGW NeoRbgwFeature
-#define GRBW NeoGrbwFeature
-#define GBRW NeoGbrwFeature
-#define BRGW NeoBrgwFeature
-#define WRGB NeoWrgbFeature
-#endif // LED_DEFAULT_TYPE == WS2816
+
+// NEO PIXEL BUS DEFINES
+#ifdef LED_MODEL_WS2816
+#define NeoPixelMethod NeoWs2816Method
+#define NeoPixelFeature NeoGrbwWs2816Feature
+#define NeoPixelColor Rgb48Color
+#define NeoPixelColorDivider 256
+#elif defined LED_MODEL_SK9822
+#define NEOPIXEL_CLOCKED
+#define NeoPixelMethod DotStarMethod            
+#define NeoPixelFeature DotStarBgrFeature
+#define NeoPixelColor RgbColor
+#define NeoPixelColorDivider 256
+#else
+#define NeoPixelMethod NeoWs2812Method
+#define NeoPixelFeature NeoBgrFeature
+#define NeoPixelColor RgbColor
+#define NeoPixelColorDivider 256
+#endif // LED_MODELS
 #endif // LED_USE_FASTLED
 
 #ifndef LED_DEFAULT_CHANNELS
@@ -60,8 +55,12 @@
 #define LED_DEFAULT_CORRECTION true
 #endif
 
-#ifndef LEDSTRIP_MAX_COUNT
-#define LEDSTRIP_MAX_COUNT 1
+#ifdef LEDSTRIP_FIXED_COUNT
+#define LEDSTRIP_MAX_COUNT LEDSTRIP_FIXED_COUNT
+#define LEDSTRIP_FIXED_MANAGER true
+#else
+#define LEDSTRIP_FIXED_MANAGER false
+#define LEDSTRIP_MAX_COUNT 2
 #endif
 
 #ifdef LED_FIXED_COUNT
@@ -74,10 +73,6 @@
 #ifndef LED_MAX_COUNT
 #define LED_MAX_COUNT 300
 #endif
-#endif
-
-#ifndef LED_DEFAULT_TYPE
-#define LED_DEFAULT_TYPE WS2812
 #endif
 
 #ifndef LED_DEFAULT_DATA_PIN

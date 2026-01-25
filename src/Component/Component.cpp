@@ -774,6 +774,11 @@ bool Component::checkParamsFeedback(void *param)
 
 Component::ParamType Component::getParamType(void *param) const
 {
+    if(!paramTypesMap.contains(param))
+    {
+        DBG("Parameter type not found for param");
+        return ParamType::ParamTypeMax;
+    }
     return (ParamType)paramTypesMap.at(param);
 }
 

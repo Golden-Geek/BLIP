@@ -113,7 +113,7 @@ public:
     ws2812 wleds;
 #else
     // NeoPixelBus
-    NeoPixelBus<LED_DEFAULT_COLOR_ORDER, LED_DEFAULT_TYPE> *neoPixelStrip;
+    NeoPixelBus<NeoPixelFeature, NeoPixelMethod>* neoPixelStrip;
     NeoGamma<NeoGammaTableMethod> colorGamma;
 #endif
 
@@ -153,7 +153,7 @@ public:
     int ledMap(int index) const;
 };
 
-DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
+DeclareComponentMaybeFixedManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT, LEDSTRIP_FIXED_MANAGER)
 
 #ifdef USE_SCRIPT
 
