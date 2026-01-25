@@ -14,11 +14,18 @@
 #define NEO_GBR GBR
 #define NEO_BRG BRG
 #else
-#define RGB NEO_RGB
-#define RBG NEO_RBG
-#define GRB NEO_GRB
-#define GBR NEO_GBR
-#define BRG NEO_BRG
+#define RGB NeoRgbFeature
+#define RBG NeoRbgFeature
+#define GRB NeoGrbFeature
+#define GBR NeoGbrFeature
+#define BRG NeoBrgFeature
+#define RGBW NeoRgbwFeature
+#define RBGW NeoRbgwFeature
+#define GRBW NeoGrbwFeature
+#define GBRW NeoGbrwFeature
+#define BRGW NeoBrgwFeature
+#define WRGB NeoWrgbFeature
+#define NEO_WS2816 NeoGrbWs2816Feature
 #endif
 
 #ifndef LED_DEFAULT_CHANNELS

@@ -140,8 +140,7 @@
 #ifdef LED_USE_FASTLED
 #include <FastLED.h>
 #else
-#include <Adafruit_NeoPixel.h>
-#include <Adafruit_DotStar.h>
+#include <NeoPixelBus.h>
 #endif
 #include "Component/components/ledstrip/LedHelpers.h"
 

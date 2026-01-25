@@ -48,7 +48,7 @@ public:
         #if defined(LED_USE_FASTLED) && defined(CONFIG_IDF_TARGET_ESP32C6)
         isHighPriority = false;
         #else
-        isHighPriority = true;
+        // isHighPriority = true;
         #endif
     }
 
@@ -112,8 +112,14 @@ public:
 #elif defined LED_USE_CUSTOM_FUNC
     ws2812 wleds;
 #else
-    Adafruit_NeoPixel *neoPixelStrip;
-    Adafruit_DotStar *dotStarStrip;
+    // NeoPixelBus
+#if defined(ARDUINO_ARCH_ESP32) || defined(ESP32)
+    using NeoPixelMethod = NeoWs2816Method;
+#else
+    using NeoPixelMethod = Neo800KbpsMethod;
+#endif
+    NeoPixelBus<LED_DEFAULT_COLOR_ORDER, NeoPixelMethod> *neoPixelStrip;
+    NeoGamma<NeoGammaTableMethod> colorGamma;
 #endif
 
     bool currentStripPower = false;
