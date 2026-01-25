@@ -57,7 +57,7 @@ DeclareFloatParam(lowBatteryThreshold, BATTERY_DEFAULT_LOW_VOLTAGE);
 DeclareIntParam(feedbackInterval, 3); // seconds
 
 DeclareFloatParam(batteryLevel, 1.0f);
-DeclareFloatParam(voltage, BATTERY_MAX_VOLTAGE);
+DeclareRangeParam(voltage, BATTERY_MAX_VOLTAGE, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE);
 DeclareBoolParam(charging, false);
 DeclareFloatParam(chargeLedIntensity, 0.01f);
 DeclareIntParam(shutdownChargeNoSignal, 0);      // seconds, 0 = disabled
@@ -81,7 +81,7 @@ void readBatteryLevel();
 
 void checkShouldAutoShutdown();
 
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
 bool isBatteryLow() const { return voltage < lowBatteryThreshold; }
 

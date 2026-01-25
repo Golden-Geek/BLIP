@@ -76,7 +76,7 @@ bool initVL53L0X();
 void updateVL53L0X();
 #endif
 
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
 ;
 

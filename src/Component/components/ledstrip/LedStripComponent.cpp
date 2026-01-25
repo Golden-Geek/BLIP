@@ -11,7 +11,6 @@ void LedStripComponent::setupInternal(JsonObject o)
 #ifdef LED_USE_FASTLED
 #else
     neoPixelStrip = NULL;
-    dotStarStrip = NULL;
 #endif
 
     for (int i = 0; i < LEDSTRIP_NUM_USER_LAYERS; i++)
@@ -24,15 +23,15 @@ void LedStripComponent::setupInternal(JsonObject o)
         enPin = LED2_DEFAULT_EN_PIN;
     }
 
-    AddIntParamConfig(count);
+    ParamInfo* countInfo = AddIntParamConfig(count);
 #ifdef LED_FIXED_COUNT
-    setParamConfig(&count, false);
-    setParamFeedback(&count, true);
+    countInfo->setTag(TagConfig, false);
+    countInfo->setTag(TagFeedback, false);
 #endif
     AddIntParamConfig(dataPin);
     AddIntParamConfig(enPin);
     AddIntParamConfig(clkPin);
-    AddFloatParam(brightness);
+    AddRangeParam(brightness);
     AddBoolParamConfig(invertStrip);
     AddEnumParamConfig(multiLedMode, multiLedModeOptions, MultiLedModeMax);
     AddIntParamConfig(maxPower);
@@ -116,18 +115,29 @@ void LedStripComponent::setupLeds()
     updateCorrection();
 #else
 
-    if (clkPin > 0)
+    if (neoPixelStrip != NULL)
     {
-        NDBG("Using DotStar strip");
-        dotStarStrip = new Adafruit_DotStar(count * LED_DUPLICATE, dataPin, clkPin, DOTSTAR_BGR);
-        dotStarStrip->begin();
+        neoPixelStrip->ClearTo(RgbColor(0, 0, 0));
+        neoPixelStrip->Show();
+        delete neoPixelStrip;
+        neoPixelStrip = NULL;
     }
-    else
-    {
-        NDBG("Using NeoPixel strip");
 
-        neoPixelStrip = new Adafruit_NeoPixel(count * LED_DUPLICATE, dataPin, LED_DEFAULT_COLOR_ORDER + NEO_KHZ800);
-        neoPixelStrip->begin();
+#ifdef NEOPIXEL_CLOCKED
+    if (clkPin >= 0)
+    {
+        neoPixelStrip = new NeoPixelBus<NeoPixelFeature, NeoPixelMethod>((uint16_t)count, (uint8_t)clkPin, (uint8_t)dataPin);
+        NDBG("Setting up clocked NeoPixelBus on data pin " + std::to_string(dataPin) + " clk pin " + std::to_string(clkPin) + " with " + std::to_string(count) + " pixels.");
+    }
+#else
+    neoPixelStrip = new NeoPixelBus<NeoPixelFeature, NeoPixelMethod>((uint16_t)count, (uint8_t)dataPin);
+#endif
+
+    if (neoPixelStrip != NULL)
+    {
+        neoPixelStrip->Begin();
+        neoPixelStrip->ClearTo(RgbColor(0, 0, 0));
+        neoPixelStrip->Show();
     }
 #endif
 
@@ -139,7 +149,7 @@ void LedStripComponent::updateInternal()
 {
 #ifdef LED_USE_FASTLED
 #else
-    if (dotStarStrip == NULL && neoPixelStrip == NULL)
+    if (neoPixelStrip == NULL)
     {
         return; // not active
     }
@@ -179,9 +189,6 @@ void LedStripComponent::clearInternal()
 #else
     delete neoPixelStrip;
     neoPixelStrip = NULL;
-
-    delete dotStarStrip;
-    dotStarStrip = NULL;
 #endif
 }
 
@@ -235,18 +242,17 @@ int LedStripComponent::getColorIndex(int i) const
     return i;
 }
 
-void LedStripComponent::paramValueChangedInternal(void *param)
+void LedStripComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
+    void* param = paramInfo->ptr;
+
 #ifdef LED_USE_FASTLED
     if (param == &colorCorrection)
         updateCorrection();
 #else
     if (param == &count)
     {
-        if (neoPixelStrip != NULL)
-            neoPixelStrip->updateLength(count);
-        else if (dotStarStrip != NULL)
-            dotStarStrip->updateLength(count);
+        setupLeds();
     }
 #endif
 }
@@ -392,38 +398,20 @@ void LedStripComponent::showLeds()
     // DBG("First Led " + std::to_string(ledMap(0)) + " color: " + std::to_string(colors[0].r) + ", " + std::to_string(colors[0].g) + ", " + std::to_string(colors[0].b) + ", " + std::to_string(colors[0].a));
     FastLED.show();
 #else
-    if (neoPixelStrip != NULL)
-        neoPixelStrip->setBrightness(targetBrightness * 255);
-    else if (dotStarStrip != NULL)
-        dotStarStrip->setBrightness(targetBrightness * 255);
 
     if (neoPixelStrip != NULL)
     {
+        long startTime = millis();
         for (int i = 0; i < count; i++)
         {
+            float bri = colors[i].a * targetBrightness;
+            NeoPixelColor linearColor = NeoPixelColor(colors[i].r * bri / NeoPixelColorDivider, colors[i].g * bri / NeoPixelColorDivider, colors[i].b * bri / NeoPixelColorDivider);
+            NeoPixelColor correctedColor = colorCorrection ? colorGamma.Correct(linearColor) : linearColor;
+            neoPixelStrip->SetPixelColor(ledMap(i), correctedColor);
+        }
+        neoPixelStrip->Show();
+    }
 
-            float a = colors[i].a / 255.0f;
-            uint8_t r = Adafruit_NeoPixel::gamma8(colors[i].r * a);
-            uint8_t g = Adafruit_NeoPixel::gamma8(colors[i].g * a);
-            uint8_t b = Adafruit_NeoPixel::gamma8(colors[i].b * a);
-            neoPixelStrip->setPixelColor(ledMap(i), r, g, b);
-        }
-        neoPixelStrip->show();
-    }
-    else if (dotStarStrip != NULL)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            float a = colors[i].a / 255.0f;
-            // float bFactor = getDitheredBrightness(targetBrightness * colors[i].a, ditherFrameCounter) / 255.0f;
-            uint8_t r = Adafruit_NeoPixel::gamma8(colors[i].r * a);
-            uint8_t g = Adafruit_NeoPixel::gamma8(colors[i].g * a);
-            uint8_t b = Adafruit_NeoPixel::gamma8(colors[i].b * a);
-            dotStarStrip->setPixelColor(ledMap(i), r, g, b);
-        }
-        dotStarStrip->show();
-    }
-    ditherFrameCounter = (ditherFrameCounter + 1) & 0x07;
 #endif
 }
 

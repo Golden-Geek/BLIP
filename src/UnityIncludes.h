@@ -33,6 +33,7 @@
 #include "Common/Settings.h"
 #include "Common/StringHelpers.h"
 #include "Common/CommonListeners.h"
+#include "Common/Parameter.h"
 
 #ifdef USE_SCRIPT // needs pre declaration to be used by Component
 #include <wasm3.h>
@@ -140,8 +141,7 @@
 #ifdef LED_USE_FASTLED
 #include <FastLED.h>
 #else
-#include <Adafruit_NeoPixel.h>
-#include <Adafruit_DotStar.h>
+#include <NeoPixelBus.h>
 #endif
 #include "Component/components/ledstrip/LedHelpers.h"
 

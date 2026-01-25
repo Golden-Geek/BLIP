@@ -259,7 +259,7 @@ void LedStripPlaybackLayer::load(const std::string& path, bool force)
 
     NDBG("Load file " + path);
     NDBG("Reading meta data");
-    DynamicJsonDocument metaData(1000);
+    StaticJsonDocument<1000> metaData;
     metaDataFile = FilesComponent::instance->openFile(playbackDir + "/" + path + ".meta", false); // false is for reading
     if (!metaDataFile)
     {
@@ -470,9 +470,10 @@ void LedStripPlaybackLayer::onEnabledChanged()
     }
 }
 
-void LedStripPlaybackLayer::paramValueChangedInternal(void *param)
+void LedStripPlaybackLayer::paramValueChangedInternal(ParamInfo *paramInfo)
 {
-    LedStripLayer::paramValueChangedInternal(param);
+    LedStripLayer::paramValueChangedInternal(paramInfo);
+    void* param = paramInfo->ptr;
     if (param == &idMode)
     {
         NDBG("ID Mode Switch " + std::to_string(idMode));

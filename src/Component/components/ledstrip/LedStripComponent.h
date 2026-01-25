@@ -48,7 +48,7 @@ public:
         #if defined(LED_USE_FASTLED) && defined(CONFIG_IDF_TARGET_ESP32C6)
         isHighPriority = false;
         #else
-        isHighPriority = true;
+        // isHighPriority = true;
         #endif
     }
 
@@ -60,7 +60,7 @@ public:
     DeclareIntParam(clkPin, LED_DEFAULT_CLK_PIN);
     DeclareIntParam(enPin, LED_DEFAULT_EN_PIN);
 
-    DeclareFloatParam(brightness, LED_DEFAULT_BRIGHTNESS);
+    DeclareRangeParam(brightness, LED_DEFAULT_BRIGHTNESS, 0, 2);
     DeclareIntParam(maxPower, LED_DEFAULT_MAX_POWER);
     DeclareBoolParam(colorCorrection, LED_DEFAULT_CORRECTION);
 
@@ -112,8 +112,9 @@ public:
 #elif defined LED_USE_CUSTOM_FUNC
     ws2812 wleds;
 #else
-    Adafruit_NeoPixel *neoPixelStrip;
-    Adafruit_DotStar *dotStarStrip;
+    // NeoPixelBus
+    NeoPixelBus<NeoPixelFeature, NeoPixelMethod>* neoPixelStrip;
+    NeoGamma<NeoGammaTableMethod> colorGamma;
 #endif
 
     bool currentStripPower = false;
@@ -135,7 +136,7 @@ public:
     int getNumColors() const;
     int getColorIndex(int i) const;
 
-    void paramValueChangedInternal(void *param) override;
+    void paramValueChangedInternal(ParamInfo *param) override;
     void onEnabledChanged() override;
 
     void setStripPower(bool value);
@@ -152,7 +153,7 @@ public:
     int ledMap(int index) const;
 };
 
-DeclareComponentManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT)
+DeclareComponentMaybeFixedManager(LedStrip, LEDSTRIP, leds, strip, LEDSTRIP_MAX_COUNT, LEDSTRIP_FIXED_MANAGER)
 
 #ifdef USE_SCRIPT
 

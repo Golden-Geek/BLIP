@@ -12,8 +12,8 @@ void BatteryComponent::setupInternal(JsonObject o)
     AddIntParamConfig(chargePin);
 
 #ifdef BATTERY_CHARGE_LED_PIN
-    AddFloatParamConfig(chargeLedIntensity);
-    SetParamRange(chargeLedIntensity, 0.0f, 1.0f);
+    ParamInfo *cInfo = AddFloatParamConfig(chargeLedIntensity);
+    cInfo->setRange(&defaultRange);
     pinMode(BATTERY_CHARGE_LED_PIN, OUTPUT);
     analogWrite(BATTERY_CHARGE_LED_PIN, (int)(chargeLedIntensity * 255));
 #endif
@@ -25,10 +25,10 @@ void BatteryComponent::setupInternal(JsonObject o)
 
     AddFloatParamConfig(lowBatteryThreshold);
 
-    AddFloatParamFeedback(batteryLevel);
-    SetParamRange(batteryLevel, 0.0f, 1.0f);
-    AddFloatParamFeedback(voltage);
-    SetParamRange(voltage, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE);
+    ParamInfo* levelInfo = AddRangeParamFeedback(batteryLevel);
+    levelInfo->setRange(&defaultRange);
+    
+    AddRangeParamFeedback(voltage);
     AddBoolParamFeedback(charging);
 
     AddIntParamConfig(shutdownChargeNoSignal);      // seconds, 0 = disabled
@@ -249,7 +249,7 @@ void BatteryComponent::checkShouldAutoShutdown()
     }
 }
 
-void BatteryComponent::paramValueChangedInternal(void *param)
+void BatteryComponent::paramValueChangedInternal(ParamInfo *param)
 {
 #ifdef BATTERY_CHARGE_LED_PIN
     if (param == &chargeLedIntensity)

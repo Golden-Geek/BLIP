@@ -89,27 +89,28 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
 }
 
-void CommunicationComponent::sendParamFeedback(Component *c, void *param, const std::string &pName, Component::ParamType pType)
+void CommunicationComponent::sendParamFeedback(Component *c, const ParamInfo *paramInfo)
 {
+    void *param = paramInfo->ptr;
+    ParamType pType = paramInfo->type;
+    std::string pName = paramInfo->name;
     int numData = 1;
     var data[4];
 
     switch (pType)
     {
-    case Component::ParamType::Trigger:
-        break;
 
-    case Component::ParamType::Bool:
+    case ParamType::Bool:
         data[0] = (*(bool *)param);
         break;
 
-    case Component::ParamType::Int:
+    case ParamType::Int:
         data[0] = (*(int *)param);
         break;
 
-    case Component::ParamType::TypeEnum:
+    case ParamType::TypeEnum:
     {
-        const std::string *options = enumOptionsMap[param];
+        const std::string *options = paramInfo->enumOptions;
         int index = (*(int *)param);
         if (options && index >= 0)
             data[0] = options[index];
@@ -118,27 +119,27 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
     }
     break;
 
-    case Component::ParamType::Float:
+    case ParamType::Float:
         data[0] = (*(float *)param);
         break;
 
-    case Component::ParamType::Str:
+    case ParamType::Str:
         data[0] = (*(std::string *)param);
         break;
 
-    case Component::ParamType::P2D:
-    case Component::ParamType::P3D:
+    case ParamType::P2D:
+    case ParamType::P3D:
     {
-        numData = pType == Component::ParamType::P2D ? 2 : 3;
+        numData = pType == ParamType::P2D ? 2 : 3;
         float *vals = (float *)param;
         data[0] = vals[0];
         data[1] = vals[1];
-        if (pType == Component::ParamType::P3D)
+        if (pType == ParamType::P3D)
             data[2] = vals[2];
     }
     break;
 
-    case Component::ParamType::TypeColor:
+    case ParamType::TypeColor:
     {
         numData = 4;
         data[0] = ((float *)param)[0];

@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "Component.h"
 
 void Component::setup(JsonObject o)
 {
@@ -51,7 +52,14 @@ void Component::update(bool inFastLoop)
             c->update(inFastLoop);
         }
 
+        long startTime = millis();
         updateInternal();
+        long endTime = millis();
+        long duration = endTime - startTime;
+        if (duration > 5)
+        {
+            NDBG("Component " + name + " update took " + std::to_string(duration) + " ms");
+        }
     }
 }
 
@@ -98,9 +106,10 @@ bool Component::handleCommand(const std::string &command, var *data, int numData
 {
     if (numData == 0)
     {
-        if (triggersMap.contains(command))
+        Trigger *trigger = getTrigger(command);
+        if (trigger)
         {
-            triggersMap.at(command)();
+            trigger->func();
             return true;
         }
     }
@@ -134,13 +143,12 @@ void Component::fillSettingsData(JsonObject o)
 {
     for (auto &param : params)
     {
-        if (param == &enabled && !saveEnabled)
+        if (param.ptr == &enabled && !saveEnabled)
             continue;
 
-        bool isReadOnly = checkParamTag(param, TagFeedback);
-
-        if (isReadOnly)
+        if (param.hasTag(TagFeedback))
             continue;
+
         fillSettingsParam(o, param);
     }
 
@@ -155,10 +163,11 @@ void Component::fillSettingsData(JsonObject o)
     }
 }
 
-void Component::fillSettingsParam(JsonObject o, void *param)
+void Component::fillSettingsParam(JsonObject o, const ParamInfo &paramInfo)
 {
-    ParamType t = getParamType(param);
-    const std::string pName = paramToNameMap.at(param);
+    ParamType t = paramInfo.type;
+    const std::string pName = paramInfo.name;
+    void *param = paramInfo.ptr;
 
     switch (t)
     {
@@ -200,7 +209,7 @@ void Component::fillSettingsParam(JsonObject o, void *param)
         break;
 
     default:
-        DBG("Unsupported param type for saving settings: " + typeNames[t] + "(" + std::to_string((int)t) + ")");
+        DBG("Unsupported param type for saving settings: " + paramInfo.getTypeString());
         break;
     }
 }
@@ -222,23 +231,23 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
 
         // iterates through trigger map
 
-        if (params.size() > 0 || triggersMap.size() > 0)
+        if (params.size() > 0 || triggers.size() > 0)
         {
             StaticJsonDocument<6000> doc;
             JsonObject o = doc.to<JsonObject>();
 
-            if (triggersMap.size() > 0)
+            if (triggers.size() > 0)
             {
-                for (const auto &[triggerName, triggerFunc] : triggersMap)
+                for (const auto &t : triggers)
                 {
-                    createBaseOSCQueryObject(o, fullPath, triggerName, "I", false);
+                    createBaseOSCQueryObject(o, fullPath, t.name, "I", false);
                     numParamsSaved++;
                 }
             }
 
             for (auto &param : params)
             {
-                if (param == &enabled && !exposeEnabled)
+                if (param.ptr == &enabled && !exposeEnabled)
                     continue;
 
                 if (fillOSCQueryParam(o, fullPath, param, showConfig))
@@ -290,120 +299,102 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
     }
 }
 
-bool Component::fillOSCQueryParam(JsonObject o, const std::string &fullPath, void *param, bool showConfig)
+bool Component::fillOSCQueryParam(JsonObject o, const std::string &fullPath, const ParamInfo &paramInfo, bool showConfig)
 {
-    bool isConfig = checkParamTag(param, TagConfig);
-
-    if (!showConfig && isConfig)
+    if (!showConfig && paramInfo.hasTag(TagConfig))
         return false;
 
-    const std::string pName = paramToNameMap.at(param);
-    ParamType t = getParamType(param);
-    bool readOnly = checkParamTag(param, TagFeedback);
+    const std::string pName = paramInfo.name;
+    ParamType t = paramInfo.type;
+    bool readOnly = paramInfo.hasTag(TagFeedback);
+    std::string paramTypeStr = paramInfo.getTypeString();
+    void *param = paramInfo.ptr;
+    JsonObject po = createBaseOSCQueryObject(o, fullPath, pName, t == Bool ? (*(bool *)param) ? "T" : "F" : paramTypeStr, readOnly);
+    JsonArray vArr = po.createNestedArray("VALUE");
 
-    JsonObject po = createBaseOSCQueryObject(o, fullPath, pName, t == Bool ? (*(bool *)param) ? "T" : "F" : typeNames[t], readOnly);
-
-    // if (isConfig)
-    // {
-    //     JsonArray to = po.createNestedArray("TAGS");
-    //     to.add("config");
-    // }
-
-    if (t != ParamType::Trigger)
+    switch (t)
     {
-        JsonArray vArr = po.createNestedArray("VALUE");
-
-        switch (t)
-        {
-        case ParamType::Bool:
-            vArr.add((*(bool *)param));
-            break;
-
-        case ParamType::Int:
-            vArr.add((*(int *)param));
-            break;
-
-        case ParamType::TypeEnum:
-        {
-            int numOptions = enumOptionsCountMap.contains(param) ? enumOptionsCountMap.at(param) : 0;
-            const std::string *options = enumOptionsMap.contains(param) ? enumOptionsMap.at(param) : nullptr;
-            if (options != nullptr && numOptions > 0)
-            {
-                JsonArray rArr = po.createNestedArray("RANGE");
-                JsonObject vals = rArr.createNestedObject();
-                JsonArray opt = vals.createNestedArray("VALS");
-
-                for (int i = 0; i < numOptions; i++)
-                {
-                    opt.add(options[i]);
-                }
-
-                po["TYPE"] = "s"; // force string type
-                int index = *(int *)param;
-                if (index >= 0 && index < numOptions)
-                    vArr.add(options[index]);
-            }
-        }
+    case ParamType::Bool:
+        vArr.add((*(bool *)param));
         break;
 
-        case ParamType::Float:
-            vArr.add((*(float *)param));
-            break;
+    case ParamType::Int:
+        vArr.add((*(int *)param));
+        break;
 
-        case ParamType::Str:
-            vArr.add((*(std::string *)param));
-            break;
+    case ParamType::TypeEnum:
+    {
+        const std::string *options = paramInfo.enumOptions;
+        if (options != nullptr && paramInfo.numEnumOptions > 0)
+        {
+            JsonArray rArr = po.createNestedArray("RANGE");
+            JsonObject vals = rArr.createNestedObject();
+            JsonArray opt = vals.createNestedArray("VALS");
 
-        case ParamType::P2D:
-            vArr.add(((float *)param)[0]);
-            vArr.add(((float *)param)[1]);
-            break;
+            for (int i = 0; i < paramInfo.numEnumOptions; i++)
+            {
+                opt.add(options[i]);
+            }
 
-        case ParamType::P3D:
-            vArr.add(((float *)param)[0]);
-            vArr.add(((float *)param)[1]);
-            vArr.add(((float *)param)[2]);
-            break;
-
-        case ParamType::TypeColor:
-            vArr.add(((float *)param)[0]);
-            vArr.add(((float *)param)[1]);
-            vArr.add(((float *)param)[2]);
-            vArr.add(((float *)param)[3]);
-            break;
-
-        default:
-            break;
+            po["TYPE"] = "s"; // force string type
+            int index = *(int *)param;
+            if (index >= 0 && index < paramInfo.numEnumOptions)
+                vArr.add(options[index]);
         }
     }
+    break;
 
-    if (paramRangesMap.contains(param))
+    case ParamType::Float:
+        vArr.add((*(float *)param));
+        break;
+
+    case ParamType::Str:
+        vArr.add((*(std::string *)param));
+        break;
+
+    case ParamType::P2D:
+        vArr.add(((float *)param)[0]);
+        vArr.add(((float *)param)[1]);
+        break;
+
+    case ParamType::P3D:
+        vArr.add(((float *)param)[0]);
+        vArr.add(((float *)param)[1]);
+        vArr.add(((float *)param)[2]);
+        break;
+
+    case ParamType::TypeColor:
+        vArr.add(((float *)param)[0]);
+        vArr.add(((float *)param)[1]);
+        vArr.add(((float *)param)[2]);
+        vArr.add(((float *)param)[3]);
+        break;
+
+    default:
+        break;
+    }
+
+    if (param)
     {
-        ParamRange range = paramRangesMap.at(param);
-        float vMin1 = range.vMin;
-        float vMax1 = range.vMax;
-        float vMin2 = range.vMin2;
-        float vMax2 = range.vMax2;
-        float vMin3 = range.vMin3;
-        float vMax3 = range.vMax3;
-        if (vMin1 != vMax1)
+        ParamRange *range = paramInfo.range;
+        if (range != nullptr && range->vMin != range->vMax)
         {
             JsonArray rArr = po.createNestedArray("RANGE");
             JsonObject r1 = rArr.createNestedObject();
-            r1["MIN"] = vMin1;
-            r1["MAX"] = vMax1;
+            r1["MIN"] = range->vMin;
+            r1["MAX"] = range->vMax;
             if (t == ParamType::P2D || t == ParamType::P3D)
             {
                 JsonObject r2 = rArr.createNestedObject();
 
-                r2["MIN"] = vMin2;
-                r2["MAX"] = vMax2;
+                r2["MIN"] = range->vMin2;
+                r2["MAX"] = range->vMax2;
 
                 if (t == ParamType::P3D)
                 {
                     JsonObject r3 = rArr.createNestedObject();
-                    r3["MIN"] = vMin3;
-                    r3["MAX"] = vMax3;
+                    r3["MIN"] = range->vMin3;
+                    r3["MAX"] = range->vMax3;
                 }
             }
         }
@@ -507,76 +498,29 @@ Component *Component::addComponent(Component *c, JsonObject o)
     return c;
 }
 
-// Component *Component::getComponentWithName(const std::string &name)
-// {
-//     if (name == this->name)
-//         return this;
-
-//     int subCompIndex = name.indexOf('.');
-
-//     if (subCompIndex > 0)
-//     {
-//         std::string n = name.substring(0, subCompIndex);
-//         for (int i = 0; i < numComponents; i++)
-//         {
-//             if (components[i]->name == n)
-//                 return components[i]->getComponentWithName(name.substring(subCompIndex + 1));
-//         }
-//     }
-//     else
-//     {
-//         for (int i = 0; i < numComponents; i++)
-//         {
-//             if (components[i]->name == name)
-//                 return components[i];
-//         }
-//     }
-
-//     return NULL;
-// }
-
-void Component::addParam(void *param, ParamType type, const std::string &paramName, uint8_t tags)
+ParamInfo *Component::addParam(void *param, ParamType type, const std::string &paramName, uint8_t tags)
 {
-    params.push_back(param);
-    paramTypesMap.insert(std::make_pair(param, (int)type));
-    paramTagsMap.insert(std::make_pair(param, tags));
-    nameToParamMap.insert(std::make_pair(paramName, param));
-    paramToNameMap.insert(std::make_pair(param, paramName));
-}
-
-void Component::setParamTag(void *param, ParamTag tag, bool enable)
-{
-    uint8_t currentTags = paramTagsMap[param];
-    if (enable)
-        currentTags |= tag;
-    else
-        currentTags &= ~tag;
-    paramTagsMap[param] = currentTags;
-}
-
-void Component::setParamRange(void *param, ParamRange range)
-{
-    paramRangesMap.emplace(param, range);
-}
-
-void Component::setEnumOptions(void *param, const std::string *enumOptions, int numOptions)
-{
-    enumOptionsMap.emplace(param, enumOptions);
-    enumOptionsCountMap.emplace(param, numOptions);
+    params.push_back({param, paramName, type, tags});
+    return &params.back();
 }
 
 void Component::setParam(void *param, var *value, int numData)
 {
     bool hasChanged = false;
-    ParamType t = getParamType(param);
+    ParamInfo *pInfo = getParamInfo(param);
+    if (pInfo == nullptr)
+    {
+        NDBG("Parameter not found");
+        return;
+    }
 
-    if (numData < 2 && t == P2D)
+    if (numData < 2 && pInfo->type == P2D)
     {
         NDBG("Expecting at least 2 parameters");
         return;
     }
 
-    if (numData < 3 && t == P3D)
+    if (numData < 3 && pInfo->type == P3D)
     {
         NDBG("Expecting at least 3 parameters");
         return;
@@ -588,12 +532,8 @@ void Component::setParam(void *param, var *value, int numData)
     //     return;
     // }
 
-    switch (t)
+    switch (pInfo->type)
     {
-    case ParamType::Trigger:
-
-        break;
-
     case ParamType::Bool:
 
         hasChanged = *((bool *)param) != value[0].boolValue();
@@ -709,49 +649,48 @@ void Component::setParam(void *param, var *value, int numData)
 
     if (hasChanged)
     {
-
         // notify here
-        paramValueChanged(param);
+        paramValueChanged(pInfo);
     }
 }
 
 bool Component::handleSetParam(const std::string &paramName, var *data, int numData)
 {
-    if (nameToParamMap.contains(paramName))
+    if (ParamInfo *pInfo = getParamInfo(paramName))
     {
-        setParam(nameToParamMap.at(paramName), data, numData);
+        setParam(pInfo->ptr, data, numData);
         return true;
     }
 
     return false;
 }
 
-void Component::paramValueChanged(void *param)
+void Component::paramValueChanged(ParamInfo *paramInfo)
 {
-    if (param == &enabled)
+    if (paramInfo->ptr == &enabled)
         onEnabledChanged();
 
-    paramValueChangedInternal(param);
+    paramValueChangedInternal(paramInfo);
 
-    checkParamsFeedback(param);
+    checkParamsFeedback(paramInfo);
 
     if (parentComponent != nullptr)
-        parentComponent->childParamValueChanged(this, this, param);
+        parentComponent->childParamValueChanged(this, this, paramInfo);
 }
 
-void Component::childParamValueChanged(Component *caller, Component *comp, void *param)
+void Component::childParamValueChanged(Component *caller, Component *comp, ParamInfo*paramInfo)
 {
     // NDBG("Child param value changed : "+caller->name + " > " + comp->name);
     if (parentComponent != nullptr)
-        parentComponent->childParamValueChanged(this, comp, param);
+        parentComponent->childParamValueChanged(this, comp, paramInfo);
 }
 
-bool Component::checkParamsFeedback(void *param)
+bool Component::checkParamsFeedback(ParamInfo *paramInfo)
 {
     if (feedbackRate < 0)
         return false;
 
-    if (!checkParamTag(param, TagFeedback))
+    if (!paramInfo->hasTag(TagFeedback))
         return false;
 
     bool shouldSend = false;
@@ -761,22 +700,55 @@ bool Component::checkParamsFeedback(void *param)
         return false;
     }
 
-    CommunicationComponent::instance->sendParamFeedback(this, param, paramToNameMap.at(param), getParamType(param));
+    CommunicationComponent::instance->sendParamFeedback(this, paramInfo);
     return true;
 }
 
-Component::ParamType Component::getParamType(void *param) const
-{
-    return (ParamType)paramTypesMap.at(param);
-}
-
-bool Component::checkParamTag(void *param, ParamTag tag) const
-{
-    return (paramTagsMap.at(param) & tag) != 0;
-}
-
-
 void Component::addTrigger(const std::string &name, std::function<void(void)> func)
 {
-    triggersMap.emplace(name, func);
+    triggers.push_back({name, func});
+}
+
+Trigger *Component::getTrigger(const std::string &name)
+{
+    for (auto &t : triggers)
+    {
+        if (t.name == name)
+            return &t;
+    }
+
+    DBG("Trigger not found: " + name);
+    return nullptr;
+}
+
+ParamInfo *Component::getParamInfo(void *param)
+{
+    for (auto &p : params)
+    {
+        if (p.ptr == param)
+            return &p;
+    }
+
+    DBG("Param not found");
+    return nullptr; // should not happen
+}
+
+ParamInfo *Component::getParamInfo(const std::string &paramName)
+{
+    for (auto &p : params)
+    {
+        if (p.name == paramName)
+            return &p;
+    }
+
+    DBG("Param not found: " + paramName);
+    return nullptr; // should not happen
+}
+
+void *Component::getParamByName(const std::string &paramName)
+{
+    ParamInfo *param = getParamInfo(paramName);
+    if (param != nullptr)
+        return param->ptr;
+    return nullptr;
 }

@@ -9,10 +9,11 @@ void IRComponent::setupInternal(JsonObject o)
 
     AddIntParamConfig(pin1);
     AddIntParamConfig(pin2);
-    AddFloatParam(value);
-    SetParamRange(value, 0.0f, 1.0f);
+    ParamInfo* valueInfo = AddFloatParamConfig(value);
     AddBoolParamConfig(keepValueOnReboot);
-    setParamConfig(&value, keepValueOnReboot);
+   
+    valueInfo->setRange(&defaultRange);
+    valueInfo->setTag(TagConfig, keepValueOnReboot);
 
     prevValue = -1;
 }
@@ -33,15 +34,16 @@ void IRComponent::clearInternal()
 {
 }
 
-void IRComponent::paramValueChangedInternal(void *param)
+void IRComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
+    void* param = paramInfo->ptr;
 
     if (param == &pin1 || param == &pin2)
         setupPins();
     if (param == &value)
         updatePins();
     if (param == &keepValueOnReboot)
-        setParamConfig(&value, keepValueOnReboot);
+        getParamInfo(&value)->setTag(TagConfig, keepValueOnReboot);
 }
 
 void IRComponent::setupPins()

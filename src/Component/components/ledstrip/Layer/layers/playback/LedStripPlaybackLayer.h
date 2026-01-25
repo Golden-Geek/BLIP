@@ -66,7 +66,7 @@ public:
     void togglePlayPause();
 
     void onEnabledChanged() override;
-    void paramValueChangedInternal(void *param) override;
+    void paramValueChangedInternal(ParamInfo *param) override;
 
     bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 

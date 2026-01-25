@@ -5,10 +5,11 @@
 #ifndef POWER_EXT
 #ifndef C6_BOARD
 #define POWER_EXT 0
-#endif
+#else
 #define POWER_EXT 1
-#endif
-#endif
+#endif // C6_BOARD
+#endif // POWER_EXT
+#endif // USE_POWER
 
 #ifndef DEMO_MODE_COUNT
 #define DEMO_MODE_COUNT 3
@@ -33,7 +34,7 @@ void RootComponent::setupInternal(JsonObject)
 #else
         esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
 #endif
-#endif
+#endif // USE_POWER
 
     // parameters.clear(); // remove enabled in root component
     Settings::loadSettings();
@@ -300,13 +301,21 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
 
             Component *targetComponent = nullptr;
-            if (pathComponentMap.contains(address))
-            {
-                targetComponent = pathComponentMap[address];
-            }
-            else if (address == "" || address == "root")
+            if (address == "" || address == "root")
             {
                 targetComponent = this;
+            }
+            else
+            {
+
+                for (int i=0;i<allComponents.size();i++)
+                {
+                    if (allComponentPaths[i] == address)
+                    {
+                        targetComponent = allComponents[i];
+                        break;
+                    }
+                }
             }
 
             if (targetComponent != nullptr)
@@ -364,8 +373,9 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
     comm.sendEventFeedback(e);
 }
 
-void RootComponent::childParamValueChanged(Component *caller, Component *comp, void *param)
+void RootComponent::childParamValueChanged(Component *caller, Component *comp, ParamInfo *paramInfo)
 {
+    void *param = paramInfo->ptr;
 #ifdef USE_BUTTON
     if (caller == &buttons)
     {
@@ -467,27 +477,29 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
 
 void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
 {
-    NDBG("Register component " + path + " (" + comp->getTypeString() + ")");
-    pathComponentMap.insert(std::make_pair(path, comp));
+    DBG("Register component " + path);
+    allComponents.push_back(comp);
+    allComponentPaths.push_back(path);
     if (highPriority)
         highPriorityComponents.push_back(comp);
 }
 
 void RootComponent::unregisterComponent(Component *comp)
 {
-    NDBG("Unregister component (" + comp->getTypeString() + ")");
-
-    for (auto it = pathComponentMap.begin(); it != pathComponentMap.end();)
+    int index = -1;
+    for (size_t i = 0; i < allComponents.size(); i++)
     {
-        if (it->second == comp)
+        if (allComponents[i] == comp)
         {
-            NDBG(" - remove path " + it->first);
-            it = pathComponentMap.erase(it);
+            index = i;
+            break;
         }
-        else
-        {
-            ++it;
-        }
+    }
+
+    if (index >= 0)
+    {
+        allComponents.erase(allComponents.begin() + index);
+        allComponentPaths.erase(allComponentPaths.begin() + index);
     }
 
     if (highPriorityComponents.size() > 0)

@@ -70,10 +70,11 @@ void ButtonComponent::updateInternal()
     }
 }
 
-void ButtonComponent::paramValueChangedInternal(void *param)
+void ButtonComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
-    IOComponent::paramValueChangedInternal(param);
+    IOComponent::paramValueChangedInternal(paramInfo);
 
+    void* param = paramInfo->ptr;
     if (param == &value)
     {
         // NDBG("Reset long press and very long press");

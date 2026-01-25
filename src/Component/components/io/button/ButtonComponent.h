@@ -45,7 +45,7 @@ public:
 
     void setupInternal(JsonObject o) override;
     void updateInternal() override;
-    void paramValueChangedInternal(void *param) override;
+    void paramValueChangedInternal(ParamInfo *param) override;
 
 #if USE_SCRIPT
     // LinkScriptFunctionsStart

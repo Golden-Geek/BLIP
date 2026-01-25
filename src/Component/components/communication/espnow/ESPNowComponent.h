@@ -119,7 +119,7 @@ void sendPairingResponse(const uint8_t *bridgeMac);
 
 void setupLongRange(const uint8_t *deviceMac);
 
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 DeclareComponentEventTypes(MessageReceived);

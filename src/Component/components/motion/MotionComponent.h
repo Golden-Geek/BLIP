@@ -46,7 +46,7 @@ DeclareIntParam(intPin, IMU_DEFAULT_INT);
 long timeSinceOrientationLastSent;
 
 // IMU data
-DeclareP3DParam(orientation, 0, 0, 0);
+DeclareP3DRangeParam(orientation, -180, 180, -90, 90, -180, 180);
 DeclareP3DParam(accel, 0, 0, 0);
 DeclareP3DParam(gyro, 0, 0, 0);
 DeclareP3DParam(linearAccel, 0, 0, 0);
@@ -107,7 +107,7 @@ void setOrientationXOffset(float offset);
 void setProjectAngleOffset(float yaw, float angle);
 
 void onEnabledChanged() override;
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
 bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 

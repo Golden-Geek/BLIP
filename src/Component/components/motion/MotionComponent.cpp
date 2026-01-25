@@ -17,17 +17,17 @@ void MotionComponent::setupInternal(JsonObject o)
 #endif
 
     AddEnumParam(throwState, throwStateOptions, ThrowStateMax);
-    AddP3DParam(orientation);
-    AddP3DParam(accel);
-    AddP3DParam(gyro);
-    AddP3DParam(linearAccel);
+    AddP3DRangeParamFeedback(orientation);
+    AddP3DParamFeedback(accel);
+    AddP3DParamFeedback(gyro);
+    AddP3DParamFeedback(linearAccel);
     AddFloatParam(projectedAngle);
     AddIntParam(spinCount);
     AddFloatParam(spin);
     AddFloatParam(activity);
 
     AddFloatParamConfig(orientationXOffset);
-    AddP2DParamConfig(flatThresholds);
+    AddP3DParamConfig(flatThresholds);
     AddP3DParamConfig(accelThresholds);
     AddFloatParamConfig(diffThreshold);
     AddFloatParamConfig(semiFlatThreshold);
@@ -43,7 +43,7 @@ void MotionComponent::setupInternal(JsonObject o)
     prevActivity = 0;
     countNonDouble = 0;
 
-    paramValueChangedInternal(&sendLevel); // force feedback setup
+    paramValueChangedInternal(getParamInfo(&sendLevel)); // force feedback setup
 }
 
 bool MotionComponent::initInternal()
@@ -123,19 +123,20 @@ void MotionComponent::onEnabledChanged()
         shouldStopRead = true;
 }
 
-void MotionComponent::paramValueChangedInternal(void *param)
+void MotionComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
+    void* param = paramInfo->ptr;
     if (param == &sendLevel)
     {
-        setParamFeedback(&throwState, sendLevel != SendLevelNone);
-        setParamFeedback(&orientation, sendLevel != SendLevelNone);
-        setParamFeedback(&accel, sendLevel == SendLevelAll);
-        setParamFeedback(&gyro, sendLevel == SendLevelAll);
-        setParamFeedback(&linearAccel, sendLevel == SendLevelAll);
-        setParamFeedback(&projectedAngle, sendLevel == SendLevelAll);
-        setParamFeedback(&spinCount, sendLevel == SendLevelAll);
-        setParamFeedback(&spin, sendLevel == SendLevelAll);
-        setParamFeedback(&activity, sendLevel == SendLevelAll);
+        getParamInfo(&throwState)->setTag(TagFeedback, sendLevel != SendLevelNone);
+        getParamInfo(&orientation)->setTag(TagFeedback, sendLevel != SendLevelNone);
+        getParamInfo(&accel)->setTag(TagFeedback, sendLevel == SendLevelAll);
+        getParamInfo(&gyro)->setTag(TagFeedback, sendLevel == SendLevelAll);
+        getParamInfo(&linearAccel)->setTag(TagFeedback, sendLevel == SendLevelAll);
+        getParamInfo(&projectedAngle)->setTag(TagFeedback, sendLevel == SendLevelAll);
+        getParamInfo(&spinCount)->setTag(TagFeedback, sendLevel == SendLevelAll);
+        getParamInfo(&spin)->setTag(TagFeedback, sendLevel == SendLevelAll);
+        getParamInfo(&activity)->setTag(TagFeedback, sendLevel == SendLevelAll);
     }
 }
 

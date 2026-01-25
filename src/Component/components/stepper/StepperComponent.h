@@ -32,7 +32,7 @@ void updateInternal() override;
 void clearInternal() override;
 
 void onEnabledChanged() override;
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
 
     EndDeclareComponent

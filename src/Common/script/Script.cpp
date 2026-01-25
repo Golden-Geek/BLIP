@@ -1,5 +1,10 @@
 #include "UnityIncludes.h"
 
+#if defined(ESP32)
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#endif
+
 #define FATAL(func, msg)                  \
     {                                     \
         Serial.print("Fatal: " func " "); \
@@ -40,6 +45,17 @@ void Script::update()
 {
     if (isRunning)
     {
+
+#if defined(ESP32)
+        const UBaseType_t stackWords = uxTaskGetStackHighWaterMark(NULL);
+        // DBG("[script] Update wasm script " + std::to_string(stackWords) + " words free stack");
+        if (stackWords < SCRIPT_MIN_STACK_WORDS)
+        {
+            DBG("[script] Low stack while running wasm, stopping script");
+            stop();
+            return;
+        }
+#endif
         // TSTART()
         if (updateFunc != NULL)
         {
@@ -248,7 +264,7 @@ M3Result Script::LinkArduino(IM3Runtime runtime)
     m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
     m3_LinkRawFunction(module, arduino, "printFloat", "v(f)", &m3_printFloat);
     m3_LinkRawFunction(module, arduino, "printInt", "v(i)", &m3_printInt);
-    m3_LinkRawFunction(module, arduino, "printString", "v(ii)", &m3_printString);
+    // m3_LinkRawFunction(module, arduino, "printString", "v(ii)", &m3_printString);
     m3_LinkRawFunction(module, arduino, "sendEvent", "v(i)", &m3_sendEvent);
     m3_LinkRawFunction(module, arduino, "sendParamFeedback", "v(if)", &m3_sendParamFeedback);
     m3_LinkRawFunction(module, arduino, "getPropID", "i()", &m3_getPropID);

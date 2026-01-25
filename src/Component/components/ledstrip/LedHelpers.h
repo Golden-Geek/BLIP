@@ -6,20 +6,38 @@
 #define BLUE_MILLIAMP 15
 #define DARK_MILLIAMP 1
 
-// NEO PIXEL - FAST LED CONVERSION
+// NEO PIXEL / FAST LED CONVERSION
 #ifdef LED_USE_FASTLED
-#define NEO_RGB RGB
-#define NEO_RBG RBG
-#define NEO_GRB GRB
-#define NEO_GBR GBR
-#define NEO_BRG BRG
+
+#ifdef LED_MODEL_WS2816
+#define LED_DEFAULT_TYPE WS2812B
+#elif defined LED_MODEL_SK9822
+#define LED_DEFAULT_TYPE SK9822
 #else
-#define RGB NEO_RGB
-#define RBG NEO_RBG
-#define GRB NEO_GRB
-#define GBR NEO_GBR
-#define BRG NEO_BRG
+#define LED_DEFAULT_TYPE WS2812B
 #endif
+
+#else
+
+// NEO PIXEL BUS DEFINES
+#ifdef LED_MODEL_WS2816
+#define NeoPixelMethod NeoWs2816Method
+#define NeoPixelFeature NeoGrbwWs2816Feature
+#define NeoPixelColor Rgb48Color
+#define NeoPixelColorDivider 256
+#elif defined LED_MODEL_SK9822
+#define NEOPIXEL_CLOCKED
+#define NeoPixelMethod DotStarMethod            
+#define NeoPixelFeature DotStarBgrFeature
+#define NeoPixelColor RgbColor
+#define NeoPixelColorDivider 256
+#else
+#define NeoPixelMethod NeoWs2812Method
+#define NeoPixelFeature NeoBgrFeature
+#define NeoPixelColor RgbColor
+#define NeoPixelColorDivider 256
+#endif // LED_MODELS
+#endif // LED_USE_FASTLED
 
 #ifndef LED_DEFAULT_CHANNELS
 #define LED_DEFAULT_CHANNELS 3
@@ -37,8 +55,12 @@
 #define LED_DEFAULT_CORRECTION true
 #endif
 
-#ifndef LEDSTRIP_MAX_COUNT
-#define LEDSTRIP_MAX_COUNT 1
+#ifdef LEDSTRIP_FIXED_COUNT
+#define LEDSTRIP_MAX_COUNT LEDSTRIP_FIXED_COUNT
+#define LEDSTRIP_FIXED_MANAGER true
+#else
+#define LEDSTRIP_FIXED_MANAGER false
+#define LEDSTRIP_MAX_COUNT 2
 #endif
 
 #ifdef LED_FIXED_COUNT

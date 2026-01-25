@@ -67,7 +67,7 @@ void DistanceSensorComponent::updateHCSR04()
         {
             // Start Trigger sequence
             gpio_set_level(gpio_num_t(trigPin), LOW); // Ensure low before pulse
-            delayMicroseconds(2);                   // Small delay for clean pulse
+            delayMicroseconds(2);                     // Small delay for clean pulse
             gpio_set_level(gpio_num_t(trigPin), HIGH);
             stateStartTime = micros(); // Record the start time of the trigger pulse
             currentState = TRIGGERING;
@@ -222,8 +222,9 @@ void DistanceSensorComponent::updateVL53L0X()
 }
 #endif
 
-void DistanceSensorComponent::paramValueChangedInternal(void *param)
+void DistanceSensorComponent::paramValueChangedInternal(ParamInfo *param)
 {
+    void *param = paramInfo->ptr;
 #ifdef DISTANCE_SENSOR_HCSR04
     if (param == &trigPin)
     {

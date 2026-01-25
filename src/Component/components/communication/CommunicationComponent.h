@@ -21,7 +21,7 @@ void setupInternal(JsonObject o) override;
 
 void onChildComponentEvent(const ComponentEvent &e) override;
 
-void sendParamFeedback(Component *c, void *param, const std::string &pName, Component::ParamType pType);
+void sendParamFeedback(Component *c, const ParamInfo* paramInfo);
 void sendMessage(Component *c, const std::string &mName, const std::string &val);
 void sendEventFeedback(const ComponentEvent &e);
 void sendDebug(const std::string& msg, const std::string&source = "", const std::string& type = "info");

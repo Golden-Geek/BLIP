@@ -137,7 +137,7 @@ struct Color
           b(constrain(b * maxValue(), 0, maxValue()))
     {
     }
-    
+
     Color(ColorType r, ColorType g, ColorType b, ColorType a = maxValue())
         : a(a), r(r), g(g), b(b)
     {
@@ -184,10 +184,10 @@ struct Color
     static Color HSV(float h, float s, float v, float a = 1.0f)
     {
         return Color(
-            v * mix(1.0, constrain(abs(fract(h + 1.0) * 6.0 - 3.0) - 1.0, 0.0, 1.0), s) * maxValue(),
-            v * mix(1.0, constrain(abs(fract(h + 0.6666666) * 6.0 - 3.0) - 1.0, 0.0, 1.0), s) * maxValue(),
-            v * mix(1.0, constrain(abs(fract(h + 0.3333333) * 6.0 - 3.0) - 1.0, 0.0, 1.0), s) * maxValue(),
-            a * maxValue());
+            v * mix(1.0, constrain(abs(fract(h + 1.0) * 6.0 - 3.0) - 1.0, 0.0, 1.0), s),
+            v * mix(1.0, constrain(abs(fract(h + 0.6666666) * 6.0 - 3.0) - 1.0, 0.0, 1.0), s),
+            v * mix(1.0, constrain(abs(fract(h + 0.3333333) * 6.0 - 3.0) - 1.0, 0.0, 1.0), s),
+            a);
     }
 
     static float mix(float a, float b, float t) { return a + (b - a) * t; }

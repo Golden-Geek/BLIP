@@ -22,8 +22,9 @@ void ServoComponent::clearInternal()
     servo.detach();
 }
 
-void ServoComponent::paramValueChangedInternal(void *param)
+void ServoComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
+    void* param = paramInfo->ptr;
     if (param == &pin)
     {
         servo.detach();

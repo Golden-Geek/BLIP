@@ -48,8 +48,9 @@ void DCMotorComponent::setupPins()
     }
 }
 
-void DCMotorComponent::paramValueChangedInternal(void *param)
+void DCMotorComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
+    void* param = paramInfo->ptr;
     if (param == &speed)
     {
         gpio_set_level(gpio_num_t(dir1Pin), speed > 0 ? HIGH : LOW);
