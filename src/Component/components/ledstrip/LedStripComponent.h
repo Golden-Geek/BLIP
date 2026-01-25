@@ -113,12 +113,7 @@ public:
     ws2812 wleds;
 #else
     // NeoPixelBus
-#if defined(ARDUINO_ARCH_ESP32) || defined(ESP32)
-    using NeoPixelMethod = NeoWs2816Method;
-#else
-    using NeoPixelMethod = Neo800KbpsMethod;
-#endif
-    NeoPixelBus<LED_DEFAULT_COLOR_ORDER, NeoPixelMethod> *neoPixelStrip;
+    NeoPixelBus<LED_DEFAULT_COLOR_ORDER, LED_DEFAULT_TYPE> *neoPixelStrip;
     NeoGamma<NeoGammaTableMethod> colorGamma;
 #endif
 

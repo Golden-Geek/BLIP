@@ -26,6 +26,8 @@
 #define BRGW NeoBrgwFeature
 #define WRGB NeoWrgbFeature
 #define NEO_WS2816 NeoGrbWs2816Feature
+#define WS2816 NeoWs2816Method
+#define WS2812 Neo800KbpsMethod
 #endif
 
 #ifndef LED_DEFAULT_CHANNELS
@@ -58,6 +60,10 @@
 #ifndef LED_MAX_COUNT
 #define LED_MAX_COUNT 300
 #endif
+#endif
+
+#ifndef LED_DEFAULT_TYPE
+#define LED_DEFAULT_TYPE WS2812
 #endif
 
 #ifndef LED_DEFAULT_DATA_PIN

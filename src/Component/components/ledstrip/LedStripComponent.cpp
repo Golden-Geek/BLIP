@@ -129,7 +129,7 @@ void LedStripComponent::setupLeds()
     }
     else
     {
-        neoPixelStrip = new NeoPixelBus<LED_DEFAULT_COLOR_ORDER, NeoPixelMethod>((uint16_t)count, (uint8_t)dataPin);
+        neoPixelStrip = new NeoPixelBus<LED_DEFAULT_COLOR_ORDER, LED_DEFAULT_TYPE>((uint16_t)count, (uint8_t)dataPin);
     }
     NDBG("Using NeoPixel strip on data pin " + std::to_string(dataPin));
 
