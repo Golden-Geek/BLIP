@@ -33,7 +33,7 @@ struct ParamRange
 
 ParamRange defaultRange{0, 1};
 
-const std::string paramTypeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r"};
+const std::string paramTypeNames[ParamTypeMax]{"b", "i", "f", "s", "ff", "fff", "r", "i"};
 // const std::string paramTagNames[TagNameMax]{"", "config", "feedback"};
 
 struct ParamInfo

@@ -1,16 +1,16 @@
 #pragma once
 
 #ifndef SCRIPT_MAX_SIZE
-#define SCRIPT_MAX_SIZE 16000
+#define SCRIPT_MAX_SIZE 8000
 #endif
 
 #ifndef WASM_STACK_SLOTS
-#define WASM_STACK_SLOTS 1200
+#define WASM_STACK_SLOTS 512
 #endif
 
-#ifndef SCRIPT_NATIVE_STACK_SIZE
-#define SCRIPT_NATIVE_STACK_SIZE (8 * 1024)
-#endif
+// #ifndef SCRIPT_NATIVE_STACK_SIZE
+// #define SCRIPT_NATIVE_STACK_SIZE (16 * 1024)
+// #endif
 
 #ifndef SCRIPT_MIN_STACK_WORDS
 #define SCRIPT_MIN_STACK_WORDS 256

@@ -45,8 +45,10 @@ void Script::update()
 {
     if (isRunning)
     {
+
 #if defined(ESP32)
         const UBaseType_t stackWords = uxTaskGetStackHighWaterMark(NULL);
+        // DBG("[script] Update wasm script " + std::to_string(stackWords) + " words free stack");
         if (stackWords < SCRIPT_MIN_STACK_WORDS)
         {
             DBG("[script] Low stack while running wasm, stopping script");

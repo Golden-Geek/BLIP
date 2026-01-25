@@ -5,6 +5,7 @@ ImplementSingleton(ScriptComponent);
 
 void ScriptComponent::setupInternal(JsonObject o)
 {
+    setCustomUpdateRate(50, o);
     script.localComponent = this;
 
     AddStringParamConfig(scriptAtLaunch);

@@ -377,7 +377,7 @@ bool Component::fillOSCQueryParam(JsonObject o, const std::string &fullPath, con
     if (param)
     {
         ParamRange *range = paramInfo.range;
-        if (range->vMax != range->vMax)
+        if (range != nullptr && range->vMax != range->vMax)
         {
             JsonArray rArr = po.createNestedArray("RANGE");
             JsonObject r1 = rArr.createNestedObject();

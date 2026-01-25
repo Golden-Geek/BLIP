@@ -308,17 +308,16 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
             else
             {
 
-                for (auto &c : allComponents)
+                for (int i=0;i<allComponents.size();i++)
                 {
-                    std::string compPath = c->getFullPath(false, false, true);
-                    if (compPath == address)
+                    if (allComponentPaths[i] == address)
                     {
-                        targetComponent = c;
+                        targetComponent = allComponents[i];
                         break;
                     }
                 }
             }
-            
+
             if (targetComponent != nullptr)
             {
                 bool handled = targetComponent->handleCommand(e.data[1], &e.data[2], e.numData - 2);
@@ -478,6 +477,7 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
 
 void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
 {
+    DBG("Register component " + path);
     allComponents.push_back(comp);
     allComponentPaths.push_back(path);
     if (highPriority)
