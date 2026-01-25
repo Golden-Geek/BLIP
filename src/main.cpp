@@ -12,11 +12,7 @@ void setup()
 
 void loop()
 {
-  // long startTime = millis();
   root.update();
-  // long endTime = millis();
-  // long duration = endTime - startTime;
-  // DBG("Main loop took " + std::to_string(duration) + " ms");
 
   delay(1);
 }

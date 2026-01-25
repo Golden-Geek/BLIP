@@ -411,20 +411,7 @@ void LedStripComponent::showLeds()
             }
             neoPixelStrip->SetPixelColor(ledMap(i), correctedColor);
         }
-        #ifdef LEDSTRIP_DEBUG
-        DBG("First Led " + std::to_string(ledMap(0)) + " color: " + std::to_string(colors[0].r) + ", " + std::to_string(colors[0].g) + ", " + std::to_string(colors[0].b) + ", " + std::to_string(colors[0].a));
-        long endTime = millis();
-        long duration = endTime - startTime;
-        NDBG("Led Strip set took " + std::to_string(duration) + " ms");
-        #endif
-
         neoPixelStrip->Show();
-        #ifdef LEDSTRIP_DEBUG
-        long endTimeShow = millis();
-        long durationShow = endTimeShow - endTime;
-        NDBG("Led Strip show took " + std::to_string(durationShow) + " ms");
-        #endif
-
     }
 
 #endif
