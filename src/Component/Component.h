@@ -4,16 +4,16 @@ class Component : public EventBroadcaster<ComponentEvent>
 {
 public:
     Component(const std::string &name, bool _enabled = true, int index = 0) : name(name),
-                                                                         enabled(_enabled),
-                                                                         index(index),
-                                                                         isInit(false),
-                                                                         autoInit(true),
-                                                                         exposeEnabled(true),
-                                                                         saveEnabled(true),
-                                                                         isHighPriority(false),
-                                                                         lastUpdateTime(0),
-                                                                         lastFeedbackTime(0),
-                                                                         parentComponent(nullptr)
+                                                                              enabled(_enabled),
+                                                                              index(index),
+                                                                              isInit(false),
+                                                                              autoInit(true),
+                                                                              exposeEnabled(true),
+                                                                              saveEnabled(true),
+                                                                              isHighPriority(false),
+                                                                              lastUpdateTime(0),
+                                                                              lastFeedbackTime(0),
+                                                                              parentComponent(nullptr)
     {
     }
 
@@ -42,50 +42,8 @@ public:
     // Parameter *parameters[MAX_CHILD_PARAMETERS];
     // uint8_t numParameters;
 
-    enum ParamType
-    {
-        Trigger,
-        Bool,
-        Int,
-        Float,
-        Str,
-        P2D,
-        P3D,
-        TypeColor,
-        TypeEnum,
-        ParamTypeMax
-    };
-
-    enum ParamTag
-    {
-        TagNone = 0,
-        TagConfig = 1,
-        TagFeedback = 2,
-        TagNameMax
-    };
-
-    struct ParamRange
-    {
-        float vMin = 0;
-        float vMax = 0;
-        float vMin2 = 0;
-        float vMax2 = 0;
-        float vMin3 = 0;
-        float vMax3 = 0;
-    };
-
-    const std::string typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r", "i"};
-    const std::string tagNames[TagNameMax]{"", "config", "feedback"};
-
-    std::vector<void *> params;
-    std::map<void *, int> paramTypesMap;
-    std::map<void *, std::string> paramToNameMap;
-    std::map<std::string, void *> nameToParamMap;
-    std::map<void *, uint8_t> paramTagsMap;
-    std::map<void *, const std::string *> enumOptionsMap;
-    std::map<void *, int> enumOptionsCountMap;
-    std::map<void *, ParamRange> paramRangesMap;
-    std::map<std::string, std::function<void(void)>> triggersMap;
+    std::vector<ParamInfo> params;
+    std::vector<Trigger> triggers;
 
     virtual std::string getComponentEventName(uint8_t type) const
     {
@@ -113,25 +71,22 @@ public:
     Component *addComponent(Component *c, JsonObject o = JsonObject());
     // Component *getComponentWithName(const std::string &name);
 
-    void addParam(void *param, ParamType type, const std::string &name, uint8_t tags = TagNone);
-    void setParamRange(void *param, ParamRange range);
-    void setEnumOptions(void *param, const std::string *enumOptions, int numOptions);
+    ParamInfo *addParam(void *param, ParamType type, const std::string &name, uint8_t tags = TagNone);
     void setParam(void *param, var *value, int numData);
-    ParamType getParamType(void *param) const;
-    bool checkParamTag(void *param, ParamTag tag) const;
     void addTrigger(const std::string &name, std::function<void(void)> func);
 
-    void setParamTag(void *param, ParamTag tag, bool enable);
-    void setParamConfig(void *param, bool config) { setParamTag(param, TagConfig, config); }
-    void setParamFeedback(void *param, bool feedback) { setParamTag(param, TagFeedback, feedback); }
+    ParamInfo *getParamInfo(void *param);
+    ParamInfo *getParamInfo(const std::string &paramName);
+    void *getParamByName(const std::string &paramName);
+    Trigger *getTrigger(const std::string &name);
 
     void setEnabled(bool v) { SetParam(enabled, v); }
     virtual void onEnabledChanged() {}
 
-    void paramValueChanged(void *param);
-    virtual void paramValueChangedInternal(void *param) {}
-    virtual void childParamValueChanged(Component *caller, Component *comp, void *param);
-    virtual bool checkParamsFeedback(void *param);
+    void paramValueChanged(ParamInfo *param);
+    virtual void paramValueChangedInternal(ParamInfo *param) {}
+    virtual void childParamValueChanged(Component *caller, Component *comp, ParamInfo *param);
+    virtual bool checkParamsFeedback(ParamInfo *param);
 
     bool handleCommand(const std::string &command, var *data, int numData);
     virtual bool handleCommandInternal(const std::string &command, var *data, int numData) { return false; }
@@ -139,8 +94,8 @@ public:
     bool handleSetParam(const std::string &paramName, var *data, int numData);
 
     void fillSettingsData(JsonObject o);
-    void fillSettingsParam(JsonObject o, void *param);
-    bool fillOSCQueryParam(JsonObject o, const std::string &fullPath, void *param, bool showConfig = true);
+    void fillSettingsParam(JsonObject o, const ParamInfo &param);
+    bool fillOSCQueryParam(JsonObject o, const std::string &fullPath, const ParamInfo &param, bool showConfig = true);
     JsonObject createBaseOSCQueryObject(JsonObject o, const std::string &fullPath, const std::string &pName, const std::string &type, bool readOnly);
 
     enum OSCQueryChunkType

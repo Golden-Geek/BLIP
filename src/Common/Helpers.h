@@ -140,10 +140,18 @@
 #define DeclareIntParam(name, val) int name = val;
 #define DeclareEnumParam(name, val) int name = val;
 #define DeclareFloatParam(name, val) float name = val;
+#define DeclareRangeParam(name, val, minRange, maxRange) \
+    float name = val;                                    \
+    ParamRange name##Range{minRange, maxRange};
 #define DeclareStringParam(name, val) std::string name = val;
 #define DeclareP2DParam(name, val1, val2) float name[2]{val1, val2};
+#define DeclareP2DRangeParam(name, minX, minY, maxX, maxY) DeclareP2DParam(name, (minX + maxX) / 2, (minY + maxY) / 2) \
+    ParamRange name##Range{minX, maxX, minY, maxY};
 #define DeclareP3DParam(name, val1, val2, val3) float name[3]{val1, val2, val3};
-#define DeclareColorParam(name, r, g, b, a) float name[4]{r, b, g, a};
+#define DeclareP3DRangeParam(name, minX, minY, minZ, maxX, maxY, maxZ) DeclareP3DParam(name, (minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2) \
+    ParamRange name##Range{minX, maxX, minY, maxY, minZ, maxZ};
+
+#define DeclareColorParam(name, r, g, b, a) float name[4]{r, g, b, a};
 
 #define AddFunctionTrigger(func) addTrigger(#func, [this]() { this->func(); });
 
@@ -151,62 +159,79 @@
     addParam(&param, ParamType::type, #param, tag); \
     SetParam(param, Settings::getVal<class>(o, #param, param));
 
-#define AddMultiParamWithTag(type, class, param, tag, numData) \
-    {                                                          \
-                                                               \
-        addParam(&param, ParamType::type, #param, tag);        \
-        if (o.containsKey(#param))                             \
-        {                                                      \
-            JsonArray vArr = o[#param].as<JsonArray>();        \
-            var dataV[numData];                                \
-            dataV[0] = vArr[0].as<class>();                    \
-            dataV[1] = vArr[1].as<class>();                    \
-            if (numData > 2)                                   \
-                dataV[2] = vArr[2].as<class>();                \
-            setParam(param, dataV, numData);                   \
-        }                                                      \
+#define AddParamWithRangeTag(type, class, param, tag)                        \
+    addParam(&param, ParamType::type, #param, tag)->setRange(&param##Range); \
+    SetParam(param, Settings::getVal<class>(o, #param, param));
+
+#define AddParamWithOptionsTag(type, class, param, tag, options, numOptions)         \
+    addParam(&param, ParamType::type, #param, tag)->setOptions(options, numOptions); \
+    SetParam(param, Settings::getVal<class>(o, #param, param));
+
+#define AddMultiParamWithTag(type, class, param, tag, numData, ExtraSet) \
+    {                                                                    \
+                                                                         \
+        addParam(&param, ParamType::type, #param, tag) ExtraSet;         \
+        if (o.containsKey(#param))                                       \
+        {                                                                \
+            JsonArray vArr = o[#param].as<JsonArray>();                  \
+            var dataV[numData];                                          \
+            dataV[0] = vArr[0].as<class>();                              \
+            dataV[1] = vArr[1].as<class>();                              \
+            if (numData > 2)                                             \
+                dataV[2] = vArr[2].as<class>();                          \
+            setParam(param, dataV, numData);                             \
+        }                                                                \
     }
+
+#define EmptyExtra ;
 
 #define AddBoolParamWithTag(param, tag) AddParamWithTag(Bool, bool, param, tag)
 #define AddIntParamWithTag(param, tag) AddParamWithTag(Int, int, param, tag)
 #define AddFloatParamWithTag(param, tag) AddParamWithTag(Float, float, param, tag)
+#define AddRangeParamWithTag(param, tag) AddFloatParamWithTag(param, tag)
 #define AddStringParamWithTag(param, tag) AddParamWithTag(Str, std::string, param, tag)
-#define AddP2DParamWithTag(param, tag) AddMultiParamWithTag(P2D, float, param, tag, 2);
-#define AddP3DParamWithTag(param, tag) AddMultiParamWithTag(P3D, float, param, tag, 3);
-#define AddColorParamWithTag(param, tag) AddMultiParamWithTag(TypeColor, float, param, tag, 4);
-#define AddEnumParamWithTag(param, tag, options, numOptions) AddParamWithTag(TypeEnum, int, param, tag) \
-    setEnumOptions(&param, options, numOptions);
+#define AddP2DParamWithTag(param, tag) AddMultiParamWithTag(P2D, float, param, tag, 2, EmptyExtra)
+#define AddP2DRangeParamWithTag(param, tag) AddMultiParamWithTag(P2D, float, param, tag, 2, ->setRange(&param##Range))
+#define AddP3DParamWithTag(param, tag) AddMultiParamWithTag(P3D, float, param, tag, 3, EmptyExtra)
+#define AddP3DRangeParamWithTag(param, tag) AddMultiParamWithTag(P3D, float, param, tag, 3, ->setRange(&param##Range))
+#define AddColorParamWithTag(param, tag) AddMultiParamWithTag(TypeColor, float, param, tag, 4, EmptyExtra)
+#define AddEnumParamWithTag(param, tag, options, numOptions) AddParamWithOptionsTag(TypeEnum, int, param, tag, options, numOptions)
 
 #define AddBoolParam(param) AddBoolParamWithTag(param, TagNone)
 #define AddIntParam(param) AddIntParamWithTag(param, TagNone)
 #define AddFloatParam(param) AddFloatParamWithTag(param, TagNone)
+#define AddRangeParam(param) AddRangeParamWithTag(param, TagNone)
 #define AddStringParam(param) AddStringParamWithTag(param, TagNone)
 #define AddP2DParam(param) AddP2DParamWithTag(param, TagNone)
+#define AddP2DRangeParam(param) AddP2DRangeParamWithTag(param, TagNone)
 #define AddP3DParam(param) AddP3DParamWithTag(param, TagNone)
+#define AddP3DRangeParam(param) AddP3DRangeParamWithTag(param, TagNone)
 #define AddColorParam(param) AddColorParamWithTag(param, TagNone)
 #define AddEnumParam(param, options, numOptions) AddEnumParamWithTag(param, TagNone, options, numOptions)
 
 #define AddBoolParamConfig(param) AddBoolParamWithTag(param, TagConfig)
 #define AddIntParamConfig(param) AddIntParamWithTag(param, TagConfig)
 #define AddFloatParamConfig(param) AddFloatParamWithTag(param, TagConfig)
+#define AddRangeParamConfig(param) AddRangeParamWithTag(param, TagConfig)
 #define AddStringParamConfig(param) AddStringParamWithTag(param, TagConfig)
 #define AddP2DParamConfig(param) AddP2DParamWithTag(param, TagConfig)
+#define AddP2DRangeParamConfig(param) AddP2DRangeParamWithTag(param, TagConfig)
 #define AddP3DParamConfig(param) AddP3DParamWithTag(param, TagConfig)
+#define AddP3DRangeParamConfig(param) AddP3DRangeParamWithTag(param, TagConfig)
 #define AddColorParamConfig(param) AddColorParamWithTag(param, TagConfig)
 #define AddEnumParamConfig(param, options, numOptions) AddEnumParamWithTag(param, TagConfig, options, numOptions)
 
 #define AddBoolParamFeedback(param) AddBoolParamWithTag(param, TagFeedback)
 #define AddIntParamFeedback(param) AddIntParamWithTag(param, TagFeedback)
 #define AddFloatParamFeedback(param) AddFloatParamWithTag(param, TagFeedback)
+#define AddRangeParamFeedback(param) AddRangeParamWithTag(param, TagFeedback)
 #define AddStringParamFeedback(param) AddStringParamWithTag(param, TagFeedback)
 #define AddP2DParamFeedback(param) AddP2DParamWithTag(param, TagFeedback)
+#define AddP2DRangeParamFeedback(param) AddP2DRangeParamWithTag(param, TagFeedback)
 #define AddP3DParamFeedback(param) AddP3DParamWithTag(param, TagFeedback)
+#define AddP3DRangeParamFeedback(param) AddP3DRangeParamWithTag(param, TagFeedback)
 #define AddColorParamFeedback(param) AddColorParamWithTag(param, TagFeedback)
 #define AddEnumParamFeedback(param, options, numOptions) AddEnumParamWithTag(param, TagFeedback, options, numOptions)
-
-#define SetParamRange(param, min, max) setParamRange(&param, {min, max});
-#define SetParamRange2D(param, minX, maxX, minY, maxY) setParamRange(&param, {minX, maxX, minY, maxY});
-#define SetParamRange3D(param, minX, maxX, minY, maxY, minZ, maxZ) setParamRange(&param, {minX, maxX, minY, maxY, minZ, maxZ});
 
 #define SetParam(param, val)        \
     {                               \

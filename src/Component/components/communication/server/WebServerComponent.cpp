@@ -353,7 +353,7 @@ void WebServerComponent::updateInternal()
         if (timeAtLastCleanup + 10000 < millis())
         {
             timeAtLastCleanup = millis();
-            ws.cleanupClients();
+            ws.cleanupClients(4);
         }
     }
 }

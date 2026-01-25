@@ -52,7 +52,7 @@ virtual void clearInternal() override;
 virtual void setupPin();
 void updatePin();
 
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
     EndDeclareComponent;
 

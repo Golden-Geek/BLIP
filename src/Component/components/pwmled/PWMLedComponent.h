@@ -77,7 +77,7 @@ void setColor(float r, float g, float b, float a = 1, bool show = true);
 
 void RGBToRGBW(float r, float g, float b, float &rOut, float &gOut, float &bOut, float &wOut);
 
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
 void onLedStreamReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 

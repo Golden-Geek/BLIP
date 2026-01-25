@@ -33,6 +33,7 @@
 #include "Common/Settings.h"
 #include "Common/StringHelpers.h"
 #include "Common/CommonListeners.h"
+#include "Common/Parameter.h"
 
 #ifdef USE_SCRIPT // needs pre declaration to be used by Component
 #include <wasm3.h>

@@ -68,10 +68,12 @@ void StepperComponent::clearInternal()
     stepper->disableOutputs();
 }
 
-void StepperComponent::paramValueChangedInternal(void *param)
+void StepperComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
     if (!isInit)
         return;
+
+    void *param = paramInfo->ptr;
 
     if (param == &position)
     {

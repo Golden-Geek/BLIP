@@ -33,7 +33,7 @@ void RootComponent::setupInternal(JsonObject)
         esp_sleep_enable_ext0_wakeup((gpio_num_t)settings.wakeUpButton, settings.wakeUpState);
 #else
         esp_sleep_enable_ext1_wakeup(1ULL << settings.wakeUpButton, settings.wakeUpState ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ANY_LOW);
-#endif 
+#endif
 #endif // USE_POWER
 
     // parameters.clear(); // remove enabled in root component
@@ -301,15 +301,24 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
 
             Component *targetComponent = nullptr;
-            if (pathComponentMap.contains(address))
-            {
-                targetComponent = pathComponentMap[address];
-            }
-            else if (address == "" || address == "root")
+            if (address == "" || address == "root")
             {
                 targetComponent = this;
             }
+            else
+            {
 
+                for (auto &c : allComponents)
+                {
+                    std::string compPath = c->getFullPath(false, false, true);
+                    if (compPath == address)
+                    {
+                        targetComponent = c;
+                        break;
+                    }
+                }
+            }
+            
             if (targetComponent != nullptr)
             {
                 bool handled = targetComponent->handleCommand(e.data[1], &e.data[2], e.numData - 2);
@@ -365,8 +374,9 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
     comm.sendEventFeedback(e);
 }
 
-void RootComponent::childParamValueChanged(Component *caller, Component *comp, void *param)
+void RootComponent::childParamValueChanged(Component *caller, Component *comp, ParamInfo *paramInfo)
 {
+    void *param = paramInfo->ptr;
 #ifdef USE_BUTTON
     if (caller == &buttons)
     {
@@ -468,23 +478,28 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
 
 void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
 {
-    pathComponentMap.insert(std::make_pair(path, comp));
+    allComponents.push_back(comp);
+    allComponentPaths.push_back(path);
     if (highPriority)
         highPriorityComponents.push_back(comp);
 }
 
 void RootComponent::unregisterComponent(Component *comp)
 {
-    for (auto it = pathComponentMap.begin(); it != pathComponentMap.end();)
+    int index = -1;
+    for (size_t i = 0; i < allComponents.size(); i++)
     {
-        if (it->second == comp)
+        if (allComponents[i] == comp)
         {
-            it = pathComponentMap.erase(it);
+            index = i;
+            break;
         }
-        else
-        {
-            ++it;
-        }
+    }
+
+    if (index >= 0)
+    {
+        allComponents.erase(allComponents.begin() + index);
+        allComponentPaths.erase(allComponentPaths.begin() + index);
     }
 
     if (highPriorityComponents.size() > 0)

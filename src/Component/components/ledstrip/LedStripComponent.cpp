@@ -23,10 +23,10 @@ void LedStripComponent::setupInternal(JsonObject o)
         enPin = LED2_DEFAULT_EN_PIN;
     }
 
-    AddIntParamConfig(count);
+    ParamInfo* countInfo = AddIntParamConfig(count);
 #ifdef LED_FIXED_COUNT
-    setParamConfig(&count, false);
-    setParamFeedback(&count, true);
+    countInfo->setTag(TagConfig, false);
+    countInfo->setTag(TagFeedback, false);
 #endif
     AddIntParamConfig(dataPin);
     AddIntParamConfig(enPin);
@@ -242,8 +242,10 @@ int LedStripComponent::getColorIndex(int i) const
     return i;
 }
 
-void LedStripComponent::paramValueChangedInternal(void *param)
+void LedStripComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
+    void* param = paramInfo->ptr;
+
 #ifdef LED_USE_FASTLED
     if (param == &colorCorrection)
         updateCorrection();

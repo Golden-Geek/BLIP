@@ -5,11 +5,11 @@
 #endif
 
 #ifndef WASM_STACK_SLOTS
-#define WASM_STACK_SLOTS 2000
+#define WASM_STACK_SLOTS 1200
 #endif
 
 #ifndef SCRIPT_NATIVE_STACK_SIZE
-#define SCRIPT_NATIVE_STACK_SIZE (16 * 1024)
+#define SCRIPT_NATIVE_STACK_SIZE (8 * 1024)
 #endif
 
 #ifndef SCRIPT_MIN_STACK_WORDS
@@ -17,19 +17,19 @@
 #endif
 
 #ifndef WASM_MEMORY_LIMIT
-#define WASM_MEMORY_LIMIT 4096
+#define WASM_MEMORY_LIMIT 2048
 #endif
 
 #ifndef WASM_VARIABLES_MAX
-#define WASM_VARIABLES_MAX 20
+#define WASM_VARIABLES_MAX 10
 #endif
 
 #ifndef WASM_FUNCTIONS_MAX
-#define WASM_FUNCTIONS_MAX 20
+#define WASM_FUNCTIONS_MAX 10
 #endif
 
 #ifndef WASM_EVENTS_MAX
-#define WASM_EVENTS_MAX 20
+#define WASM_EVENTS_MAX 4
 #endif
 
 class ScriptComponent;

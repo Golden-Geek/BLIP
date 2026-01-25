@@ -15,6 +15,6 @@ void setupInternal(JsonObject o) override;
 bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
-void paramValueChangedInternal(void *param) override;
+void paramValueChangedInternal(ParamInfo *param) override;
 
 EndDeclareComponent

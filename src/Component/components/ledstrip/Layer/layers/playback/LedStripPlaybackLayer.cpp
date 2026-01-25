@@ -470,9 +470,10 @@ void LedStripPlaybackLayer::onEnabledChanged()
     }
 }
 
-void LedStripPlaybackLayer::paramValueChangedInternal(void *param)
+void LedStripPlaybackLayer::paramValueChangedInternal(ParamInfo *paramInfo)
 {
-    LedStripLayer::paramValueChangedInternal(param);
+    LedStripLayer::paramValueChangedInternal(paramInfo);
+    void* param = paramInfo->ptr;
     if (param == &idMode)
     {
         NDBG("ID Mode Switch " + std::to_string(idMode));

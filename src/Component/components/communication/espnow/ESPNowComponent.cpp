@@ -897,11 +897,12 @@ void ESPNowComponent::setupLongRange(const uint8_t *deviceMac)
     }
 }
 
-void ESPNowComponent::paramValueChangedInternal(void *param)
+void ESPNowComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
     if (!isInit)
         return;
 
+    void* param = paramInfo->ptr;
 #ifdef ESPNOW_BRIDGE
     if (param == &pairingMode || param == &wakeUpMode)
     {

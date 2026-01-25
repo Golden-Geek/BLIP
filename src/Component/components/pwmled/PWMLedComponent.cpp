@@ -203,9 +203,10 @@ void PWMLedComponent::updatePins()
     }
 }
 
-void PWMLedComponent::paramValueChangedInternal(void *param)
+void PWMLedComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
 
+    void* param = paramInfo->ptr;
     if (param == &rPin || param == &gPin || param == &bPin || param == &wPin || param == &pwmResolution || param == &pwmFrequency)
     {
         setupPins();

@@ -17,8 +17,8 @@ void IOComponent::setupInternal(JsonObject o)
     AddEnumParamConfig(mode, modeOptions, PINMODE_MAX);
     AddBoolParamConfig(inverted);
 
-    AddFloatParam(value);
-    SetParamRange(value, 0.0f, 1.0f);
+    ParamInfo* valueInfo = AddFloatParamConfig(value);
+    valueInfo->setRange(&defaultRange);
 
     lastUpdateTime = millis();
 
@@ -42,11 +42,12 @@ void IOComponent::clearInternal()
 {
 }
 
-void IOComponent::paramValueChangedInternal(void *param)
+void IOComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
     if (!enabled)
         return;
 
+    void* param = paramInfo->ptr;
     if (param == &pin || param == &mode)
         setupPin();
     if (param == &value)
@@ -70,7 +71,7 @@ void IOComponent::setupPin()
     curPin = pin;
 
     bool isInputMode = (mode == D_INPUT || mode == D_INPUT_PULLUP || mode == D_INPUT_PULLDOWN || mode == A_INPUT || mode == TOUCH_INPUT);
-    setParamFeedback(&value, isInputMode);
+    getParamInfo(&value)->setTag(TagFeedback, isInputMode);
 
     if (curPin > 0)
     {

@@ -136,7 +136,7 @@ public:
     int getNumColors() const;
     int getColorIndex(int i) const;
 
-    void paramValueChangedInternal(void *param) override;
+    void paramValueChangedInternal(ParamInfo *param) override;
     void onEnabledChanged() override;
 
     void setStripPower(bool value);
