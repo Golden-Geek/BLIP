@@ -70,6 +70,27 @@ void Component::clear()
     numParams = 0;
 }
 
+void Component::setCustomUpdateRate(int defaultRate, JsonObject o)
+{
+    if (updateRate < 0)
+        return;
+    updateRate = defaultRate;
+    AddIntParamConfig(updateRate);
+}
+
+void Component::setCustomFeedbackRate(float defaultRate, JsonObject o)
+{
+    if (feedbackRate < 0)
+        return;
+    feedbackRate = defaultRate;
+    AddFloatParamConfig(feedbackRate);
+}
+
+void Component::sendEvent(uint8_t type, var *data, int numData)
+{
+    EventBroadcaster::sendEvent(ComponentEvent(this, type, data, numData));
+}
+
 bool Component::handleCommand(const String &command, var *data, int numData)
 {
     if (numData == 0)
@@ -537,6 +558,16 @@ void Component::addParam(void *param, ParamType type, const String &paramName, u
     paramToNameMap.insert(std::make_pair(param, paramName));
 
     numParams++;
+}
+
+void Component::setParamTag(void *param, ParamTag tag, bool enable)
+{
+    uint8_t currentTags = paramTagsMap[param];
+    if (enable)
+        currentTags |= tag;
+    else
+        currentTags &= ~tag;
+    paramTagsMap[param] = currentTags;
 }
 
 void Component::setParamRange(void *param, ParamRange range)

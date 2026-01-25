@@ -110,32 +110,14 @@ public:
     virtual void updateInternal() {}
     virtual void clearInternal() {}
 
-    void setCustomUpdateRate(int defaultRate, JsonObject o)
-    {
-        if (updateRate < 0)
-            return;
-        updateRate = defaultRate;
-        AddIntParamConfig(updateRate);
-    }
-
-    void setCustomFeedbackRate(float defaultRate, JsonObject o)
-    {
-        if (feedbackRate < 0)
-            return;
-        feedbackRate = defaultRate;
-        AddFloatParamConfig(feedbackRate);
-    }
-
-    void sendEvent(uint8_t type, var *data = NULL, int numData = 0)
-    {
-        EventBroadcaster::sendEvent(ComponentEvent(this, type, data, numData));
-    }
+    void setCustomUpdateRate(int defaultRate, JsonObject o);
+    void setCustomFeedbackRate(float defaultRate, JsonObject o);
+    void sendEvent(uint8_t type, var *data = NULL, int numData = 0);
+   
 
     template <class T>
     T *addComponent(const String &name, bool _enabled, JsonObject o = JsonObject(), int index = 0) { return (T *)addComponent(new T(name, _enabled, index), o); };
-
     Component *addComponent(Component *c, JsonObject o = JsonObject());
-
     Component *getComponentWithName(const String &name);
 
     void addParam(void *param, ParamType type, const String &name, uint8_t tags = TagNone);
@@ -145,19 +127,9 @@ public:
     ParamType getParamType(void *param) const;
     bool checkParamTag(void *param, ParamTag tag) const;
     String getParamString(void *param) const;
-
     void addTrigger(const String &name, std::function<void(void)> func);
 
-     void setParamTag(void *param, ParamTag tag, bool enable)
-    {
-        uint8_t currentTags = paramTagsMap[param];
-        if (enable)
-            currentTags |= tag;
-        else
-            currentTags &= ~tag;
-        paramTagsMap[param] = currentTags;
-    }
-
+    void setParamTag(void *param, ParamTag tag, bool enable);
     void setParamConfig(void *param, bool config) { setParamTag(param, TagConfig, config); }
     void setParamFeedback(void *param, bool feedback) { setParamTag(param, TagFeedback, feedback); }
 
@@ -174,7 +146,6 @@ public:
     bool handleCommand(const String &command, var *data, int numData);
     virtual bool handleCommandInternal(const String &command, var *data, int numData) { return false; }
     bool checkCommand(const String &command, const String &ref, int numData, int expectedData);
-
     bool handleSetParam(const String &paramName, var *data, int numData);
 
     void fillSettingsData(JsonObject o);
