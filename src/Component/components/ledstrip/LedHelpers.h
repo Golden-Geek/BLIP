@@ -14,6 +14,22 @@
 #define NEO_GBR GBR
 #define NEO_BRG BRG
 #else
+#define WS2816 NeoWs2816Method
+#define WS2812 Neo800KbpsMethod
+#if LED_DEFAULT_TYPE == WS2816
+#undef GRB
+#define RGB NeoGrbWs2816Feature
+#define RBG NeoGrbWs2816Feature
+#define GRB NeoGrbWs2816Feature
+#define GBR NeoGrbWs2816Feature
+#define BRG NeoGrbWs2816Feature
+#define RGBW NeoGrbWs2816Feature
+#define RBGW NeoGrbWs2816Feature
+#define GRBW NeoGrbWs2816Feature
+#define GBRW NeoGrbWs2816Feature
+#define BRGW NeoGrbWs2816Feature
+#define WRGB NeoGrbWs2816Feature
+#else
 #define RGB NeoRgbFeature
 #define RBG NeoRbgFeature
 #define GRB NeoGrbFeature
@@ -25,10 +41,8 @@
 #define GBRW NeoGbrwFeature
 #define BRGW NeoBrgwFeature
 #define WRGB NeoWrgbFeature
-#define NEO_WS2816 NeoGrbWs2816Feature
-#define WS2816 NeoWs2816Method
-#define WS2812 Neo800KbpsMethod
-#endif
+#endif // LED_DEFAULT_TYPE == WS2816
+#endif // LED_USE_FASTLED
 
 #ifndef LED_DEFAULT_CHANNELS
 #define LED_DEFAULT_CHANNELS 3
