@@ -37,7 +37,7 @@ bool FilesComponent::initInternal()
         if (sdEnPin > 0)
         {
             pinMode(sdEnPin, OUTPUT);
-            digitalWrite(sdEnPin, sdEnVal);
+            gpio_set_level(gpio_num_t(sdEnPin), sdEnVal);
             delay(10);
         }
 
@@ -56,11 +56,11 @@ bool FilesComponent::initInternal()
     NDBG("Initializing SPI for Flash on pins MOSI " + std::to_string(sdMosi) + ", MISO " + std::to_string(sdMiso) + ", SCK " + std::to_string(sdSCK) + ",  CS " + std::to_string(sdCS));
 
     pinMode(sdSCK, OUTPUT);
-    digitalWrite(sdSCK, LOW);
+    gpio_set_level(gpio_num_t(sdSCK), LOW);
     pinMode(sdMiso, INPUT_PULLUP);
     pinMode(sdMosi, INPUT_PULLUP);
     pinMode(sdCS, OUTPUT);
-    digitalWrite(sdCS, HIGH);
+    gpio_set_level(gpio_num_t(sdCS), HIGH);
 
     SPI.begin(sdSCK, sdMiso, sdMosi, sdCS);
     if (!SD.begin(sdCS, SPI, 1'000'000UL))

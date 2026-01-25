@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "DistanceSensorComponent.h"
 
 ImplementManagerSingleton(DistanceSensor);
 
@@ -42,9 +41,9 @@ bool DistanceSensorComponent::initInternal()
 
 void DistanceSensorComponent::update()
 {
-    //Override update() to handle updateRate custom inside the sensors functions
+    // Override update() to handle updateRate custom inside the sensors functions
 
-    if(!enabled)
+    if (!enabled)
         return;
 
 #ifdef DISTANCE_SENSOR_HCSR04
@@ -57,7 +56,7 @@ void DistanceSensorComponent::update()
 #ifdef DISTANCE_SENSOR_HCSR04
 void DistanceSensorComponent::updateHCSR04()
 {
-    int currentEchoState = digitalRead(echoPin);
+    int currentEchoState = gpio_get_level(echoPin);
 
     // --- State Machine ---
     switch (currentState)
@@ -67,9 +66,9 @@ void DistanceSensorComponent::updateHCSR04()
         if (millis() - stateStartTime >= max(1000 / updateRate, 60)) // Ensure at least 60ms between measurements
         {
             // Start Trigger sequence
-            digitalWrite(trigPin, LOW); // Ensure low before pulse
-            delayMicroseconds(2);       // Small delay for clean pulse
-            digitalWrite(trigPin, HIGH);
+            gpio_set_level(gpio_num_t(trigPin), LOW); // Ensure low before pulse
+            delayMicroseconds(2);                   // Small delay for clean pulse
+            gpio_set_level(gpio_num_t(trigPin), HIGH);
             stateStartTime = micros(); // Record the start time of the trigger pulse
             currentState = TRIGGERING;
             RootComponent::instance->strips.items[0]->doNotUpdate = true;
@@ -80,7 +79,7 @@ void DistanceSensorComponent::updateHCSR04()
         // Check if the 10 microsecond trigger pulse is complete
         if (micros() - stateStartTime >= TRIG_PULSE_DURATION)
         {
-            digitalWrite(trigPin, LOW);
+            gpio_set_level(gpio_num_t(trigPin), LOW);
             currentState = WAITING_ECHO;
             // stateStartTime now marks the beginning of the wait for echo
         }

@@ -25,10 +25,10 @@ void WifiComponent::setupInternal(JsonObject o)
 
 #ifdef WIFI_C6_USE_EXTERNAL_ANTENNA
     pinMode(3, OUTPUT);
-    digitalWrite(3, LOW);
+    gpio_set_level(gpio_num_t(3), LOW);
     delay(100);
     pinMode(14, OUTPUT);
-    digitalWrite(14, HIGH);
+    gpio_set_level(gpio_num_t(14), HIGH);
 #endif
 }
 

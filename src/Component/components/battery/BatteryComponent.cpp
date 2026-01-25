@@ -112,7 +112,7 @@ void BatteryComponent::readChargePin()
 
     readChargePinOnNextCheck = false;
 
-    bool chVal = digitalRead(chargePin);
+    bool chVal = gpio_get_level(gpio_num_t(chargePin));
     if (chargePin == RX) // put back the data line to serial if we used RX pin
     {
         Serial.begin(115200);

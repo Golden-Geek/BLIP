@@ -72,7 +72,7 @@ void LedStripComponent::setupLeds()
     {
         // NDBG("Setting Led Enable pin : " + std::to_string(enPin));
         pinMode(enPin, OUTPUT);
-        digitalWrite(enPin, HIGH); // enable LEDs
+        gpio_set_level(gpio_num_t(enPin), HIGH); // enable LEDs
     }
 
     if (count == 0 || dataPin == 0)
@@ -265,7 +265,7 @@ void LedStripComponent::setStripPower(bool value)
     if (enPin > 0)
     {
         NDBG("Set Strip Power " + std::to_string(value));
-        digitalWrite(enPin, value); // enable LEDs
+        gpio_set_level(gpio_num_t(enPin), value); // enable LEDs
     }
     else
     {

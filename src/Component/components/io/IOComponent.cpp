@@ -136,7 +136,7 @@ void IOComponent::updatePin()
     case D_INPUT_PULLUP:
     case D_INPUT_PULLDOWN:
     {
-        bool val = digitalRead(pin);
+        bool val = gpio_get_level(gpio_num_t(pin));
 
         if (inverted)
             val = !val;
@@ -175,7 +175,7 @@ void IOComponent::updatePin()
         {
             if (m == D_OUTPUT)
             {
-                digitalWrite(pin, inverted ? !value : value);
+                gpio_set_level(gpio_num_t(pin), inverted ? !value : value);
             }
             else
             {
@@ -211,7 +211,7 @@ void IOComponent::updatePin()
 
         if (inverted)
             v = !v;
-        digitalWrite(pin, v);
+        gpio_set_level(gpio_num_t(pin), v);
     }
     break;
 
