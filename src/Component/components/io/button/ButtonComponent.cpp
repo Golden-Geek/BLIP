@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 ImplementManagerSingleton(Button);
 
 void ButtonComponent::setupInternal(JsonObject o)

@@ -1,3 +1,4 @@
+#include "UnityIncludes.h"
 
 #ifdef USE_FX
 #ifndef FX_SWAP_UPSIDE_DOWN
@@ -83,7 +84,7 @@ void FXComponent::process(Color *sourceColors)
             bool flipped = boardIsUp != yawIsNormal;
             if (flipped != boardIsFlipped)
             {
-                DBG("Flip count > " + String(flipFrameCount) + " / " + String(flipFrameCount));
+                DBG("Flip count > " + std::to_string(flipFrameCount) + " / " + std::to_string(flipFrameCount));
                 flipFrameCount++;
                 if (flipFrameCount >= flipDebounce)
                 {

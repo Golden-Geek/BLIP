@@ -22,7 +22,7 @@
 class LedStripComponent : public Component
 {
 public:
-    LedStripComponent(const String &name = "strip", bool enabled = true, int index = 0) : Component(name, enabled, index)
+    LedStripComponent(const std::string &name = "strip", bool enabled = true, int index = 0) : Component(name, enabled, index)
 #if USE_BAKELAYER
                                                                                           ,
                                                                                           bakeLayer(this)
@@ -45,10 +45,15 @@ public:
 #endif
 
     {
+        #if defined(LED_USE_FASTLED) && defined(CONFIG_IDF_TARGET_ESP32C6)
+        isHighPriority = false;
+        #else
+        isHighPriority = true;
+        #endif
     }
 
     ~LedStripComponent() {}
-    virtual String getTypeString() const override { return "ledstrip"; }
+    virtual std::string getTypeString() const override { return "ledstrip"; }
 
     DeclareIntParam(count, LED_DEFAULT_COUNT);
     DeclareIntParam(dataPin, LED_DEFAULT_DATA_PIN);
@@ -70,7 +75,7 @@ public:
         MultiLedModeMax
     };
 
-    const String multiLedModeOptions[MultiLedModeMax] = {
+    const std::string multiLedModeOptions[MultiLedModeMax] = {
         "Full Color",
         "Single Color",
         "Two Colors"};

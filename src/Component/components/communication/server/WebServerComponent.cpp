@@ -1,27 +1,22 @@
 #include "UnityIncludes.h"
-#include "WebServerComponent.h"
-
-#include <cstring>
-
 #include "FirstrunPage.h"
 
 namespace
 {
-    bool pathLooksLikeEditAsset(const String &path)
+    bool pathLooksLikeEditAsset(const std::string &path)
     {
         if (path.length() == 0)
         {
             return false;
         }
 
-        String lower = path;
-        lower.toLowerCase();
-        return lower.endsWith("/edit") || lower.endsWith("/edit.html") || lower.endsWith("/edit.html.gz") || lower.endsWith("edit");
+        std::string lower = StringHelpers::toLowerCase(path);
+        return lower.ends_with("/edit") || lower.ends_with("/edit.html") || lower.ends_with("/edit.html.gz") || lower.ends_with("/edit");
     }
 
-    String urlEncode(const String &value)
+    std::string urlEncode(const std::string &value)
     {
-        String encoded;
+        std::string encoded;
         encoded.reserve(value.length() * 3);
         const char *hex = "0123456789ABCDEF";
         for (size_t i = 0; i < value.length(); ++i)
@@ -44,21 +39,21 @@ namespace
 
     void redirectToFirstRunPage(AsyncWebServerRequest *request)
     {
-        String deviceIP = WifiComponent::instance ? WifiComponent::instance->getIP() : String("[noip]");
+        std::string deviceIP = WifiComponent::instance ? WifiComponent::instance->getIP() : std::string("[noip]");
         if (deviceIP == "[noip]")
         {
             request->send(500, "text/plain", "Device IP unavailable; cannot bootstrap dashboard.");
             return;
         }
 
-        while (deviceIP.endsWith("/"))
+        while (deviceIP.ends_with("/"))
         {
-            deviceIP.remove(deviceIP.length() - 1);
+            deviceIP.erase(deviceIP.length() - 1);
         }
 
-        String deviceBase = "http://" + deviceIP;
-        String destination = String("/firstrun?device=") + urlEncode(deviceBase);
-        request->redirect(destination);
+        std::string deviceBase = "http://" + deviceIP;
+        std::string destination = std::string("/firstrun?device=") + urlEncode(deviceBase);
+        request->redirect(destination.c_str());
     }
 }
 
@@ -66,6 +61,8 @@ ImplementSingleton(WebServerComponent);
 
 void WebServerComponent::setupInternal(JsonObject o)
 {
+    updateRate = 1; // 2 Hz update rate, only for cleanup clients
+
     for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
     {
         uploadingFiles[i].request = nullptr;
@@ -114,10 +111,10 @@ bool WebServerComponent::initInternal()
             o["OSC_PORT"] = OSC_LOCAL_PORT;
             o["OSC_TRANSPORT"] = "UDP";
 
-            String jStr;
+            std::string jStr;
             serializeJson(doc, jStr);
 
-            request->send(200, "application/json", jStr);
+            request->send(200, "application/json", jStr.c_str());
         }
         else
         {
@@ -129,7 +126,7 @@ bool WebServerComponent::initInternal()
                 size_t expectedIndex = 0;
                 size_t offsetInChunk = 0;
                 uint8_t emptyRefills = 0;
-                String current;
+                std::string current;
             };
             std::shared_ptr<ChunkStreamState> state = std::make_shared<ChunkStreamState>();
 
@@ -212,7 +209,7 @@ bool WebServerComponent::initInternal()
             return;
         }
 
-        auto isRegularFile = [](const String &path) -> bool {
+        auto isRegularFile = [](const std::string &path) -> bool {
             File candidate = FilesComponent::instance->openFile(path, false, false);
             if(!candidate) {
                 return false;
@@ -222,21 +219,21 @@ bool WebServerComponent::initInternal()
             return ok;
         };
 
-        String resolvedPath = request->url();
-        String lastTriedPath = resolvedPath;
+        std::string resolvedPath = request->url().c_str();
+        std::string lastTriedPath = resolvedPath;
         bool found = isRegularFile(resolvedPath);
 
         bool firstRunRedirectCandidate = pathLooksLikeEditAsset(resolvedPath);
 
         if(!found) {
-            String path = resolvedPath;
-            if(!path.startsWith("/server/")) {
-                path = String("/server") + (path.startsWith("/")?"":"/") + path;
+            std::string path = resolvedPath;
+            if(!path.starts_with("/server/")) {
+                path = std::string("/server") + (path.starts_with("/")?"":"/") + path;
                 lastTriedPath = path;
                 found = isRegularFile(path);
                 if(found) {
                     resolvedPath = path;
-                } else if(!path.endsWith(".html") && !path.endsWith(".htm") && !path.endsWith(".css") && !path.endsWith(".js")) {
+                } else if(!path.ends_with(".html") && !path.ends_with(".htm") && !path.ends_with(".css") && !path.ends_with(".js")) {
                     path += ".html";
                     lastTriedPath = path;
                     found = isRegularFile(path);
@@ -252,26 +249,27 @@ bool WebServerComponent::initInternal()
             if(!request->hasHeader("Accept-Encoding")) {
                 return false;
             }
-            String header = request->header("Accept-Encoding");
-            header.toLowerCase();
-            return header.indexOf("gzip") >= 0;
+            String headerStr = request->header("Accept-Encoding");
+            headerStr.toLowerCase();
+            std::string header = headerStr.c_str();
+            return header.find("gzip") != std::string::npos;
         };
 
-        const String logicalPath = found ? resolvedPath : lastTriedPath;
-        String pathToServe = found ? resolvedPath : logicalPath;
+        const std::string logicalPath = found ? resolvedPath : lastTriedPath;
+        std::string pathToServe = found ? resolvedPath : logicalPath;
         bool usingCompressed = false;
 
         // Try serving gzip even if the plain file doesn't exist (some deployments only ship *.gz).
         if(clientAcceptsGzip() && logicalPath.length() > 0) {
-            const String sameDirGz = logicalPath + ".gz";
+            const std::string sameDirGz = logicalPath + ".gz";
             if(isRegularFile(sameDirGz)) {
                 pathToServe = sameDirGz;
                 usingCompressed = true;
                 found = true;
-            } else if(logicalPath.startsWith("/server/")) {
+            } else if(logicalPath.starts_with("/server/")) {
                 const size_t serverPrefixLen = 7; // length of "/server"
-                const String relative = logicalPath.substring(serverPrefixLen);
-                const String altPath = String("/server-compressed") + relative + ".gz";
+                const std::string relative = logicalPath.substr(serverPrefixLen);
+                const std::string altPath = std::string("/server-compressed") + relative + ".gz";
                 if(isRegularFile(altPath)) {
                     pathToServe = altPath;
                     usingCompressed = true;
@@ -285,51 +283,52 @@ bool WebServerComponent::initInternal()
                 redirectToFirstRunPage(request);
                 return;
             }
-            request->send(404, "text/plain", "File not found : " + request->url()+" (also tried "+lastTriedPath+")");
+            std::string msg = "File not found : " + std::string(request->url().c_str()) +" (also tried " + lastTriedPath + ")";
+            request->send(404, "text/plain", msg.c_str());
             return;
         }
 
-        auto determineContentType = [](const String &name) {
-            if (name.endsWith(".html") || name.endsWith(".htm"))
+        auto determineContentType = [](const std::string &name) {
+            if (name.ends_with(".html") || name.ends_with(".htm"))
             {
-                return String("text/html");
+                return std::string("text/html");
             }
-            if (name.endsWith(".css"))
+            if (name.ends_with(".css"))
             {
-                return String("text/css");
+                return std::string("text/css");
             }
-            if (name.endsWith(".js"))
+            if (name.ends_with(".js"))
             {
-                return String("application/javascript");
+                return std::string("application/javascript");
             }
-            if (name.endsWith(".json"))
+            if (name.ends_with(".json"))
             {
-                return String("application/json");
+                return std::string("application/json");
             }
-            if (name.endsWith(".svg"))
+            if (name.ends_with(".svg"))
             {
-                return String("image/svg+xml");
+                return std::string("image/svg+xml");
             }
-            if (name.endsWith(".png"))
+            if (name.ends_with(".png"))
             {
-                return String("image/png");
+                return std::string("image/png");
             }
-            if (name.endsWith(".jpg") || name.endsWith(".jpeg"))
+            if (name.ends_with(".jpg") || name.ends_with(".jpeg"))
             {
-                return String("image/jpeg");
+                return std::string("image/jpeg");
             }
-            if (name.endsWith(".ico"))
+            if (name.ends_with(".ico"))
             {
-                return String("image/x-icon");
+                return std::string("image/x-icon");
             }
-            return String("application/octet-stream");
+            return std::string("application/octet-stream");
         };
 
-        String contentType = determineContentType(logicalPath.length() > 0 ? logicalPath : resolvedPath);
+        std::string contentType = determineContentType(logicalPath.length() > 0 ? logicalPath : resolvedPath);
 
         DBG("Serving file: " + pathToServe + (usingCompressed ? " (gzip)" : ""));
 
-        AsyncWebServerResponse *response = request->beginResponse(FilesComponent::instance->getFS(), pathToServe, contentType, false);
+        AsyncWebServerResponse *response = request->beginResponse(FilesComponent::instance->getFS(), pathToServe.c_str(), contentType.c_str(), false);
         if(!response) {
             request->send(500, "text/plain", "Failed to create file response");
             return;
@@ -437,7 +436,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             return;
         }
 
-        String destFolder = "";
+        std::string destFolder = "";
         if (filename.endsWith(".wasm") || filename.endsWith(".wmeta"))
             destFolder = "/scripts";
         else if (filename.endsWith(".colors") || filename.endsWith(".meta"))
@@ -446,12 +445,12 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             destFolder = "/playback";
 
         if (destFolder == "")
-            destFolder = request->hasArg("folder") ? request->arg("folder") : "";
+            destFolder = request->hasArg("folder") ? request->arg("folder").c_str() : "";
 
         FilesComponent::instance->createFolderIfNotExists(destFolder);
-        String dest = destFolder + "/" + filename;
+        std::string dest = destFolder + "/" + filename.c_str();
 
-        NDBG("File Upload start from" + request->client()->remoteIP().toString() + ", at : " + String(request->url()) + "; Filename: " + filename + ", Length: " + String(len / 1024) + " kb");
+        NDBG("File Upload start from" + std::string(request->client()->remoteIP().toString().c_str()) + ", at : " + request->url().c_str() + "; Filename: " + filename.c_str() + ", Length: " + std::to_string(len / 1024) + " kb");
 
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
 
@@ -492,7 +491,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 
             if (final)
             {
-                NDBG("Upload Complete: " + String(uploadingFiles[i].file.name()) + ", size: " + String(index + len));
+                NDBG("Upload Complete: " + std::string(uploadingFiles[i].file.name()) + ", size: " + std::to_string(index + len));
                 uploadingFiles[i].file.flush();
                 uploadingFiles[i].file.close();
                 uploadingFiles[i].request = nullptr; // Free the slot
@@ -548,10 +547,10 @@ void WebServerComponent::onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketCl
     switch (type)
     {
     case WS_EVT_CONNECT:
-        DBG("WebSocket client " + String(client->id()) + "connected from " + String(client->remoteIP().toString()));
+        DBG("WebSocket client " + std::to_string(client->id()) + "connected from " + client->remoteIP().toString().c_str());
         break;
     case WS_EVT_DISCONNECT:
-        DBG("WebSocket client " + String(client->id()) + " disconnected");
+        DBG("WebSocket client " + std::to_string(client->id()) + " disconnected");
         break;
     case WS_EVT_DATA:
         handleWebSocketMessage(arg, data, len);
@@ -569,9 +568,9 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
     {
         if (info->opcode == WS_TEXT)
         {
-            String text;
+            std::string text;
             text.reserve(len + 1);
-            text.concat((const char *)data, len);
+            text.append((const char *)data, len);
             parseTextMessage(text);
         }
         else if (info->opcode == WS_BINARY)
@@ -579,7 +578,7 @@ void WebServerComponent::handleWebSocketMessage(void *arg, uint8_t *data, size_t
     }
 }
 
-void WebServerComponent::parseTextMessage(String msg)
+void WebServerComponent::parseTextMessage(std::string msg)
 {
     DBG("Text message: " + msg);
 }
@@ -595,7 +594,7 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
 
         char addr[64];
         msg.getAddress(addr);
-        tmpExcludeParam = String(addr);
+        tmpExcludeParam = std::string(addr);
 
         OSCComponent::instance->processMessage(msg);
 
@@ -604,14 +603,14 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
 #endif
 }
 
-void WebServerComponent::sendParamFeedback(Component *c, String pName, var *data, int numData)
+void WebServerComponent::sendParamFeedback(Component *c, std::string pName, var *data, int numData)
 {
     if (!sendFeedback)
         return;
     sendParamFeedback(c->getFullPath(), pName, data, numData);
 }
 
-void WebServerComponent::sendParamFeedback(String path, String pName, var *data, int numData)
+void WebServerComponent::sendParamFeedback(std::string path, std::string pName, var *data, int numData)
 {
     if (!sendFeedback)
         return;
@@ -620,7 +619,7 @@ void WebServerComponent::sendParamFeedback(String path, String pName, var *data,
 
     char addr[64];
     msg.getAddress(addr);
-    if (String(addr) == tmpExcludeParam)
+    if (std::string(addr) == tmpExcludeParam)
         return;
 
     wsPrint.flush();
@@ -633,7 +632,7 @@ void WebServerComponent::sendParamFeedback(String path, String pName, var *data,
 #endif
 }
 
-void WebServerComponent::sendDebugLog(const String &msg, String source, String type)
+void WebServerComponent::sendDebugLog(const std::string &msg, std::string source, std::string type)
 {
     if (!sendDebugLogs)
         return;
@@ -646,15 +645,33 @@ void WebServerComponent::sendDebugLog(const String &msg, String source, String t
         "message":"This is a debug log message"
         }
     */
-    String sanitizedMsg = msg;
+    std::string sanitizedMsg;
+    sanitizedMsg.reserve(msg.size());
     // escape newlines and backslashes and quotes for JSON
-    sanitizedMsg.replace("\\", "\\\\");
-    sanitizedMsg.replace("\n", "\\n");
-    sanitizedMsg.replace("\"", "\\\"");
-    ws.textAll("{\"COMMAND\":\"LOG\",\"DATA\":{\"type\":\"" + type + "\",\"source\":\"" + source + "\",\"message\":\"" + sanitizedMsg + "\"}}");
+    for (char ch : msg)
+    {
+        if (ch == '\\')
+        {
+            sanitizedMsg += "\\\\";
+        }
+        else if (ch == '\n')
+        {
+            sanitizedMsg += "\\n";
+        }
+        else if (ch == '"')
+        {
+            sanitizedMsg += "\\\"";
+        }
+        else
+        {
+            sanitizedMsg += ch;
+        }
+    }
+    std::string payload = "{\"COMMAND\":\"LOG\",\"DATA\":{\"type\":\"" + type + "\",\"source\":\"" + source + "\",\"message\":\"" + sanitizedMsg + "\"}}";
+    ws.textAll(payload.c_str());
 }
 
-void WebServerComponent::sendBye(String type)
+void WebServerComponent::sendBye(std::string type)
 {
 #ifdef USE_OSC
     OSCMessage msg("/bye");

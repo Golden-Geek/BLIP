@@ -58,7 +58,7 @@ void IRComponent::setupPins()
     {
         bool result = ledcAttach(curPin1, 5000, 10);
         if (!result)
-            NDBG("Failed to attach pin1 " + String(curPin1) + " to PWM");
+            NDBG("Failed to attach pin1 " + std::to_string(curPin1) + " to PWM");
 
         ledCAttached1 = result;
     }
@@ -67,7 +67,7 @@ void IRComponent::setupPins()
     {
         bool result = ledcAttach(curPin2, 5000, 10);
         if (!result)
-            NDBG("Failed to attach pin2 " + String(curPin2) + " to PWM");
+            NDBG("Failed to attach pin2 " + std::to_string(curPin2) + " to PWM");
 
         ledCAttached2 = result;
     }

@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 void ServoComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(pin);

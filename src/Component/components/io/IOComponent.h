@@ -42,7 +42,7 @@ float prevValue;
 
 int debounceCount = 0;
 
-const String modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator", "Touch"};
+const std::string modeOptions[PINMODE_MAX]{"Digital Input", "Digital Input Pullup", "Digital Input Pulldown", "Analog Input", "Digital Output", "Analog Output", "Digital Oscillator", "Analog Oscillator", "Touch"};
 
 virtual void setupInternal(JsonObject o) override;
 virtual bool initInternal() override;

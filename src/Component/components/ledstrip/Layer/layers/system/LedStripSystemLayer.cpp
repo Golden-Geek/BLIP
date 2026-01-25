@@ -57,7 +57,7 @@ void LedStripSystemLayer::updateConnectionStatus()
 
         if (ESPNowComponent::instance->pairingMode || !ESPNowComponent::instance->bridgeInit)
         {
-            // NDBG("Show espnow pairing mode " + String(ESPNowComponent::instance->pairingMode) + " bridge init " + String(ESPNowComponent::instance->bridgeInit));
+            // NDBG("Show espnow pairing mode " + std::to_string(ESPNowComponent::instance->pairingMode) + " bridge init " + std::to_string(ESPNowComponent::instance->bridgeInit));
             float t = millis() / 1000.0f;
             float val = (cos(t * 2 * PI / 5 + PI) * .5f + .5f) * .5f + .3f;
 
@@ -101,7 +101,7 @@ void LedStripSystemLayer::updateConnectionStatus()
         Color color = Color(100, 100, 100);
 #endif
 
-        // NDBG("Wifi status : " + String(connectionState) + " " + String(relT));
+        // NDBG("Wifi status : " + std::to_string(connectionState) + " " + std::to_string(relT));
 
         // default behavior (connecting) on which we will add animation for connected behavior
         float t = (time - RootComponent::instance->timeAtStart) / 1000.0f;
@@ -144,7 +144,7 @@ void LedStripSystemLayer::updateConnectionStatus()
         }
         else
         {
-            // DBG("Rel T " + String(relT));
+            // DBG("Rel T " + std::to_string(relT));
             color = color.withMultipliedAlpha(constrain((relT - .05f) * 1 / animTime, 0, 1));
         }
 

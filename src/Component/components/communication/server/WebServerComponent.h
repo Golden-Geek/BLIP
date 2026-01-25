@@ -34,7 +34,7 @@ int uploadedBytes;
 File uploadingFile;
 long timeAtLastCleanup = 0;
 
-String tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
+std::string tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
 
 struct UploadFileState
 {
@@ -63,13 +63,13 @@ void handleOTAUpload(AsyncWebServerRequest *request, size_t index, uint8_t *data
 void onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 
-void parseTextMessage(String msg);
+void parseTextMessage(std::string msg);
 void parseBinaryMessage(uint8_t *data, size_t len);
 
-void sendParamFeedback(Component *c, String pName, var *data, int numData);
-void sendParamFeedback(String path, String pName, var *data, int numData);
-void sendDebugLog(const String &msg, String source = "", String type = "info");
-void sendBye(String type);
+void sendParamFeedback(Component *c, std::string pName, var *data, int numData);
+void sendParamFeedback(std::string path, std::string pName, var *data, int numData);
+void sendDebugLog(const std::string &msg, std::string source = "", std::string type = "info");
+void sendBye(std::string type);
 
 DeclareComponentEventTypes(UploadStart, Uploading, UploadDone, UploadCanceled);
 DeclareComponentEventNames("UploadStart", "Uploading", "UploadDone", "UploadCanceled");

@@ -25,7 +25,6 @@ void LedStripPlaybackLayer::setupInternal(JsonObject o)
     timeToSeek = -1;
     resyncPending = false;
 
-
 #ifdef USE_SCRIPT
     activeScriptIndex = -1;
 #endif
@@ -59,10 +58,10 @@ void LedStripPlaybackLayer::clearInternal()
 {
 }
 
-
 bool LedStripPlaybackLayer::playFrame()
 {
-    if (!isPlaying || !curFile) return false;
+    if (!isPlaying || !curFile)
+        return false;
 
     // 1) End-of-file handling
     if (curFile.available() < frameSize)
@@ -81,10 +80,11 @@ bool LedStripPlaybackLayer::playFrame()
     }
 
     // 2) Absolute timing → target frame index
-    const double fps_d = (double)fps;              // ensure float math
+    const double fps_d = (double)fps; // ensure float math
     const unsigned long now = millis();
-    const unsigned long elapsedMs = now - startTimeMs;  // startTimeMs set in play()
-    if (fps_d <= 0.0) return false;
+    const unsigned long elapsedMs = now - startTimeMs; // startTimeMs set in play()
+    if (fps_d <= 0.0)
+        return false;
 
     // target frame using floor to avoid oscillation
     const int64_t targetFrame = (int64_t)floor((elapsedMs * fps_d) / 1000.0);
@@ -94,9 +94,11 @@ bool LedStripPlaybackLayer::playFrame()
     int64_t currentPos = curFile.position();
 
     // Force a one-time hard snap right after a seek during playback
-    if (resyncPending) {
-        if (!curFile.seek(desiredPos)) {
-            DBG("resync seek() failed to " + String((long)desiredPos));
+    if (resyncPending)
+    {
+        if (!curFile.seek(desiredPos))
+        {
+            DBG("resync seek() failed to " + std::to_string((long)desiredPos));
             return false;
         }
         resyncPending = false;
@@ -125,7 +127,7 @@ bool LedStripPlaybackLayer::playFrame()
     {
         if (!curFile.seek(desiredPos))
         {
-            DBG("seek() failed to " + String((long)desiredPos));
+            DBG("seek() failed to " + std::to_string((long)desiredPos));
             return false;
         }
         currentPos = curFile.position();
@@ -169,9 +171,9 @@ bool LedStripPlaybackLayer::playFrame()
     if (finalDelta != 0 && llabs(finalDelta) != ONE_FRAME)
     {
         // Only log occasionally to avoid spam
-        DBG("Position mismatch tolerated: file=" + String((long)currentPos) +
-            ", expected=" + String((long)desiredPos) +
-            ", delta=" + String((long)finalDelta));
+        DBG("Position mismatch tolerated: file=" + std::to_string((long)currentPos) +
+            ", expected=" + std::to_string((long)desiredPos) +
+            ", delta=" + std::to_string((long)finalDelta));
         // Continue anyway (don’t hard fail)
     }
 
@@ -183,10 +185,10 @@ bool LedStripPlaybackLayer::playFrame()
     }
 
     // 9) Read the frame
-    size_t n = curFile.read((uint8_t*)colors, frameSize);
+    size_t n = curFile.read((uint8_t *)colors, frameSize);
     if (n != (size_t)frameSize)
     {
-        DBG("Short read: " + String((long)n) + " of " + String(frameSize));
+        DBG("Short read: " + std::to_string((long)n) + " of " + std::to_string(frameSize));
         return false;
     }
 
@@ -195,7 +197,6 @@ bool LedStripPlaybackLayer::playFrame()
     return true;
 }
 
-
 void LedStripPlaybackLayer::showBlackFrame()
 {
     clearColors();
@@ -203,7 +204,7 @@ void LedStripPlaybackLayer::showBlackFrame()
 
 void LedStripPlaybackLayer::showIdFrame()
 {
-    NDBG("Show id frame " + String(groupID) + ":" + String(localID));
+    NDBG("Show id frame " + std::to_string(groupID) + ":" + std::to_string(localID));
     if (groupID == -1 || localID == -1)
         return;
 
@@ -218,10 +219,10 @@ void LedStripPlaybackLayer::playScripts()
     float curT = curTimeMs / 1000.0f;
     // float prevT = prevTimeMs / 1000.0f;
 
-    // DBG("Play Script " + String(curT));
+    // DBG("Play Script " + std::to_string(curT));
     if (activeScriptIndex != -1)
     {
-        // DBG("Active script index " + String(activeScriptIndex));
+        // DBG("Active script index " + std::to_string(activeScriptIndex));
         if (scriptEndTimes[activeScriptIndex] < curT)
         {
             // NDBG("Start script");
@@ -233,7 +234,7 @@ void LedStripPlaybackLayer::playScripts()
     {
         for (int i = 0; i < numScripts; i++)
         {
-            // DBG("Check for script " + String(scriptStartTimes[i]));
+            // DBG("Check for script " + std::to_string(scriptStartTimes[i]));
             if (curT >= scriptStartTimes[i] && curT < scriptEndTimes[i])
             {
                 // NDBG("Stop script");
@@ -246,7 +247,7 @@ void LedStripPlaybackLayer::playScripts()
 #endif
 }
 
-void LedStripPlaybackLayer::load(String path, bool force)
+void LedStripPlaybackLayer::load(const std::string& path, bool force)
 {
     if (path == curFilename && !force)
         return;
@@ -254,7 +255,7 @@ void LedStripPlaybackLayer::load(String path, bool force)
 #ifdef USE_FILES
     showBlackFrame();
 
-    const String playbackDir = "/playback";
+    const std::string playbackDir = "/playback";
 
     NDBG("Load file " + path);
     NDBG("Reading meta data");
@@ -269,7 +270,7 @@ void LedStripPlaybackLayer::load(String path, bool force)
         DeserializationError error = deserializeJson(metaData, metaDataFile);
         if (error)
         {
-            NDBG(String("DeserializeJson() failed: ") + String(error.c_str()) + "\nMeta content : " + String(metaDataFile.readString()));
+            NDBG("DeserializeJson() failed: " + std::string(error.c_str()) + "\nMeta content : " + metaDataFile.readString().c_str());
         }
         else
         {
@@ -285,15 +286,15 @@ void LedStripPlaybackLayer::load(String path, bool force)
             numScripts = metaData["scripts"].size();
             for (int i = 0; i < numScripts; i++)
             {
-                scripts[i] = metaData["scripts"][i]["name"].as<String>();
+                scripts[i] = metaData["scripts"][i]["name"].as<std::string>();
                 scriptStartTimes[i] = (float)metaData["scripts"][i]["start"];
                 scriptEndTimes[i] = (float)metaData["scripts"][i]["end"];
             }
 #endif
 
-            NDBG("Loaded meta, id " + String(groupID) + ":" + String(localID) + " at " + String(fps) + " fps, "
+            NDBG("Loaded meta, id " + std::to_string(groupID) + ":" + std::to_string(localID) + " at " + std::to_string(fps) + " fps, "
 #ifdef USE_SCRIPT
-                 + String(numScripts) + " scripts"
+                 + std::to_string(numScripts) + " scripts"
 #endif
             );
         }
@@ -315,7 +316,7 @@ void LedStripPlaybackLayer::load(String path, bool force)
         totalTime = bytePosToSeconds(totalBytes);
         curTimeMs = 0;
         isPlaying = false;
-        NDBG("File loaded, " + String(totalBytes) + " bytes" + ", " + String(totalFrames) + " frames, " + String(totalTime) + " time");
+        NDBG("File loaded, " + std::to_string(totalBytes) + " bytes" + ", " + std::to_string(totalFrames) + " frames, " + std::to_string(totalTime) + " time");
 
         if (idMode)
             showIdFrame();
@@ -340,13 +341,14 @@ void LedStripPlaybackLayer::unload()
 
 void LedStripPlaybackLayer::play(float atTime)
 {
-    if (!curFile) return;
+    if (!curFile)
+        return;
 
     isPlaying = true;
-    NDBG("Play at time " + String(atTime));
+    NDBG("Play at time " + std::to_string(atTime));
 
     // time reference
-    curTimeMs   = (int64_t)(atTime * 1000.0f);
+    curTimeMs = (int64_t)(atTime * 1000.0f);
     startTimeMs = millis() - (unsigned long)curTimeMs;
 
     // seek to exact frame boundary for start
@@ -356,7 +358,7 @@ void LedStripPlaybackLayer::play(float atTime)
 
     if (!curFile.seek(startPos))
     {
-        DBG("Initial seek failed to " + String((long)startPos));
+        DBG("Initial seek failed to " + std::to_string((long)startPos));
         isPlaying = false;
         return;
     }
@@ -367,50 +369,63 @@ void LedStripPlaybackLayer::play(float atTime)
 
 void LedStripPlaybackLayer::seek(float t, bool doSendEvent)
 {
-    if (!curFile) return;
+    if (!curFile)
+        return;
 
     // 1) Target playback time (can be negative to show black)
     curTimeMs = secondsToMs(t);
 
     // 2) Keep absolute-time reference consistent with the new time
     //    This is the key piece that makes mid-play seeks work.
-    startTimeMs = millis() - (unsigned long) (curTimeMs > 0 ? curTimeMs : 0);
+    startTimeMs = millis() - (unsigned long)(curTimeMs > 0 ? curTimeMs : 0);
 
     // 3) Compute target byte position on a frame boundary
     int64_t targetPos;
-    if (curTimeMs < 0) {
-        targetPos = 0;           // before start → clamp to file start
-    } else {
+    if (curTimeMs < 0)
+    {
+        targetPos = 0; // before start → clamp to file start
+    }
+    else
+    {
         targetPos = msToBytePos(curTimeMs);
         // snap to exact frame boundary (paranoia)
         targetPos = (targetPos / (int64_t)frameSize) * (int64_t)frameSize;
     }
 
     // 4) Seek file
-    if (!curFile.seek(targetPos)) {
-        DBG("seek() failed to " + String((long)targetPos));
+    if (!curFile.seek(targetPos))
+    {
+        DBG("seek() failed to " + std::to_string((long)targetPos));
         return;
     }
 
     // 5) Visual state for negative times
-    if (curTimeMs < 0) {
+    if (curTimeMs < 0)
+    {
         showBlackFrame();
-    } else if (!isPlaying) {
+    }
+    else if (!isPlaying)
+    {
         // If paused/stopped, optionally prefetch current frame so 'colors' matches the seek position
-        if (curFile.available() >= frameSize) {
-            curFile.read((uint8_t*)colors, frameSize);
+        if (curFile.available() >= frameSize)
+        {
+            curFile.read((uint8_t *)colors, frameSize);
             // step back one frame so next playFrame will read the same frame again if desired
             int64_t back = curFile.position() - (int64_t)frameSize;
-            if (back >= 0) curFile.seek(back);
+            if (back >= 0)
+                curFile.seek(back);
         }
-    } else {
+    }
+    else
+    {
         // We are seeking while playing: request a hard resync on next tick
         resyncPending = true;
     }
 
-    prevTimeMs = millis();   // not strictly necessary with absolute timing, but harmless
+    prevTimeMs = millis(); // not strictly necessary with absolute timing, but harmless
 
-    if (doSendEvent) sendEvent(Seek);
+    if (doSendEvent)
+        sendEvent(Seek);
     // If you also want an external "PositionChanged" event, fire it here.
 }
 
@@ -460,7 +475,7 @@ void LedStripPlaybackLayer::paramValueChangedInternal(void *param)
     LedStripLayer::paramValueChangedInternal(param);
     if (param == &idMode)
     {
-        NDBG("ID Mode Switch " + String(idMode));
+        NDBG("ID Mode Switch " + std::to_string(idMode));
         if (idMode)
             showIdFrame();
         else
@@ -468,7 +483,7 @@ void LedStripPlaybackLayer::paramValueChangedInternal(void *param)
     }
 }
 
-bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *data, int numData)
+bool LedStripPlaybackLayer::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     LedStripLayer::handleCommandInternal(command, data, numData);
 
@@ -482,7 +497,7 @@ bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *da
     {
         if (numData > 0 && data[0].type == 's')
         {
-            String path = data[0].stringValue();
+            std::string path = data[0].stringValue();
             if (curFilename == path && isPlaying)
             {
                 if (numData > 1)
@@ -509,9 +524,9 @@ bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *da
         // NDBG("Received playSync command");
         if (!isPlaying)
         {
-            NDBG("Play sync " + data[0].stringValue() + " at " + String(data[1].floatValue()) + "s");
+            NDBG("Play sync " + data[0].stringValue() + " at " + std::to_string(data[1].floatValue()) + "s");
             SetParam(enabled, true);
-            String path = data[0].stringValue();
+            std::string path = data[0].stringValue();
             float time = data[1].floatValue();
             load(path);
             play(time);
@@ -546,7 +561,8 @@ bool LedStripPlaybackLayer::handleCommandInternal(const String &command, var *da
     {
         timeToSeek = data[0].floatValue();
         return true;
-    }if (checkCommand(command, "unload", numData, 0))
+    }
+    if (checkCommand(command, "unload", numData, 0))
     {
         unload();
         return true;

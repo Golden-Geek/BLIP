@@ -10,7 +10,7 @@ struct var
     } value;
 
     uint8_t size;
-    String s;
+    std::string s;
     bool shouldClear = false;
 
     var() { type = '?'; }
@@ -34,7 +34,7 @@ struct var
         size = sizeof(float);
     };
 
-    var(const String &v)
+    var(const std::string &v)
     {
         type = 's';
         s = v;
@@ -44,7 +44,7 @@ struct var
     var(const char *v)
     {
         type = 's';
-        s = String(v);
+        s = std::string(v);
         size = s.length();
     }
 
@@ -65,7 +65,7 @@ struct var
     operator bool() const { return boolValue(); }
     operator int() const { return intValue(); }
     operator float() const { return floatValue(); }
-    operator String() const { return stringValue(); }
+    operator std::string() const { return stringValue(); }
     operator char *() const { return (char *)s.c_str(); }
     operator const uint8_t *() const { return value.ptr; }
 
@@ -83,7 +83,7 @@ struct var
             return (bool)(int)value.f;
 
         case 's':
-            return (bool)s.toInt();
+            return (bool)(s == "true" || s == "1" || s == "yes" || s == "on");
 
         case 'p':
             return value.ptr != NULL;
@@ -103,7 +103,7 @@ struct var
         case 'f':
             return (int)value.f;
         case 's':
-            return s.toInt();
+            return std::stoi(s);
         case 'p':
             return (int)*value.ptr;
         }
@@ -121,7 +121,7 @@ struct var
         case 'f':
             return value.f;
         case 's':
-            return s.toFloat();
+            return std::stof(s);
         case 'p':
             return (float)*value.ptr;
         }
@@ -129,23 +129,23 @@ struct var
         return 0;
     }
 
-    String stringValue() const
+    std::string stringValue() const
     {
         switch (type)
         {
         case 'b':
-            return String((int)value.b);
+            return std::string(value.b?"true":"false");
         case 'i':
-            return String((int)value.i);
+            return std::to_string(value.i);
         case 'f':
-            return String((float)value.f);
+            return std::to_string(value.f);
         case 's':
             return s;
         case 'p':
-            String str = "[";
+            std::string str = "[";
             for (int i = 0; i < size; i++)
             {
-                str += String(value.ptr[i]);
+                str += std::to_string(value.ptr[i]);
                 if (i < size - 1)
                     str += ",";
             }
@@ -153,11 +153,6 @@ struct var
         }
         return "";
     }
-
-    bool getPtrBool(uint8_t offset) const { return (bool)value.ptr[offset]; }
-    int getPtrInt(uint8_t offset) const { return (int)value.ptr[offset]; }
-    float getPtrFloat(uint8_t offset) const { return (float)value.ptr[offset]; }
-    String getPtrString(uint8_t offset, uint8_t len) const { return String((char *)value.ptr + offset, len); }
 
     uint8_t getSize() const
     {
@@ -205,7 +200,7 @@ struct var
         return *this;
     }
 
-    var &operator=(const String &v)
+    var &operator=(const std::string &v)
     {
         if (type == '?')
             type = 's';
@@ -223,7 +218,7 @@ struct var
             type = 's';
 
         if (type == 's')
-            s = String(v);
+            s = std::string(v);
 
         return *this;
     }

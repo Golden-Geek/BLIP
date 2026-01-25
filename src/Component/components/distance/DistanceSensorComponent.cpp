@@ -199,7 +199,7 @@ void DistanceSensorComponent::updateVL53L0X()
 
     float distance = (float)range / 10.0f; // Convert mm to cm
 
-    // NDBG("Distance: " +String(distance)+ " cm");
+    // NDBG("Distance: " +std::string(distance)+ " cm");
 
     if (distance > distanceMax)
         distance = distanceMax; // Cap to max range
@@ -241,7 +241,7 @@ void DistanceSensorComponent::paramValueChangedInternal(void *param)
     {
         if (isInit)
         {
-            NDBG("Updating VL53L0X update rate to " + String(updateRate) + " Hz");
+            NDBG("Updating VL53L0X update rate to " + std::to_string(updateRate) + " Hz");
             sensor.stopContinuous();
             sensor.startContinuous(1000 / updateRate);
         }

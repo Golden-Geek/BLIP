@@ -19,7 +19,7 @@ enum SendLevel
     SendLevelAll,
     SendLevelMax
 };
-const String sendLevelOptions[3]{"None", "Orientation", "All"};
+const std::string sendLevelOptions[3]{"None", "Orientation", "All"};
 
 enum ThrowState
 {
@@ -31,7 +31,7 @@ enum ThrowState
     ThrowStateLoftie,
     ThrowStateMax
 };
-const String throwStateOptions[6]{"None", "Flat", "Single", "Double", "Flat Front", "Loftie"};
+const std::string throwStateOptions[6]{"None", "Flat", "Single", "Double", "Flat Front", "Loftie"};
 
 DeclareBoolParam(connected, false);
 DeclareEnumParam(sendLevel, 0);
@@ -109,7 +109,7 @@ void setProjectAngleOffset(float yaw, float angle);
 void onEnabledChanged() override;
 void paramValueChangedInternal(void *param) override;
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 DeclareComponentEventTypes(OrientationUpdate, AccelUpdate, GyroUpdate, LinearAccelUpdate, ThrowState, CalibrationStatus, ActivityUpdate, Debug, ProjectedAngleUpdate);
 DeclareComponentEventNames("orientation", "accel", "gyro", "linearAccel", "throwState", "calibration", "activity", "debug", "projectedAngle");

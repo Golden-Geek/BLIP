@@ -21,10 +21,10 @@ void setupInternal(JsonObject o) override;
 
 void onChildComponentEvent(const ComponentEvent &e) override;
 
-void sendParamFeedback(Component *c, void *param, const String &pName, Component::ParamType pType);
-void sendMessage(Component *c, const String &mName, const String &val);
+void sendParamFeedback(Component *c, void *param, const std::string &pName, Component::ParamType pType);
+void sendMessage(Component *c, const std::string &mName, const std::string &val);
 void sendEventFeedback(const ComponentEvent &e);
-void sendDebug(const String& msg, const String&source = "", const String& type = "info");
+void sendDebug(const std::string& msg, const std::string&source = "", const std::string& type = "info");
 
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");

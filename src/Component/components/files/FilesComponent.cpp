@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "FilesComponent.h"
 
 ImplementSingleton(FilesComponent);
 
@@ -42,7 +41,7 @@ bool FilesComponent::initInternal()
             delay(10);
         }
 
-        NDBG("Initializing SPI for SD Card on pins MOSI " + String(sdMosi) + ", MISO " + String(sdMiso) + ", SCK " + String(sdSCK) + ",  CS " + String(sdCS));
+        NDBG("Initializing SPI for SD Card on pins MOSI " + std::to_string(sdMosi) + ", MISO " + std::to_string(sdMiso) + ", SCK " + std::to_string(sdSCK) + ",  CS " + std::to_string(sdCS));
 
         spiSD.begin((int8_t)sdSCK, (int8_t)sdMiso, (int8_t)sdMosi, (int8_t)sdCS);
         if (SD.begin((uint8_t)sdCS, spiSD, sdSpeed))
@@ -54,7 +53,7 @@ bool FilesComponent::initInternal()
     }
 #elif defined(FILES_TYPE_FLASH)
 
-    NDBG("Initializing SPI for Flash on pins MOSI " + String(sdMosi) + ", MISO " + String(sdMiso) + ", SCK " + String(sdSCK) + ",  CS " + String(sdCS));
+    NDBG("Initializing SPI for Flash on pins MOSI " + std::to_string(sdMosi) + ", MISO " + std::to_string(sdMiso) + ", SCK " + std::to_string(sdSCK) + ",  CS " + std::to_string(sdCS));
 
     pinMode(sdSCK, OUTPUT);
     digitalWrite(sdSCK, LOW);
@@ -106,20 +105,20 @@ bool FilesComponent::initInternal()
 
 // --- The rest of the file operations remain unchanged and beautifully simple ---
 
-File FilesComponent::openFile(String fileName, bool forWriting, bool deleteIfExists)
+File FilesComponent::openFile(std::string fileName, bool forWriting, bool deleteIfExists)
 {
     if (!_fs)
         return File();
 
-    String fullPath = fileName;
+    std::string fullPath = fileName;
 #ifdef FILES_TYPE_FLASH
     if (_fs != &LittleFS)
     { // Only prepend if we're not on the fallback internal FS
-        fullPath = (fileName.startsWith("/") ? "" : "/") + fileName;
+        fullPath = (fileName.starts_with("/") ? "" : "/") + fileName;
     }
 #endif
 
-    if (!fullPath.startsWith("/"))
+    if (!fullPath.starts_with("/"))
     {
         fullPath = "/" + fullPath;
     }
@@ -132,12 +131,12 @@ File FilesComponent::openFile(String fileName, bool forWriting, bool deleteIfExi
     return _fs->open(fullPath.c_str(), forWriting ? FILE_WRITE : FILE_READ);
 }
 
-bool FilesComponent::deleteFolder(String path)
+bool FilesComponent::deleteFolder(std::string path)
 {
     if (!_fs || !isInit)
         return false;
 
-    if (!path.startsWith("/"))
+    if (!path.starts_with("/"))
     {
         path = "/" + path;
     }
@@ -148,7 +147,7 @@ bool FilesComponent::deleteFolder(String path)
         NDBG("Failed to open directory or not a directory: " + path);
         return false;
     }
-    
+
     File file;
     while (file = dir.openNextFile())
     {
@@ -158,8 +157,8 @@ bool FilesComponent::deleteFolder(String path)
         }
         else
         {
-            //here, because file is open, we cannot delete while iterating, so close first
-            String path = String(file.path());
+            // here, because file is open, we cannot delete while iterating, so close first
+            std::string path = std::string(file.path());
             file.close();
             NDBG("Deleting file: " + path);
             _fs->remove(path.c_str());
@@ -172,7 +171,7 @@ bool FilesComponent::deleteFolder(String path)
     return true;
 }
 
-void FilesComponent::deleteFileIfExists(String path)
+void FilesComponent::deleteFileIfExists(std::string path)
 {
     if (!_fs || !isInit)
         return;
@@ -182,13 +181,12 @@ void FilesComponent::deleteFileIfExists(String path)
     }
 }
 
-
-void FilesComponent::createFolderIfNotExists(String path)
+void FilesComponent::createFolderIfNotExists(std::string path)
 {
     if (!_fs || !isInit)
         return;
 
-    if (!path.startsWith("/"))
+    if (!path.starts_with("/"))
     {
         path = "/" + path;
     }
@@ -206,14 +204,14 @@ void FilesComponent::createFolderIfNotExists(String path)
  * @param levels The number of sub-directory levels to recurse into.
  * @return A comma-separated string of file paths.
  */
-String FilesComponent::listDir(const char *dirname, uint8_t levels)
+std::string FilesComponent::listDir(const char *dirname, uint8_t levels)
 {
     if (!_fs)
         return "";
 
-    NDBG("Listing directory: " + String(dirname) + " with levels: " + String(levels));
+    NDBG("Listing directory: " + std::string(dirname) + " with levels: " + std::to_string(levels));
 
-    String result = "";
+    std::string result = "";
     File root = _fs->open(dirname);
     if (!root || !root.isDirectory())
     {
@@ -226,7 +224,7 @@ String FilesComponent::listDir(const char *dirname, uint8_t levels)
     {
         if (file.isDirectory())
         {
-            NDBG("  DIR : " + String(file.name()));
+            NDBG("  DIR : " + std::string(file.name()));
             if (levels > 0)
             {
                 result += listDir(file.path(), levels - 1);
@@ -234,8 +232,8 @@ String FilesComponent::listDir(const char *dirname, uint8_t levels)
         }
         else
         {
-            NDBG("  FILE: " + String(file.name()) + " SIZE: " + String(file.size()));
-            result += String(file.path()) + ",";
+            NDBG("  FILE: " + std::string(file.name()) + " SIZE: " + std::to_string(file.size()));
+            result += std::string(file.path()) + ",";
         }
     }
     return result;
@@ -244,31 +242,33 @@ String FilesComponent::listDir(const char *dirname, uint8_t levels)
 /**
  * @brief Retrieves information about the current filesystem.
  */
-String FilesComponent::getFileSystemInfo()
+std::string FilesComponent::getFileSystemInfo()
 {
     if (!_fs)
         return "FS not mounted";
 
-
 #if defined FILES_TYPE_FLASH || defined FILES_TYPE_SD
-    String fsType = "SDCard/Flash";
+    std::string fsType = "SDCard/Flash";
     int bytesUsed = SD.usedBytes();
     int bytesTotal = SD.totalBytes();
 #elif defined FILES_TYPE_MMC
-    String fsType = "SDMMC";
+    std::string fsType = "SDMMC";
     int bytesUsed = SD_MMC.usedBytes();
     int bytesTotal = SD_MMC.totalBytes();
 #else
-    String fsType = "LittleFS";
+    std::string fsType = "LittleFS";
     int bytesUsed = LittleFS.usedBytes();
     int bytesTotal = LittleFS.totalBytes();
 #endif
 
-    String info = "Filesystem Info:\n \
+    std::string info = "Filesystem Info:\n \
     Type: " + fsType + "\n \
-    Used % : " + String((bytesUsed * 100) / bytesTotal) + "%\n \
-    Used Size: " + String(bytesUsed / 1024) + " KB\n\
-    Total Size: " + String(bytesTotal / 1024) + " KB";
+    Used % : " + std::to_string((bytesUsed * 100) / bytesTotal) +
+                       "%\n \
+    Used Size: " + std::to_string(bytesUsed / 1024) +
+                       " KB\n\
+    Total Size: " + std::to_string(bytesTotal / 1024) +
+                       " KB";
 
     return info;
 }
@@ -276,7 +276,7 @@ String FilesComponent::getFileSystemInfo()
 /**
  * @brief Handles incoming commands for this component.
  */
-bool FilesComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool FilesComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (checkCommand(command, "delete", numData, 1))
     {
@@ -293,7 +293,7 @@ bool FilesComponent::handleCommandInternal(const String &command, var *data, int
         var filesData;
         filesData.type = 's';
         int level = (numData == 1) ? data[0].intValue() : 0;
-        NDBG("List directories with levels : " + String(level));
+        NDBG("List directories with levels : " + std::to_string(level));
         filesData = listDir("/", level);
         sendEvent(FileList, &filesData, 1);
         return true;
@@ -311,7 +311,8 @@ bool FilesComponent::handleCommandInternal(const String &command, var *data, int
         infoData.s = getFileSystemInfo();
         sendEvent(FilesInfo, &infoData, 1);
         return true;
-    }else if(checkCommand(command, "deleteAll", numData, 0))
+    }
+    else if (checkCommand(command, "deleteAll", numData, 0))
     {
         NDBG("Deleting all files and folders in filesystem.");
         return true;

@@ -48,7 +48,7 @@ bool BatteryComponent::initInternal()
     if (chargePin >= 0)
     {
         if (chargePin == RX)
-            NDBG("Battery charge pin " + String(chargePin) + " is used by serial component, handling specially.");
+            NDBG("Battery charge pin " + std::to_string(chargePin) + " is used by serial component, handling specially.");
         else
             pinMode(chargePin, BATTERY_CHARGE_PIN_MODE);
     }
@@ -132,7 +132,7 @@ void BatteryComponent::readBatteryLevel()
 #ifdef BATTERY_READ_MILLIVOLTS
         // Read the battery in milliamps
         float curV = analogReadMilliVolts(batteryPin) * BATTERY_READ_MILLIVOLTS_MULTIPLIER / 1000.0f; // Convert to volts
-                                                                                                      // DBG("Battery millivolts  " + String(values[valuesIndex]));
+                                                                                                      // DBG("Battery millivolts  " + std::to_string(values[valuesIndex]));
 
 #else
         float curV = analogRead(batteryPin);
@@ -144,7 +144,7 @@ void BatteryComponent::readBatteryLevel()
             return;
         }
 
-        //  NDBG(String("Battery read: ") + String(curV));
+        //  NDBG(std::string("Battery read: ") + std::to_string(curV));
 
         values[valuesIndex] = curV;
         valuesIndex = (valuesIndex + 1) % BATTERY_AVERAGE_WINDOW;
@@ -175,7 +175,7 @@ void BatteryComponent::readBatteryLevel()
 
             float val = sum / BATTERY_AVERAGE_WINDOW;
 
-            // NDBG(String("Battery average: ") + String(val));
+            // NDBG(std::string("Battery average: ") + std::to_string(val));
 
 #ifdef BATTERY_READ_MILLIVOLTS
             float relVal = constrain((val - BATTERY_MIN_VOLTAGE) / (BATTERY_MAX_VOLTAGE - BATTERY_MIN_VOLTAGE), 0.f, 1.f);
@@ -186,7 +186,7 @@ void BatteryComponent::readBatteryLevel()
 
             SetParam(voltage, volt);
 
-            // NDBG(String("Battery voltage: ") + String(voltage) + "V");
+            // NDBG(std::string("Battery voltage: ") + std::to_string(voltage) + "V");
 
             SetParam(batteryLevel, relVal);
             lastBatterySet = currentTime;
@@ -232,7 +232,7 @@ void BatteryComponent::checkShouldAutoShutdown()
 
         if (millis() > shutdownChargeNoSignal * 1000)
         {
-            NDBG("No signal received since boot " + String(shutdownChargeNoSignal) + " seconds while charging, shutting down.");
+            NDBG("No signal received since boot " + std::to_string(shutdownChargeNoSignal) + " seconds while charging, shutting down.");
             RootComponent::instance->shutdown();
             return;
         }
@@ -242,7 +242,7 @@ void BatteryComponent::checkShouldAutoShutdown()
     {
         if (millis() > RootComponent::instance->timeAtLastSignal + shutdownChargeSignalTimeout * 1000)
         {
-            NDBG("No signal received for " + String(shutdownChargeSignalTimeout) + " seconds while charging, shutting down.");
+            NDBG("No signal received for " + std::to_string(shutdownChargeSignalTimeout) + " seconds while charging, shutting down.");
             RootComponent::instance->shutdown();
             return;
         }

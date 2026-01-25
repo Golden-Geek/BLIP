@@ -1,3 +1,5 @@
+#include "UnityIncludes.h"
+
 void DCMotorComponent::setupInternal(JsonObject o)
 {
     AddIntParamConfig(enPin);
@@ -10,9 +12,7 @@ void DCMotorComponent::setupInternal(JsonObject o)
 bool DCMotorComponent::initInternal()
 {
     setupPins();
-}
-
-return true;
+    return true;
 }
 
 void DCMotorComponent::updateInternal()
@@ -41,7 +41,7 @@ void DCMotorComponent::setupPins()
 
         bool result = ledcAttach(enPin, 5000, 10);
         if (!result)
-            NDBG("Failed to attach pin " + String(enPin) + " to PWM for DC Motor");
+            NDBG("Failed to attach pin " + std::to_string(enPin) + " to PWM for DC Motor");
 
         ledCAttached = result;
         curPin = enPin;
@@ -54,7 +54,7 @@ void DCMotorComponent::paramValueChangedInternal(void *param)
     {
         digitalWrite(dir1Pin, speed > 0 ? HIGH : LOW);
         digitalWrite(dir2Pin, speed > 0 ? LOW : HIGH);
-        NDBG("Speed changed " + String(speed) + " / " + String(dir1Pin) + " :" + (speed > 0 ? "HIGH" : "LOW") + " / " + String(dir2Pin) + " :" + (speed > 0 ? "LOW" : "HIGH"));
+        NDBG("Speed changed " + std::to_string(speed) + " / " + std::to_string(dir1Pin) + " :" + (speed > 0 ? "HIGH" : "LOW") + " / " + std::to_string(dir2Pin) + " :" + (speed > 0 ? "LOW" : "HIGH"));
         ledcWrite(pwmChannel, abs(speed) * 1024.0f);
     }
     else if (param == &enPin || param == &dir1Pin || param == &dir2Pin)

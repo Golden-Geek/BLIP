@@ -20,7 +20,7 @@ void SettingsComponent::updateInternal()
 {
 }
 
-bool SettingsComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool SettingsComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (command == "save")
     {
@@ -29,7 +29,7 @@ bool SettingsComponent::handleCommandInternal(const String &command, var *data, 
     }
     else if (command == "show")
     {
-        String test;
+        std::string test;
         serializeJson(Settings::settings, test);
         DBG(test);
         return true;
@@ -60,7 +60,7 @@ void SettingsComponent::clearSettings()
     RootComponent::instance->restart();
 }
 
-String SettingsComponent::getDeviceID() const
+std::string SettingsComponent::getDeviceID() const
 {
     byte mac[6]{0, 0, 0, 0, 0, 0};
 
@@ -75,10 +75,10 @@ String SettingsComponent::getDeviceID() const
 #endif
 #endif
 
-    String d = "";
+    std::string d = "";
     for (int i = 0; i < 6; i++)
-        d += (i > 0 ? ":" : "") + String(mac[i], HEX);
+        d += (i > 0 ? ":" : "") + StringHelpers::byteToHexString(mac[i]);
 
-    d.toUpperCase();
+    d = StringHelpers::toUpperCase(d);
     return d;
 }

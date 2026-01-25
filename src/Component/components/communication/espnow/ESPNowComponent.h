@@ -40,7 +40,7 @@ DeclareIntParam(streamTestRate, 50);
 DeclareBoolParam(wakeUpMode, false);
 DeclareBoolParam(routeAll, false);
 DeclareBoolParam(acceptCommands, false);
-String remoteMacs[ESPNOW_MAX_DEVICES];
+std::string remoteMacs[ESPNOW_MAX_DEVICES];
 uint8_t remoteMacsBytes[ESPNOW_MAX_DEVICES][6];
 uint8_t numConnectedDevices = 0;
 
@@ -80,7 +80,7 @@ void initESPNow();
 void updateInternal() override;
 void clearInternal() override;
 
-void sendMessage(int id, const String &address, const String &command, var *data, int numData);
+void sendMessage(int id, const std::string &address, const std::string &command, var *data, int numData);
 
 #ifdef ESPNOW_BRIDGE
 void routeMessage(var *data, int numData);
@@ -120,7 +120,7 @@ void sendPairingResponse(const uint8_t *bridgeMac);
 void setupLongRange(const uint8_t *deviceMac);
 
 void paramValueChangedInternal(void *param) override;
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 DeclareComponentEventTypes(MessageReceived);
 DeclareComponentEventNames("MessageReceived");

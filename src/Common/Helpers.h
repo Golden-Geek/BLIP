@@ -38,25 +38,31 @@
     {                                                        \
     public:
 
-#define DeclareComponentSingletonEnabled(ClassPrefix, Type, Derives, Enabled)                                                        \
+#define DeclareComponentSingletonEnabled(ClassPrefix, Type, Derives, Enabled)                                                             \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                                \
+        DeclareSingleton(ClassPrefix##Component)                                                                                          \
+            ClassPrefix##Component(const std::string &name = Type, bool enabled = Enabled) : Component(name, enabled) { InitSingleton() } \
+    ~ClassPrefix##Component() { DeleteSingleton() }                                                                                       \
+    virtual std::string getTypeString() const override { return Type; }
+
+#define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                          \
+    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                             \
+        DeclareSingleton(ClassPrefix##Component)                                                                                       \
+            ClassPrefix##Component(const std::string &name = Type, bool enabled = true) : Component(name, enabled) { InitSingleton() } \
+    ~ClassPrefix##Component() { DeleteSingleton() }                                                                                    \
+    virtual std::string getTypeString() const override { return Type; }
+
+#define DeclareComponentWithPriority(ClassPrefix, Type, Priority, Derives)                                                           \
     DeclareComponentClass(Component, ClassPrefix, Derives)                                                                           \
-        DeclareSingleton(ClassPrefix##Component)                                                                                     \
-            ClassPrefix##Component(const String &name = Type, bool enabled = Enabled) : Component(name, enabled) { InitSingleton() } \
-    ~ClassPrefix##Component() { DeleteSingleton() }                                                                                  \
-    virtual String getTypeString() const override { return Type; }
+        ClassPrefix##Component(const std::string &name = Type, bool enabled = true, int index = 0) : Component(name, enabled, index) \
+    {                                                                                                                                \
+        isHighPriority = Priority;                                                                                                   \
+    }                                                                                                                                \
+    ~ClassPrefix##Component() {}                                                                                                     \
+    virtual std::string getTypeString() const override { return Type; }
 
-#define DeclareComponentSingleton(ClassPrefix, Type, Derives)                                                                     \
-    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                        \
-        DeclareSingleton(ClassPrefix##Component)                                                                                  \
-            ClassPrefix##Component(const String &name = Type, bool enabled = true) : Component(name, enabled) { InitSingleton() } \
-    ~ClassPrefix##Component() { DeleteSingleton() }                                                                               \
-    virtual String getTypeString() const override { return Type; }
-
-#define DeclareComponent(ClassPrefix, Type, Derives)                                                                               \
-    DeclareComponentClass(Component, ClassPrefix, Derives)                                                                         \
-        ClassPrefix##Component(const String &name = Type, bool enabled = true, int index = 0) : Component(name, enabled, index) {} \
-    ~ClassPrefix##Component() {}                                                                                                   \
-    virtual String getTypeString() const override { return Type; }
+#define DeclareComponent(ClassPrefix, Type, Derives) DeclareComponentWithPriority(ClassPrefix, Type, false, Derives)
+#define DeclareHighPriorityComponent(ClassPrefix, Type, Derives) DeclareComponentWithPriority(ClassPrefix, Type, true, Derives)
 
 #define EndDeclareComponent \
     }                       \
@@ -88,7 +94,7 @@
         AddIntParam(count);                                                                \
         for (int i = 0; i < count && i < MaxCount; i++)                                    \
         {                                                                                  \
-            String n = #itemName + String(i + 1);                                          \
+            std::string n = #itemName + std::to_string(i + 1);                             \
             AddStaticOrDynamicComponent(n, Type, i == 0, i);                               \
             addItemInternal(i);                                                            \
         }                                                                                  \
@@ -104,21 +110,21 @@
     __VA_ARGS__,                                                 \
     TYPES_MAX                                                    \
 };
-#define DeclareComponentEventNames(...)                       \
-    const String componentEventNames[TYPES_MAX]{__VA_ARGS__}; \
-    String getComponentEventName(uint8_t type) const override { return componentEventNames[type]; }
+#define DeclareComponentEventNames(...)                            \
+    const std::string componentEventNames[TYPES_MAX]{__VA_ARGS__}; \
+    std::string getComponentEventName(uint8_t type) const override { return componentEventNames[type]; }
 
 // Command Helpers
 #define CheckCommand(cmd, num) checkCommand(command, cmd, numData, num)
-#define CommandCheck(cmd, Count)                                                          \
-    if (command == cmd)                                                                   \
-    {                                                                                     \
-        if (numData < Count)                                                              \
-        {                                                                                 \
-            NDBG("setConfig needs 2 parameters, only " + String(numData) + " provided."); \
-            return false;                                                                 \
-        }                                                                                 \
-        else                                                                              \
+#define CommandCheck(cmd, Count)                                                               \
+    if (command == cmd)                                                                        \
+    {                                                                                          \
+        if (numData < Count)                                                                   \
+        {                                                                                      \
+            NDBG("setConfig needs 2 parameters, only " + std::string(numData) + " provided."); \
+            return false;                                                                      \
+        }                                                                                      \
+        else                                                                                   \
         {
 #define ElifCommandCheck(cmd, Count) EndCommandCheck else CommandCheck(cmd, Count)
 #define EndCommandCheck \
@@ -132,7 +138,7 @@
 #define DeclareIntParam(name, val) int name = val;
 #define DeclareEnumParam(name, val) int name = val;
 #define DeclareFloatParam(name, val) float name = val;
-#define DeclareStringParam(name, val) String name = val;
+#define DeclareStringParam(name, val) std::string name = val;
 #define DeclareP2DParam(name, val1, val2) float name[2]{val1, val2};
 #define DeclareP3DParam(name, val1, val2, val3) float name[3]{val1, val2, val3};
 #define DeclareColorParam(name, r, g, b, a) float name[4]{r, b, g, a};
@@ -162,7 +168,7 @@
 #define AddBoolParamWithTag(param, tag) AddParamWithTag(Bool, bool, param, tag)
 #define AddIntParamWithTag(param, tag) AddParamWithTag(Int, int, param, tag)
 #define AddFloatParamWithTag(param, tag) AddParamWithTag(Float, float, param, tag)
-#define AddStringParamWithTag(param, tag) AddParamWithTag(Str, String, param, tag)
+#define AddStringParamWithTag(param, tag) AddParamWithTag(Str, std::string, param, tag)
 #define AddP2DParamWithTag(param, tag) AddMultiParamWithTag(P2D, float, param, tag, 2);
 #define AddP3DParamWithTag(param, tag) AddMultiParamWithTag(P3D, float, param, tag, 3);
 #define AddColorParamWithTag(param, tag) AddMultiParamWithTag(TypeColor, float, param, tag, 4);

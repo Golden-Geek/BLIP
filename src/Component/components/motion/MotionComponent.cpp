@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "MotionComponent.h"
 
 void MotionComponent::setupInternal(JsonObject o)
 {
@@ -52,7 +51,7 @@ bool MotionComponent::initInternal()
 #ifdef IMU_TYPE_BNO055
     if (sdaPin == 0 || sclPin == 0)
     {
-        String npin;
+        std::string npin;
         if (sdaPin == 0)
             npin += "SDA,";
         if (sclPin == 0)
@@ -75,7 +74,7 @@ bool MotionComponent::initInternal()
 
 void MotionComponent::updateInternal()
 {
-    // NDBG("updateInternal " + String(hasNewData)); // + ", " + String(orientation[1]) + ", " + String(orientation[2]));
+    // NDBG("updateInternal " + std::to_string(hasNewData)); // + ", " + std::to_string(orientation[1]) + ", " + std::to_string(orientation[2]));
     if (!hasNewData)
         return;
 
@@ -225,7 +224,7 @@ void MotionComponent::readIMU()
         return;
 
 #ifdef IMU_TYPE_BNO055
-    // NDBG("ReadIMU " + String(hasNewData));
+    // NDBG("ReadIMU " + std::to_string(hasNewData));
     imu::Quaternion q = bno.getQuat();
     q.normalize();
 
@@ -237,7 +236,7 @@ void MotionComponent::readIMU()
         return;
     }
 
-    // NDBG("Euler " + String(euler.x()));
+    // NDBG("Euler " + std::to_string(euler.x()));
 
     SetParam3(orientation,
               (float)(fmodf(((euler.x() * 180 / PI) + orientationXOffset + 180.0f * 5), 360.0f) - 180.0f),
@@ -420,12 +419,12 @@ void MotionComponent::computeThrow()
         }
     }
 
-    // DBG("maxAccel " + String(maxAccel) + ", maxLinearAccel " + String(maxLinearAccel) + ", accLinearDiff " + String(accLinearDiff) + ", isFlatting " + String(isFlatting) + ", newState " + String(newState));
+    // DBG("maxAccel " + std::to_string(maxAccel) + ", maxLinearAccel " + std::to_string(maxLinearAccel) + ", accLinearDiff " + std::to_string(accLinearDiff) + ", isFlatting " + std::to_string(isFlatting) + ", newState " + std::to_string(newState));
 
     if (newState != throwState)
     {
         SetParam(throwState, newState);
-        DBG("Throw state " + String(throwState));
+        DBG("Throw state " + std::to_string(throwState));
         // throwState = newState;
         // var data[1]{throwState};
         // sendEvent(ThrowState, data, 1);
@@ -520,7 +519,7 @@ void MotionComponent::setProjectAngleOffset(float yaw = 0.0f, float angle = 0.0f
     xOnCalibration = yaw;
 }
 
-bool MotionComponent::handleCommandInternal(const String &command, var *data, int numData)
+bool MotionComponent::handleCommandInternal(const std::string &command, var *data, int numData)
 {
     if (checkCommand(command, "calibrationStatus", numData, 0))
     {

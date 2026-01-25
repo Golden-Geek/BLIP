@@ -13,7 +13,7 @@ m3ApiRawFunction(m3_as_abort)
     // Optional: log something if desired
     // Serial.printf("AS abort: line=%u col=%u\n", line, col);
 
-    DBG("Script abort called from WebAssembly : line " + String(line) + " col " + String(col));
+    DBG("Script abort called from WebAssembly : line " + std::to_string(line) + " col " + std::to_string(col));
     m3ApiSuccess();
 }
 
@@ -41,14 +41,14 @@ m3ApiRawFunction(m3_arduino_delay)
 m3ApiRawFunction(m3_printFloat)
 {
     m3ApiGetArg(float, val);
-    DBG("Print from script : " + String(val));
+    DBG("Print from script : " + std::to_string(val));
     m3ApiSuccess();
 }
 
 m3ApiRawFunction(m3_printInt)
 {
     m3ApiGetArg(uint32_t, val);
-    DBG("Print from script : " + String(val));
+    DBG("Print from script : " + std::to_string(val));
     m3ApiSuccess();
 }
 
@@ -57,7 +57,7 @@ m3ApiRawFunction(m3_printString)
     m3ApiGetArgMem(const uint8_t *, buf); // pointer into Wasm memory
     m3ApiGetArg(uint32_t, len);           // length in bytes
 
-    DBG("Print from script : " + String(buf, len));
+    DBG("Print from script : " + std::string((const char *)buf, len));
 
     m3ApiSuccess();
 }
@@ -303,17 +303,17 @@ m3ApiRawFunction(m3_setBatterySendEnabled)
 m3ApiRawFunction(m3_playVariant)
 {
     m3ApiGetArg(uint32_t, v);
-    String name = RootComponent::instance->strips.items[0]->bakeLayer.curFile.name();
+    std::string name = RootComponent::instance->strips.items[0]->bakeLayer.curFile.name();
     float time = RootComponent::instance->strips.items[0]->bakeLayer.curTimeMs;
     uint32_t start = millis();
-    char l = name.charAt(name.length() - 1);
+    char l = name.at(name.length() - 1);
 
     if (l >= '0' && l <= '9')
     {
-        name.remove(name.length() - 1);
+        name.erase(name.length() - 1);
     }
 
-    name = name + String(v);
+    name = name + std::to_string(v);
 
     RootComponent::instance->strips.items[0]->bakeLayer.load(name);
 

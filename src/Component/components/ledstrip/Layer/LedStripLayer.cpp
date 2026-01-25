@@ -1,5 +1,6 @@
-#include "LedStripLayer.h"
-LedStripLayer::LedStripLayer(const String &name, Type t, LedStripComponent *strip) : Component(name),
+#include "UnityIncludes.h"
+
+LedStripLayer::LedStripLayer(const std::string &name, Type t, LedStripComponent *strip) : Component(name),
                                                                                      strip(strip),
                                                                                      type(t)
 {

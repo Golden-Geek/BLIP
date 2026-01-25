@@ -62,7 +62,7 @@ void IOComponent::setupPin()
 {
     if (curPin != -1) // prevPin was a PWM pin
     {
-        // NDBG("Detach Pin " + String(curPin));
+        // NDBG("Detach Pin " + std::to_string(curPin));
         if (ledCAttached)
             ledcDetach(curPin);
     }
@@ -113,10 +113,10 @@ void IOComponent::setupPin()
         {
             if (m == A_OUTPUT || m == A_OSC)
             {
-                // NDBG("Attach pin " + String(curPin) + " to PWM");
+                // NDBG("Attach pin " + std::to_string(curPin) + " to PWM");
                 bool result = ledcAttach(curPin, 5000, 10);
                 if (!result)
-                    NDBG("Failed to attach pin " + String(curPin) + " to PWM");
+                    NDBG("Failed to attach pin " + std::to_string(curPin) + " to PWM");
 
                 ledCAttached = result;
             }
@@ -153,7 +153,7 @@ void IOComponent::updatePin()
             int newDebounceCount = min(max(debounceCount + (val ? 1 : -1), 0), IO_PULL_DEBOUNCE);
             if (newDebounceCount != debounceCount)
             {
-                // DBG("Debounce count changed to " + String(newDebounceCount) + " val : " + String(val));
+                // DBG("Debounce count changed to " + std::to_string(newDebounceCount) + " val : " + std::to_string(val));
                 debounceCount = newDebounceCount;
                 if (debounceCount == IO_PULL_DEBOUNCE)
                 {
@@ -182,7 +182,7 @@ void IOComponent::updatePin()
                 if (pin != -1)
                 {
                     uint32_t v = value * 1024;
-                    // NDBG("Set PWM with value " + String(v));
+                    // NDBG("Set PWM with value " + std::to_string(v));
                     ledcWrite(pin, v);
                 }
             }
@@ -221,7 +221,7 @@ void IOComponent::updatePin()
         {
             float sv = sin(millis() * value) * 0.5f + 0.5f;
             uint32_t v = sv * 1024;
-            // NDBG("Set PWM with value " + String(v));
+            // NDBG("Set PWM with value " + std::to_string(v));
             ledcWrite(pin, v);
         }
     }

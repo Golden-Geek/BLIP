@@ -6,12 +6,13 @@ RootComponent root("root");
 void setup()
 {
   root.setup();
-  root.init(); 
+  root.init();
   DBG("[Main] Device is init");
 }
 
 void loop()
 {
   root.update();
-}
 
+  delay(1);
+}

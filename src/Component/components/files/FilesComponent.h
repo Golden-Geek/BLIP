@@ -35,16 +35,16 @@ DeclareComponentSingleton(Files, "files", );
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
 
-File openFile(String fileName, bool forWriting = false, bool deleteIfExists = true);
-bool deleteFolder(String path);
-void deleteFileIfExists(String path);
+File openFile(std::string fileName, bool forWriting = false, bool deleteIfExists = true);
+bool deleteFolder(std::string path);
+void deleteFileIfExists(std::string path);
 
-void createFolderIfNotExists(String path);
+void createFolderIfNotExists(std::string path);
 
-String listDir(const char *dirname, uint8_t levels);
-String getFileSystemInfo();
+std::string listDir(const char *dirname, uint8_t levels);
+std::string getFileSystemInfo();
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 fs::FS &getFS() const { return *_fs; }
 

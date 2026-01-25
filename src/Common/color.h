@@ -143,18 +143,18 @@ struct Color
     {
     }
 
-    Color(const String &hexString)
+    Color(const std::string &hexString)
     {
-        String s = hexString;
-        if (s.startsWith("#"))
-            s = s.substring(1);
+        std::string s = hexString;
+        if (s.starts_with("#"))
+            s = s.substr(1);
 #ifdef USE_16BIT_COLOR
         if (s.length() == 16)
         {
-            r = (ColorType)strtoul(s.substring(0, 4).c_str(), nullptr, 16);
-            g = (ColorType)strtoul(s.substring(4, 8).c_str(), nullptr, 16);
-            b = (ColorType)strtoul(s.substring(8, 12).c_str(), nullptr, 16);
-            a = (ColorType)strtoul(s.substring(12, 16).c_str(), nullptr, 16);
+            r = (ColorType)strtoul(s.substr(0, 4).c_str(), nullptr, 16);
+            g = (ColorType)strtoul(s.substr(4, 4).c_str(), nullptr, 16);
+            b = (ColorType)strtoul(s.substr(8, 4).c_str(), nullptr, 16);
+            a = (ColorType)strtoul(s.substr(12, 4).c_str(), nullptr, 16);
         }
         else
         {
@@ -167,9 +167,9 @@ struct Color
         }
         else if (s.length() == 6)
         {
-            r = (ColorType)strtoul(s.substring(0, 2).c_str(), nullptr, 16);
-            g = (ColorType)strtoul(s.substring(2, 4).c_str(), nullptr, 16);
-            b = (ColorType)strtoul(s.substring(4, 6).c_str(), nullptr, 16);
+            r = (ColorType)strtoul(s.substr(0, 2).c_str(), nullptr, 16);
+            g = (ColorType)strtoul(s.substr(2, 2).c_str(), nullptr, 16);
+            b = (ColorType)strtoul(s.substr(4, 2).c_str(), nullptr, 16);
             a = maxValue();
         }
         else
@@ -219,12 +219,12 @@ struct Color
     float getFloatBlue() const { return b / (float)maxValue(); }
     float getFloatAlpha() const { return a / (float)maxValue(); }
 
-    String toString() const
+    std::string toString() const
     {
-        return "[" + String(r) + "," + String(g) + "," + String(b) + "," + String(a) + "]";
+        return "[" + std::to_string(r) + "," + std::to_string(g) + "," + std::to_string(b) + "," + std::to_string(a) + "]";
     }
 
-    String toHexString(bool hashtag = true) const
+    std::string toHexString(bool hashtag = true) const
     {
         char buf[9];
 #ifdef USE_16BIT_COLOR
@@ -232,7 +232,7 @@ struct Color
 #else
         snprintf(buf, sizeof(buf), "%02X%02X%02X%02X", r, g, b, a);
 #endif
-        return (hashtag ? "#" : "") + String(buf);
+        return (hashtag ? "#" : "") + std::string(buf);
     }
 
 private:

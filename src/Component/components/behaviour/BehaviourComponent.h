@@ -15,7 +15,7 @@ DeclareComponent(Behaviour, "behaviour", )
         OPERATOR_MAX
     };
 
-const String operatorOptions[OPERATOR_MAX] = {
+const std::string operatorOptions[OPERATOR_MAX] = {
     "Equal",
     "Greater",
     "Greater or Equal",
@@ -39,7 +39,7 @@ enum Action
     ActionMax
 };
 
-const String triggerActionOptions[ActionMax] = {
+const std::string triggerActionOptions[ActionMax] = {
     "None",
     "Shutdown",
     "Launch Sequence",

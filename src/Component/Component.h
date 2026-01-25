@@ -1,35 +1,32 @@
 #pragma once
 
-#define MAX_CHILD_COMPONENTS 16
-#define MAX_CHILD_PARAMS 32
-
 class Component : public EventBroadcaster<ComponentEvent>
 {
 public:
-    Component(const String &name, bool _enabled = true, int index = 0) : name(name),
+    Component(const std::string &name, bool _enabled = true, int index = 0) : name(name),
                                                                          enabled(_enabled),
                                                                          index(index),
                                                                          isInit(false),
                                                                          autoInit(true),
                                                                          exposeEnabled(true),
                                                                          saveEnabled(true),
+                                                                         isHighPriority(false),
                                                                          lastUpdateTime(0),
                                                                          lastFeedbackTime(0),
-                                                                         parentComponent(NULL),
-                                                                         numComponents(0),
-                                                                         numParams(0)
+                                                                         parentComponent(nullptr)
     {
     }
 
     virtual ~Component() {}
-    virtual String getTypeString() const { return "[notype]"; }
+    virtual std::string getTypeString() const { return "[notype]"; }
 
-    String name;
+    std::string name;
     int index; // used for multiple instances of the same component type
     bool autoInit;
     bool isInit;
     bool exposeEnabled;
     bool saveEnabled;
+    bool isHighPriority;
 
     long lastUpdateTime;
     long lastFeedbackTime;
@@ -40,8 +37,7 @@ public:
 
     Component *parentComponent;
 
-    Component *components[MAX_CHILD_COMPONENTS];
-    uint8_t numComponents;
+    std::vector<Component *> components;
 
     // Parameter *parameters[MAX_CHILD_PARAMETERS];
     // uint8_t numParameters;
@@ -78,22 +74,20 @@ public:
         float vMax3 = 0;
     };
 
-    const String typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r", "i"};
-    const String tagNames[TagNameMax]{"", "config", "feedback"};
+    const std::string typeNames[ParamTypeMax]{"I", "b", "i", "f", "s", "ff", "fff", "r", "i"};
+    const std::string tagNames[TagNameMax]{"", "config", "feedback"};
 
-    void *params[MAX_CHILD_PARAMS];
+    std::vector<void *> params;
     std::map<void *, int> paramTypesMap;
-    std::map<void *, String> paramToNameMap;
-    std::map<String, void *> nameToParamMap;
+    std::map<void *, std::string> paramToNameMap;
+    std::map<std::string, void *> nameToParamMap;
     std::map<void *, uint8_t> paramTagsMap;
-    std::map<void *, const String *> enumOptionsMap;
+    std::map<void *, const std::string *> enumOptionsMap;
     std::map<void *, int> enumOptionsCountMap;
     std::map<void *, ParamRange> paramRangesMap;
-    std::map<String, std::function<void(void)>> triggersMap;
+    std::map<std::string, std::function<void(void)>> triggersMap;
 
-    uint8_t numParams;
-
-    virtual String getComponentEventName(uint8_t type) const
+    virtual std::string getComponentEventName(uint8_t type) const
     {
         return "[noname]";
     }
@@ -102,7 +96,7 @@ public:
 
     void setup(JsonObject o = JsonObject());
     bool init();
-    virtual void update();
+    virtual void update(bool inFastLoop = false);
     void clear();
 
     virtual void setupInternal(JsonObject o) {}
@@ -113,21 +107,19 @@ public:
     void setCustomUpdateRate(int defaultRate, JsonObject o);
     void setCustomFeedbackRate(float defaultRate, JsonObject o);
     void sendEvent(uint8_t type, var *data = NULL, int numData = 0);
-   
 
     template <class T>
-    T *addComponent(const String &name, bool _enabled, JsonObject o = JsonObject(), int index = 0) { return (T *)addComponent(new T(name, _enabled, index), o); };
+    T *addComponent(const std::string &name, bool _enabled, JsonObject o = JsonObject(), int index = 0) { return (T *)addComponent(new T(name, _enabled, index), o); };
     Component *addComponent(Component *c, JsonObject o = JsonObject());
-    Component *getComponentWithName(const String &name);
+    // Component *getComponentWithName(const std::string &name);
 
-    void addParam(void *param, ParamType type, const String &name, uint8_t tags = TagNone);
+    void addParam(void *param, ParamType type, const std::string &name, uint8_t tags = TagNone);
     void setParamRange(void *param, ParamRange range);
-    void setEnumOptions(void *param, const String *enumOptions, int numOptions);
+    void setEnumOptions(void *param, const std::string *enumOptions, int numOptions);
     void setParam(void *param, var *value, int numData);
     ParamType getParamType(void *param) const;
     bool checkParamTag(void *param, ParamTag tag) const;
-    String getParamString(void *param) const;
-    void addTrigger(const String &name, std::function<void(void)> func);
+    void addTrigger(const std::string &name, std::function<void(void)> func);
 
     void setParamTag(void *param, ParamTag tag, bool enable);
     void setParamConfig(void *param, bool config) { setParamTag(param, TagConfig, config); }
@@ -141,17 +133,15 @@ public:
     virtual void childParamValueChanged(Component *caller, Component *comp, void *param);
     virtual bool checkParamsFeedback(void *param);
 
-    virtual String getEnumString(void *param) const { return ""; }
-
-    bool handleCommand(const String &command, var *data, int numData);
-    virtual bool handleCommandInternal(const String &command, var *data, int numData) { return false; }
-    bool checkCommand(const String &command, const String &ref, int numData, int expectedData);
-    bool handleSetParam(const String &paramName, var *data, int numData);
+    bool handleCommand(const std::string &command, var *data, int numData);
+    virtual bool handleCommandInternal(const std::string &command, var *data, int numData) { return false; }
+    bool checkCommand(const std::string &command, const std::string &ref, int numData, int expectedData);
+    bool handleSetParam(const std::string &paramName, var *data, int numData);
 
     void fillSettingsData(JsonObject o);
     void fillSettingsParam(JsonObject o, void *param);
-    bool fillOSCQueryParam(JsonObject o, const String &fullPath, void *param, bool showConfig = true);
-    JsonObject createBaseOSCQueryObject(JsonObject o, const String &fullPath, const String& pName, const String& type, bool readOnly);
+    bool fillOSCQueryParam(JsonObject o, const std::string &fullPath, void *param, bool showConfig = true);
+    JsonObject createBaseOSCQueryObject(JsonObject o, const std::string &fullPath, const std::string &pName, const std::string &type, bool readOnly);
 
     enum OSCQueryChunkType
     {
@@ -163,16 +153,16 @@ public:
 
     struct OSCQueryChunk
     {
-        OSCQueryChunk(Component *c, OSCQueryChunkType t = Start, String d = "") : nextComponent(c), nextType(t), data(d) {}
+        OSCQueryChunk(Component *c, OSCQueryChunkType t = Start, std::string d = "") : nextComponent(c), nextType(t), data(d) {}
         Component *nextComponent = nullptr;
         OSCQueryChunkType nextType = Start;
-        String data = "";
+        std::string data = "";
     };
 
     void fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig = true);
     void setupChunkAfterComponent(OSCQueryChunk *result, const Component *c);
 
-    String getFullPath(bool includeRoot = false, bool scriptMode = false, bool serialMode = false) const;
+    std::string getFullPath(bool includeRoot = false, bool scriptMode = false, bool serialMode = false) const;
 
 // void scripting
 #ifdef USE_SCRIPT

@@ -32,12 +32,12 @@ DeclareBoolParam(wakeUpState, POWER_WAKEUP_BUTTON_STATE);
 void setupInternal(JsonObject o) override;
 void updateInternal() override;
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 void saveSettings();
 void clearSettings();
 
-String getDeviceID() const;
+std::string getDeviceID() const;
 
     EndDeclareComponent
 

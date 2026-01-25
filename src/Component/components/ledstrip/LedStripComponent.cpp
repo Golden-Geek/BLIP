@@ -6,6 +6,7 @@ ImplementManagerSingleton(LedStrip);
 
 void LedStripComponent::setupInternal(JsonObject o)
 {
+    setCustomUpdateRate(60, o); // 60 fps customizable
 // init
 #ifdef LED_USE_FASTLED
 #else
@@ -69,7 +70,7 @@ void LedStripComponent::setupLeds()
 
     if (enPin > 0)
     {
-        // NDBG("Setting Led Enable pin : " + String(enPin));
+        // NDBG("Setting Led Enable pin : " + std::to_string(enPin));
         pinMode(enPin, OUTPUT);
         digitalWrite(enPin, HIGH); // enable LEDs
     }
@@ -87,7 +88,7 @@ void LedStripComponent::setupLeds()
     if (index == 0)
     {
 #if LED_DEFAULT_CLK_PIN != -1
-        NDBG("Using FastLED with DotStar strip on pin " + String(LED_DEFAULT_DATA_PIN) + " and clk pin " + String(LED_DEFAULT_CLK_PIN));
+        NDBG("Using FastLED with DotStar strip on pin " + std::to_string(LED_DEFAULT_DATA_PIN) + " and clk pin " + std::to_string(LED_DEFAULT_CLK_PIN));
         FastLED.addLeds<LED_DEFAULT_TYPE, LED_DEFAULT_DATA_PIN, LED_DEFAULT_CLK_PIN, LED_DEFAULT_COLOR_ORDER>(leds, count);
 #else
         NDBG("Using FastLED with NeoPixel strip");
@@ -263,7 +264,7 @@ void LedStripComponent::setStripPower(bool value)
 
     if (enPin > 0)
     {
-        NDBG("Set Strip Power " + String(value));
+        NDBG("Set Strip Power " + std::to_string(value));
         digitalWrite(enPin, value); // enable LEDs
     }
     else
@@ -286,7 +287,7 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
     if (!layer->enabled)
         return;
 
-    // DBG("Processing Layer "+String(layer->name));
+    // DBG("Processing Layer "+std::string(layer->name));
 
     for (int i = 0; i < count; i++)
     {
@@ -294,7 +295,7 @@ void LedStripComponent::processLayer(LedStripLayer *layer)
         Color c = layer->colors[index];
         // if(index == 0)
         // {
-        //     DBG(" Layer color for led " + String(i) + ": " + String(c.r) + ", " + String(c.g) + ", " + String(c.b) + ", " + String(c.a));
+        //     DBG(" Layer color for led " + std::to_string(i) + ": " + std::to_string(c.r) + ", " + std::to_string(c.g) + ", " + std::to_string(c.b) + ", " + std::to_string(c.a));
         // }
 
         LedStripLayer::BlendMode bm = (LedStripLayer::BlendMode)layer->blendMode;
@@ -350,7 +351,7 @@ void LedStripComponent::clearColors()
 
 void LedStripComponent::showLeds()
 {
-    // DBG("Showing Leds, led 0 color: " + String(colors[0].r) + ", " + String(colors[0].g) + ", " + String(colors[0].b) + ", " + String(colors[0].a));
+    // DBG("Showing Leds, led 0 color: " + std::to_string(colors[0].r) + ", " + std::to_string(colors[0].g) + ", " + std::to_string(colors[0].b) + ", " + std::to_string(colors[0].a));
     float targetBrightness = brightness * LED_BRIGHTNESS_FACTOR;
     if (maxPower > 0)
     {
@@ -365,17 +366,17 @@ void LedStripComponent::showLeds()
 
         totalAmpFullBrightness *= bMultiplier;
 
-        // NDBG("Total Amps at full brightness: " + String(totalAmpFullBrightness) + ", Max Power: " + String(maxPower));
+        // NDBG("Total Amps at full brightness: " + std::to_string(totalAmpFullBrightness) + ", Max Power: " + std::to_string(maxPower));
 
         if (totalAmpFullBrightness > maxPower)
         {
             float maxOkBrightness = LED_BRIGHTNESS_FACTOR * maxPower / (float)totalAmpFullBrightness;
             targetBrightness = min(targetBrightness, maxOkBrightness);
-            // NDBG("maxOkBrightness: " + String(maxOkBrightness) + ", Target brightness: " + String(targetBrightness));
+            // NDBG("maxOkBrightness: " + std::to_string(maxOkBrightness) + ", Target brightness: " + std::to_string(targetBrightness));
         }
     }
 
-    // DBG("Strip power is " + String(currentStripPower) + ", brightness : " + String(brightness) + ", target brightness: " + String(targetBrightness));
+    // DBG("Strip power is " + std::to_string(currentStripPower) + ", brightness : " + std::to_string(brightness) + ", target brightness: " + std::to_string(targetBrightness));
 
 #ifdef LED_USE_FASTLED
     FastLED.setBrightness(min(int(targetBrightness * 255), 255));
@@ -384,7 +385,7 @@ void LedStripComponent::showLeds()
         float a = colors[i].a / 255.0f;
         leds[ledMap(i)] = CRGB(colors[i].r * a, colors[i].g * a, colors[i].b * a);
     }
-    // DBG("First Led " + String(ledMap(0)) + " color: " + String(colors[0].r) + ", " + String(colors[0].g) + ", " + String(colors[0].b) + ", " + String(colors[0].a));
+    // DBG("First Led " + std::to_string(ledMap(0)) + " color: " + std::to_string(colors[0].r) + ", " + std::to_string(colors[0].g) + ", " + std::to_string(colors[0].b) + ", " + std::to_string(colors[0].a));
     FastLED.show();
 #else
     if (neoPixelStrip != NULL)

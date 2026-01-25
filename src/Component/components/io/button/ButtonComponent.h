@@ -32,7 +32,7 @@
 class ButtonComponent : public IOComponent
 {
 public:
-    ButtonComponent(const String &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
+    ButtonComponent(const std::string &name = "button", bool _enabled = false, int index = 0) : IOComponent(name, _enabled, index) {}
 
     long timeAtPress = 0;
     bool wasPressedAtBoot = false;

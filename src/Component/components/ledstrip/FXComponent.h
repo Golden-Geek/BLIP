@@ -26,7 +26,7 @@ public:
         Roll,
         IsoAxisMax
     };
-    const String isoOptions[IsoAxisMax]{"Projected Angle", "Yaw", "Pitch", "Roll"};
+    const std::string isoOptions[IsoAxisMax]{"Projected Angle", "Yaw", "Pitch", "Roll"};
 
     DeclareEnumParam(isolationAxis, ProjectedAngle); // 0 = projectedAngle, 1 = yaw, 2 = pitch, 3 = roll
 
@@ -46,7 +46,7 @@ public:
     void process(Color* sourcColors);
     void reset();
 
-    String getTypeString() const override { return "fx"; }
+    std::string getTypeString() const override { return "fx"; }
 };
 
 #endif

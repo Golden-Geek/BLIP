@@ -57,7 +57,7 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
         if (e.type == ESPNowComponent::MessageReceived)
         {
 #ifdef ESPNOW_BRIDGE
-            if (e.data[0].stringValue().startsWith("dev.")) // message from device, to route
+            if (e.data[0].stringValue().starts_with("dev.")) // message from device, to route
             {
 #ifdef USE_OSC
                 if (osc.sendFeedback)
@@ -89,7 +89,7 @@ void CommunicationComponent::onChildComponentEvent(const ComponentEvent &e)
 #endif
 }
 
-void CommunicationComponent::sendParamFeedback(Component *c, void *param, const String &pName, Component::ParamType pType)
+void CommunicationComponent::sendParamFeedback(Component *c, void *param, const std::string &pName, Component::ParamType pType)
 {
     int numData = 1;
     var data[4];
@@ -108,15 +108,22 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
         break;
 
     case Component::ParamType::TypeEnum:
-        data[0] = c->getEnumString(param);
-        break;
+    {
+        const std::string *options = enumOptionsMap[param];
+        int index = (*(int *)param);
+        if (options && index >= 0)
+            data[0] = options[index];
+        else
+            data[0] = "";
+    }
+    break;
 
     case Component::ParamType::Float:
         data[0] = (*(float *)param);
         break;
 
     case Component::ParamType::Str:
-        data[0] = (*(String *)param);
+        data[0] = (*(std::string *)param);
         break;
 
     case Component::ParamType::P2D:
@@ -148,13 +155,13 @@ void CommunicationComponent::sendParamFeedback(Component *c, void *param, const 
 #ifdef USE_SERIAL
     if (serial.sendFeedback)
     {
-        String baseAddress = c->getFullPath(false, false, true);
+        std::string baseAddress = c->getFullPath(false, false, true);
         serial.sendMessage(baseAddress, pName, data, numData);
     }
 #endif
 
 #if defined USE_OSC || defined USE_ESPNOW
-    String baseAddress = c->getFullPath();
+    std::string baseAddress = c->getFullPath();
 #endif
 
 #ifdef USE_OSC
@@ -183,13 +190,13 @@ void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
 #ifdef USE_SERIAL
     if (serial.sendFeedback)
     {
-        String serialAddress = e.component->getFullPath(false, false, true);
+        std::string serialAddress = e.component->getFullPath(false, false, true);
         serial.sendMessage(serialAddress, e.getName(), e.data, e.numData);
     }
 #endif
 
 #if defined USE_OSC || defined USE_ESPNOW
-    String baseAddress = e.component->getFullPath();
+    std::string baseAddress = e.component->getFullPath();
 #endif
 
 #ifdef USE_OSC
@@ -216,29 +223,29 @@ void CommunicationComponent::sendEventFeedback(const ComponentEvent &e)
 #endif
 }
 
-void CommunicationComponent::sendMessage(Component *c, const String &mName, const String &val)
+void CommunicationComponent::sendMessage(Component *c, const std::string &mName, const std::string &val)
 {
     var data[1]{val};
 
 #ifdef USE_SERIAL
-    String serialAddress = c->getFullPath(false, false, true);
+    std::string serialAddress = c->getFullPath(false, false, true);
     serial.sendMessage(serialAddress, mName, data, 1);
 #endif
 
 #ifdef USE_OSC
-    String oscAddress = c->getFullPath();
+    std::string oscAddress = c->getFullPath();
     osc.sendMessage(oscAddress, mName, data, 1);
 #endif
 
 #ifdef USE_ESPNOW
 #ifndef ESPNOW_BRIDGE
-    String espnowAddress = c->getFullPath(false, false, true);
+    std::string espnowAddress = c->getFullPath(false, false, true);
     espNow.sendMessage(-1, espnowAddress, mName, data, 1);
 #endif
 #endif
 }
 
-void CommunicationComponent::sendDebug(const String &msg, const String &source, const String &type)
+void CommunicationComponent::sendDebug(const std::string &msg, const std::string &source, const std::string &type)
 {
 #ifdef USE_SERIAL
     serial.send("[" + source + "] " + msg);

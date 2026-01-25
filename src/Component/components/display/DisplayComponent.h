@@ -20,11 +20,11 @@
 class DisplayComponent : public IOComponent
 {
 public:
-    DisplayComponent(const String &name = "display", bool _enabled = false) : IOComponent(name, _enabled), canvas(&display) {}
+    DisplayComponent(const std::string &name = "display", bool _enabled = false) : IOComponent(name, _enabled), canvas(&display) {}
 
     enum DisplayType { M5StickC };
 
-String logLines[DISPLAY_LOG_MAX_LINES];
+std::string logLines[DISPLAY_LOG_MAX_LINES];
 int logLineIndex = 0;
 
 bool shouldUpdateDisplay = false;
@@ -42,13 +42,13 @@ void clearInternal() override;
 void initM5StickC();
 #endif
 
-void setDisplayText(const String &text, int x = 0, int y = 0, int size = DISPLAY_DEFAULT_TEXT_SIZE);
-void log(const String &text);
-void logWarning(const String &text);
-void logError(const String &text);
+void setDisplayText(const std::string &text, int x = 0, int y = 0, int size = DISPLAY_DEFAULT_TEXT_SIZE);
+void log(const std::string &text);
+void logWarning(const std::string &text);
+void logError(const std::string &text);
 void clearDisplay();
 
-bool handleCommandInternal(const String &command, var *data, int numData) override;
+bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 
 
