@@ -6,6 +6,7 @@ void SettingsComponent::setupInternal(JsonObject o)
 {
     AddFunctionTrigger(saveSettings);
     AddFunctionTrigger(clearSettings);
+    AddFunctionTrigger(factoryReset);
     AddIntParamConfig(propID);
     AddStringParamConfig(deviceName);
     AddStringParamConfig(deviceType);
@@ -36,7 +37,8 @@ bool SettingsComponent::handleCommandInternal(const std::string &command, var *d
     }
     else if (command == "clear")
     {
-        clearSettings();
+        bool keepWifi = numData > 0 ? data[0].boolValue() : true;
+        clearSettings(keepWifi);
         return true;
     }
 
@@ -52,9 +54,19 @@ void SettingsComponent::saveSettings()
     NDBG("Settings saved");
 }
 
-void SettingsComponent::clearSettings()
+void SettingsComponent::clearSettings(bool keepWifiSettings)
 {
+
     Settings::clearSettings();
+
+    if (keepWifiSettings)
+    {
+        JsonObject o = Settings::settings.to<JsonObject>();
+        JsonObject comps = o.createNestedObject("components");
+        RootComponent::instance->wifi.fillSettingsData(comps.createNestedObject(RootComponent::instance->wifi.name));
+        Settings::saveSettings();
+    }
+
     NDBG("Settings cleared, will reboot now.");
     delay(200);
     RootComponent::instance->restart();

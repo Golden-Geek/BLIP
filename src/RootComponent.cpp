@@ -438,13 +438,13 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
         uint32_t heapSize = ESP.getHeapSize();
 
         std::string stats = DeviceName +
-                       "\nID " + std::to_string(settings.propID) +
-                       "\n " + DeviceType +
-                       "\nVersion " + settings.firmwareVersion +
-                       "\n \"DeviceID\": " + settings.getDeviceID() +
-                       "\nHeap Size: " + std::to_string(heapSize / 1024) + " kb, Free Heap: " + std::to_string(freeHeap / 1024) + " kb  (" + std::to_string(freeHeap * 100 / heapSize) + "%)" +
-                       "\n Min Free Heap: " + std::to_string(ESP.getMinFreeHeap() / 1024) + " kb " +
-                       "\n Max Alloc Heap: " + std::to_string(ESP.getMaxAllocHeap() / 1024) + " kb";
+                            "\nID " + std::to_string(settings.propID) +
+                            "\n " + DeviceType +
+                            "\nVersion " + settings.firmwareVersion +
+                            "\n \"DeviceID\": " + settings.getDeviceID() +
+                            "\nHeap Size: " + std::to_string(heapSize / 1024) + " kb, Free Heap: " + std::to_string(freeHeap / 1024) + " kb  (" + std::to_string(freeHeap * 100 / heapSize) + "%)" +
+                            "\n Min Free Heap: " + std::to_string(ESP.getMinFreeHeap() / 1024) + " kb " +
+                            "\n Max Alloc Heap: " + std::to_string(ESP.getMaxAllocHeap() / 1024) + " kb";
 
 #ifdef USE_FILES
         stats += "\n" + files.getFileSystemInfo();
@@ -467,14 +467,28 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
 
 void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
 {
+    NDBG("Register component " + path + " (" + comp->getTypeString() + ")");
     pathComponentMap.insert(std::make_pair(path, comp));
     if (highPriority)
         highPriorityComponents.push_back(comp);
 }
 
-void RootComponent::unregisterComponent(Component *comp, const std::string &path)
+void RootComponent::unregisterComponent(Component *comp)
 {
-    pathComponentMap.erase(path);
+    NDBG("Unregister component (" + comp->getTypeString() + ")");
+
+    for (auto it = pathComponentMap.begin(); it != pathComponentMap.end();)
+    {
+        if (it->second == comp)
+        {
+            NDBG(" - remove path " + it->first);
+            it = pathComponentMap.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 
     if (highPriorityComponents.size() > 0)
     {

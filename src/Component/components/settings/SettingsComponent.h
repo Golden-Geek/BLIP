@@ -35,7 +35,8 @@ void updateInternal() override;
 bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 void saveSettings();
-void clearSettings();
+void clearSettings(bool keepWifiSettings = true);
+void factoryReset() { clearSettings(false); }
 
 std::string getDeviceID() const;
 

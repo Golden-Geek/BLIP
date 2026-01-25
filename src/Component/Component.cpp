@@ -5,7 +5,7 @@ void Component::setup(JsonObject o)
     NDBG("Setup");
     AddBoolParamConfig(enabled);
     setupInternal(o);
-    RootComponent::instance->registerComponent(this, getFullPath(), isHighPriority);
+    RootComponent::instance->registerComponent(this, getFullPath(false, true), isHighPriority);
 }
 
 bool Component::init()
@@ -70,6 +70,7 @@ void Component::clear()
     // for (int i = 0; i < numParameters; i++)
     // delete parameters[i];
     params.clear();
+    RootComponent::instance->unregisterComponent(this);
 }
 
 void Component::setCustomUpdateRate(int defaultRate, JsonObject o)

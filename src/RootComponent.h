@@ -125,7 +125,7 @@ void childParamValueChanged(Component *caller, Component *comp, void *param);
 bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 
 void registerComponent(Component *comp, const std::string &path, bool highPriority = false);
-void unregisterComponent(Component *comp, const std::string &path);
+void unregisterComponent(Component *comp);
 
 
 bool isShuttingDown() const { return timeAtShutdown > 0; }

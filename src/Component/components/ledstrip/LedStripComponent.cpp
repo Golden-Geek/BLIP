@@ -24,7 +24,11 @@ void LedStripComponent::setupInternal(JsonObject o)
         enPin = LED2_DEFAULT_EN_PIN;
     }
 
-    AddIntParam(count);
+    AddIntParamConfig(count);
+#ifdef LED_FIXED_COUNT
+    setParamConfig(&count, false);
+    setParamFeedback(&count, true);
+#endif
     AddIntParamConfig(dataPin);
     AddIntParamConfig(enPin);
     AddIntParamConfig(clkPin);
