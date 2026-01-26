@@ -24,7 +24,7 @@
 #define NeoPixelMethod NeoWs2816Method
 #define NeoPixelFeature NeoGrbWs2816Feature
 #define NeoPixelColor Rgb48Color
-#define NeoPixelColorDivider 256
+#define NeoPixelColorDivider 1
 #elif defined LED_MODEL_SK9822
 #define NEOPIXEL_CLOCKED
 #define NeoPixelMethod DotStarMethod            
