@@ -519,11 +519,11 @@ void ESPNowComponent::routeMessage(var *data, int numData)
 
     if (targetAddress.starts_with("/dev/"))
     {
-        int idEnd = targetAddress.indexOf('/', 5);
-        if (idEnd != -1)
+        std::string::size_type idEnd = targetAddress.find('/', 5);
+        if (idEnd != std::string::npos)
         {
-            id = targetAddress.substring(5, idEnd).toInt();
-            targetAddress = targetAddress.substring(idEnd + 1);
+            id = std::stoi(targetAddress.substr(5, idEnd - 5));
+            targetAddress = targetAddress.substr(idEnd + 1);
             shouldSend = true;
         }
     }
@@ -737,7 +737,7 @@ void ESPNowComponent::registerDevice(const uint8_t *deviceMac)
 
     for (int i = 0; i < ESPNOW_MAX_DEVICES; i++)
     {
-        if ((remoteMacs[i]).isEmpty())
+        if (remoteMacs[i] == "")
         {
             remoteMacs[i] = address;
             addDevicePeer(deviceMac);
