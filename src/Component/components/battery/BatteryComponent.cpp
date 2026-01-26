@@ -249,10 +249,10 @@ void BatteryComponent::checkShouldAutoShutdown()
     }
 }
 
-void BatteryComponent::paramValueChangedInternal(ParamInfo *param)
+void BatteryComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
 #ifdef BATTERY_CHARGE_LED_PIN
-    if (param == &chargeLedIntensity)
+    if (paramInfo->ptr == &chargeLedIntensity)
     {
         analogWrite(BATTERY_CHARGE_LED_PIN, (int)(chargeLedIntensity * 255));
     }
