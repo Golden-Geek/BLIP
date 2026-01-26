@@ -22,7 +22,7 @@
 // NEO PIXEL BUS DEFINES
 #ifdef LED_MODEL_WS2816
 #define NeoPixelMethod NeoWs2816Method
-#define NeoPixelFeature NeoGrbwWs2816Feature
+#define NeoPixelFeature NeoGrbWs2816Feature
 #define NeoPixelColor Rgb48Color
 #define NeoPixelColorDivider 256
 #elif defined LED_MODEL_SK9822
