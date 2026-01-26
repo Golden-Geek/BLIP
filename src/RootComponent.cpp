@@ -477,7 +477,7 @@ bool RootComponent::handleCommandInternal(const std::string &command, var *data,
 
 void RootComponent::registerComponent(Component *comp, const std::string &path, bool highPriority)
 {
-    DBG("Register component " + path);
+    // DBG("Register component " + path);
     allComponents.push_back(comp);
     allComponentPaths.push_back(path);
     if (highPriority)

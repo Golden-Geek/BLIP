@@ -6,6 +6,10 @@
 // #define NDBG(t)
 #define DBG(text) CommunicationComponent::instance->sendDebug(text)
 #define NDBG(text) CommunicationComponent::instance->sendDebug(text, name)
+#define DWARN(text) CommunicationComponent::instance->sendDebug(text, "warn")
+#define NDWARN(text) CommunicationComponent::instance->sendDebug(text, name, "warn")
+#define DERR(text) CommunicationComponent::instance->sendDebug(text, "error")
+#define NDERR(text) CommunicationComponent::instance->sendDebug(text, name, "error")
 
 #define DeviceID SettingsComponent::instance->getDeviceID()
 #define DeviceType SettingsComponent::instance->deviceType
@@ -165,7 +169,7 @@
 
 #define AddParamWithOptionsTag(type, class, param, tag, options, numOptions)         \
     addParam(&param, ParamType::type, #param, tag)->setOptions(options, numOptions); \
-    SetParam(param, Settings::getVal<class>(o, #param, param));
+    if(tag != TagFeedback) SetParam(param, Settings::getVal<class>(o, #param, param));
 
 #define AddMultiParamWithTag(type, class, param, tag, numData, ExtraSet) \
     {                                                                    \

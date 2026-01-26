@@ -249,7 +249,8 @@ void CommunicationComponent::sendMessage(Component *c, const std::string &mName,
 void CommunicationComponent::sendDebug(const std::string &msg, const std::string &source, const std::string &type)
 {
 #ifdef USE_SERIAL
-    serial.send("[" + source + "] " + msg);
+    std::string prefix = type == "info" ? "" : (type == "warning" ? "!" : "!!");
+    serial.send(prefix + "[" + source + "] " + msg);
 #endif
 
 #ifdef USE_SERVER

@@ -9,8 +9,8 @@ void SettingsComponent::setupInternal(JsonObject o)
     AddFunctionTrigger(factoryReset);
     AddIntParamConfig(propID);
     AddStringParamConfig(deviceName);
-    AddStringParamConfig(deviceType);
-    AddStringParamConfig(firmwareVersion);
+    AddStringParamFeedback(deviceType);
+    AddStringParamFeedback(firmwareVersion);
 #ifdef USE_POWER
     AddIntParamConfig(wakeUpButton);
     AddBoolParamConfig(wakeUpState);

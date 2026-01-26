@@ -547,10 +547,12 @@ void WebServerComponent::onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketCl
     switch (type)
     {
     case WS_EVT_CONNECT:
-        DBG("WebSocket client " + std::to_string(client->id()) + "connected from " + client->remoteIP().toString().c_str());
+        NDBG("Client " + std::to_string(client->id()) + " connected from " + client->remoteIP().toString().c_str());
+        NDBG("Clients connected: " + std::to_string(server->count()));
         break;
     case WS_EVT_DISCONNECT:
-        DBG("WebSocket client " + std::to_string(client->id()) + " disconnected");
+        NDBG("Client " + std::to_string(client->id()) + " disconnected");
+        NDBG("Clients connected: " + std::to_string(server->count()));
         break;
     case WS_EVT_DATA:
         handleWebSocketMessage(arg, data, len);

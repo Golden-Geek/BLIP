@@ -16,8 +16,8 @@ enum ParamType
 enum ParamTag
 {
     TagNone = 0,
-    TagConfig = 1,
-    TagFeedback = 2,
+    TagConfig = 1 << 0,
+    TagFeedback = 1 << 1,
     TagNameMax
 };
 
@@ -41,7 +41,7 @@ struct ParamInfo
     void *ptr = nullptr;
     std::string name;
     ParamType type;
-    uint8_t tags; // bitmask of ParamTag
+    uint8_t tags = 0; // bitmask of ParamTag
     ParamRange* range = nullptr;
     std::string* enumOptions = nullptr;
     uint8_t numEnumOptions = 0;
@@ -54,14 +54,15 @@ struct ParamInfo
     void setTag(ParamTag tag, bool enable)
     {
         if (enable)
-            tags |= (1 << tag);
+            tags |= tag;
         else
-            tags &= ~(1 << tag);
+            tags &= ~tag;
     }
 
     bool hasTag(ParamTag tag) const
     {
-        return (tags & (1 << tag)) != 0;
+        // check if tag bit is set
+        return (tags & tag) != 0;
     }
 
     void setOptions(const std::string* options, uint8_t numOptions)
