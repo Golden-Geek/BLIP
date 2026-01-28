@@ -81,6 +81,11 @@
 #include "Component/components/communication/espnow/ESPNowComponent.h"
 #endif
 
+#ifdef USE_RF24
+#include <RF24.h>
+#include "Component/components/communication/rf24/RF24Component.h"
+#endif
+
 #ifdef USE_SERVER
 
 #include <AsyncTCP.h>
@@ -198,6 +203,15 @@
 #ifdef USE_DUMMY
 #include "Component/components/dummy/DummyComponent.h"
 #endif
+
+
+// SPECIALS
+
+#ifdef USE_FLOWTOYS_CONNECT
+#include "Component/components/specials/flowtoys/flowtoysconnect/FlowtoysConnectComponent.h"
+#endif
+
+//
 
 #include "Component/components/settings/SettingsComponent.h"
 

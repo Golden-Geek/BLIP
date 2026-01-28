@@ -52,14 +52,14 @@ void Component::update(bool inFastLoop)
             c->update(inFastLoop);
         }
 
-        long startTime = millis();
+        // long startTime = millis();
         updateInternal();
-        long endTime = millis();
-        long duration = endTime - startTime;
-        if (duration > 5)
-        {
-            NDBG("Component " + name + " update took " + std::to_string(duration) + " ms");
-        }
+        // long endTime = millis();
+        // long duration = endTime - startTime;
+        // if (duration > 5)
+        // {
+        //     NDBG("Component " + name + " update took " + std::to_string(duration) + " ms");
+        // }
     }
 }
 

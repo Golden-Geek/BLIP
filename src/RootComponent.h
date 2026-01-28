@@ -89,6 +89,12 @@ DistanceSensorManagerComponent distances;
 DIPSwitchComponent dipswitch;
 #endif
 
+// SPECIALS
+#ifdef USE_FLOWTOYS_CONNECT
+FlowtoysConnectComponent flowtoysConnect;
+#endif
+//
+
 // High Priority Components
 TaskHandle_t fastTask;
 

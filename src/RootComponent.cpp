@@ -154,6 +154,12 @@ void RootComponent::setupInternal(JsonObject)
     AddOwnedComponent(&sequence);
 #endif
 
+// SPECIALS
+#ifdef USE_FLOWTOYS_CONNECT
+    AddOwnedComponent(&flowtoysConnect);
+#endif
+    //
+
     AddFunctionTrigger(shutdown);
     AddFunctionTrigger(restart);
     AddFunctionTrigger(standby);
@@ -308,7 +314,7 @@ void RootComponent::onChildComponentEvent(const ComponentEvent &e)
             else
             {
 
-                for (int i=0;i<allComponents.size();i++)
+                for (int i = 0; i < allComponents.size(); i++)
                 {
                     if (allComponentPaths[i] == address)
                     {

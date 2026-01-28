@@ -32,6 +32,10 @@
 #include "Component/components/communication/espnow/ESPNowComponent.cpp"
 #endif
 
+#ifdef USE_RF24
+#include "Component/components/communication/rf24/RF24Component.cpp"
+#endif
+
 #ifdef USE_SERVER
 #include "Component/components/communication/server/WebServerComponent.cpp"
 #endif
@@ -121,3 +125,11 @@
 #ifdef USE_DUMMY
 #include "Component/components/dummy/DummyComponent.cpp"
 #endif
+
+// SPECIALS
+
+#ifdef USE_FLOWTOYS_CONNECT
+#include "Component/components/specials/flowtoys/flowtoysconnect/FlowtoysConnectComponent.cpp"
+#endif
+
+//
