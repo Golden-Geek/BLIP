@@ -272,16 +272,20 @@ void RootComponent::powerdown()
 
 void RootComponent::switchToWifi()
 {
+#ifdef USE_ESPNOW
     comm.espNow.setEnabled(false);
     settings.saveSettings();
     restart();
+#endif
 }
 
 void RootComponent::switchToESPNow()
 {
+#ifdef USE_ESPNOW
     comm.espNow.setEnabled(true);
     settings.saveSettings();
     restart();
+#endif
 }
 
 void RootComponent::onChildComponentEvent(const ComponentEvent &e)

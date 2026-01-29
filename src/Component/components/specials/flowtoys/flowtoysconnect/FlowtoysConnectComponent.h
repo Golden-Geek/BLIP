@@ -12,9 +12,7 @@
 #define RF24_DEFAULT_IRQ_PIN 7
 #endif
 
-#define MAX_GROUPS 4
-
-DeclareComponent(FlowtoysConnect, "Flowtoys Connect", )
+DeclareComponentWithPriority(FlowtoysConnect, "Flowtoys Connect", false, DMXListenerDerive) // need to put withpriority to use only one macro ref call because of DMXListenerDerive
 
 #pragma pack(push, 1) // prevents memory alignment from disrupting the layout and size of the network packet
     struct SyncPacket
@@ -43,12 +41,44 @@ DeclareComponent(FlowtoysConnect, "Flowtoys Connect", )
     uint8_t save : 1;
     uint8_t _delete : 1;
     uint8_t alternate : 1;
+
+    std::string toString() const
+    {
+        return "GroupID: " + std::to_string(groupID) +
+               " Page: " + std::to_string(page) +
+               " Mode: " + std::to_string(mode) +
+               " Hue Active: " + std::to_string(hue_active) +
+               " Sat Active: " + std::to_string(sat_active) +
+               " Val Active: " + std::to_string(val_active) +
+               " Speed Active: " + std::to_string(speed_active) +
+               " Density Active: " + std::to_string(density_active) +
+               " Adjust Active: " + std::to_string(adjust_active) +
+               " Padding: " + std::to_string(padding) +
+               " Wake Up: " + std::to_string(wakeup) +
+               " Power Off: " + std::to_string(poweroff) +
+               " Force Reload: " + std::to_string(force_reload) +
+               " Save: " + std::to_string(save) +
+               " Delete: " + std::to_string(_delete) +
+               " Alternate: " + std::to_string(alternate);
+    }
+};
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct InvitePacket
+{
+    uint8_t byte1 = 0x50;
+    uint8_t byte2 = 0x06;
+    uint16_t groupID;
+    uint8_t byte5 = 0x00;
+    uint8_t byte6 = 0x00;
 };
 #pragma pack(pop)
 
 // DeclareIntParam(cePin, RF24_DEFAULT_CE_PIN);
 // DeclareIntParam(csPin, RF24_DEFAULT_CS_PIN);
 // DeclareIntParam(irqPin, RF24_DEFAULT_IRQ_PIN);
+DeclareIntParam(dmxAddress, 1);
 DeclareBoolParam(pairingMode, false);
 DeclareIntParam(page, 1);
 DeclareIntParam(mode, 1);
@@ -58,16 +88,19 @@ DeclareFloatParam(hue, 0.0f);
 DeclareFloatParam(saturation, 1.0f);
 DeclareFloatParam(speed, 1.0f);
 DeclareFloatParam(density, 1.0f);
-DeclareIntParam(group1ID, 0);
-DeclareIntParam(group2ID, 0);
-DeclareIntParam(group3ID, 0);
-DeclareIntParam(group4ID, 0);
-int *groupIds[MAX_GROUPS] = {&group1ID, &group2ID, &group3ID, &group4ID};
+DeclareIntParam(groupID, 0);
 
 RF24 *radio = nullptr;
 
 SyncPacket packet;
 SyncPacket receivingPacket;
+InvitePacket pairingPacket;
+
+ButtonComponent* button = nullptr;
+IOComponent* ledOutput = nullptr;
+
+long timeAtButtonDown = 0;
+int pageOnRelease = 1;
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -75,11 +108,15 @@ void updateInternal() override;
 
 void clearInternal() override;
 
+void checkButtonPairingMode();
 void paramValueChangedInternal(ParamInfo *param) override;
 
+void setNewGroupID();
 void sendPacket();
-void sendPacketToGroup(int groupID);
+void sendSyncPacket();
+void sendPairingPacket();
 
 void receivePacket();
 
+void onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len) override;
 EndDeclareComponent

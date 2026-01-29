@@ -39,7 +39,7 @@ void Component::update(bool inFastLoop)
 
     if (suspendNonCriticalUpdates)
     {
-        if(!isCritical)
+        if (!isCritical)
         {
             return;
         }
@@ -166,7 +166,7 @@ void Component::fillSettingsData(JsonObject o)
         if (param.ptr == &enabled && !saveEnabled)
             continue;
 
-        if (param.hasTag(TagFeedback))
+        if (!param.hasTag(TagConfig))
             continue;
 
         fillSettingsParam(o, param);

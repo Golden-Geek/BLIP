@@ -39,7 +39,9 @@ void clearSettings(bool keepWifiSettings = true);
 void factoryReset() { clearSettings(false); }
 
 std::string getDeviceID() const;
+uint16_t getDeviceIDNum() const;
+void getDeviceMac(byte *mac) const;
 
-    EndDeclareComponent
+EndDeclareComponent
 
     // Manager

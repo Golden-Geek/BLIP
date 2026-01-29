@@ -14,6 +14,7 @@
 #define DeviceID SettingsComponent::instance->getDeviceID()
 #define DeviceType SettingsComponent::instance->deviceType
 #define DeviceName SettingsComponent::instance->deviceName
+#define FillDeviceMac(mac) SettingsComponent::instance->getDeviceMac(mac)
 
 // Class Helpers
 #define DeclareSingleton(Class) static Class *instance;
@@ -171,8 +172,7 @@
 
 #define AddParamWithOptionsTag(type, class, param, tag, options, numOptions)         \
     addParam(&param, ParamType::type, #param, tag)->setOptions(options, numOptions); \
-    if (tag != TagFeedback)                                                          \
-        SetParam(param, Settings::getVal<class>(o, #param, param));
+    SetParam(param, Settings::getVal<class>(o, #param, param));
 
 #define AddMultiParamWithTag(type, class, param, tag, numData, ExtraSet) \
     {                                                                    \
@@ -240,27 +240,33 @@
 #define AddColorParamFeedback(param) AddColorParamWithTag(param, TagFeedback)
 #define AddEnumParamFeedback(param, options, numOptions) AddEnumParamWithTag(param, TagFeedback, options, numOptions)
 
-#define SetParam(param, val)        \
-    {                               \
-        var pData[1];               \
-        pData[0] = val;             \
-        setParam(&param, pData, 1); \
+#define SetComponentParam(comp, param, val) \
+    {                                       \
+        var pData[1];                       \
+        pData[0] = val;                     \
+        comp->setParam(&comp->param, pData, 1);   \
     };
-#define SetParam2(param, val1, val2) \
-    {                                \
-        var pData[2];                \
-        pData[0] = val1;             \
-        pData[1] = val2;             \
-        setParam(&param, pData, 2);  \
+
+#define SetComponentParam2(comp, param, val1, val2) \
+    {                                               \
+        var pData[2];                               \
+        pData[0] = val1;                            \
+        pData[1] = val2;                            \
+        comp->setParam(&comp->param, pData, 2);           \
     };
-#define SetParam3(param, val1, val2, val3) \
-    {                                      \
-        var pData[3];                      \
-        pData[0] = val1;                   \
-        pData[1] = val2;                   \
-        pData[2] = val3;                   \
-        setParam(&param, pData, 3);        \
+
+#define SetComponentParam3(comp, param, val1, val2, val3) \
+    {                                                     \
+        var pData[3];                                     \
+        pData[0] = val1;                                  \
+        pData[1] = val2;                                  \
+        pData[2] = val3;                                  \
+        comp->setParam(&comp->param, pData, 3);                 \
     };
+
+#define SetParam(param, val) SetComponentParam(this, param, val);
+#define SetParam2(param, val1, val2) SetComponentParam2(this, param, val1, val2);
+#define SetParam3(param, val1, val2, val3) SetComponentParam3(this, param, val1, val2, val3);
 
 // Script
 

@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "SettingsComponent.h"
 
 ImplementSingleton(SettingsComponent);
 
@@ -32,7 +33,17 @@ bool SettingsComponent::handleCommandInternal(const std::string &command, var *d
     {
         std::string test;
         serializeJson(Settings::settings, test);
-        DBG(test);
+        //pretty print json
+        //add new lines where there are { and }
+        std::string pretty;
+        pretty.reserve(test.size() * 2);
+        for (char c : test)
+        {
+            pretty += c;
+            if (c == '{' || c == '}')
+            pretty += '\n';
+        }
+        NDBG(pretty.c_str());
         return true;
     }
     else if (command == "clear")
@@ -75,17 +86,7 @@ void SettingsComponent::clearSettings(bool keepWifiSettings)
 std::string SettingsComponent::getDeviceID() const
 {
     byte mac[6]{0, 0, 0, 0, 0, 0};
-
-#ifdef USE_WIFI
-#ifdef USE_ETHERNET
-    if (WifiComponent::instance->isUsingEthernet())
-        ETH.macAddress(mac);
-    else
-        WiFi.macAddress(mac);
-#else
-    WiFi.macAddress(mac);
-#endif
-#endif
+    getDeviceMac(mac);
 
     std::string d = "";
     for (int i = 0; i < 6; i++)
@@ -93,4 +94,26 @@ std::string SettingsComponent::getDeviceID() const
 
     d = StringHelpers::toUpperCase(d);
     return d;
+}
+
+uint16_t SettingsComponent::getDeviceIDNum() const
+{
+    byte mac[6]{0, 0, 0, 0, 0, 0};
+    getDeviceMac(mac);
+
+    return (uint16_t)(mac[4] << 8) | mac[5];
+}
+
+void SettingsComponent::getDeviceMac(byte *mac) const
+{
+    #ifdef USE_WIFI
+    #ifdef USE_ETHERNET
+        if (WifiComponent::instance->isUsingEthernet())
+            ETH.macAddress(mac);
+        else
+            WiFi.macAddress(mac);
+    #else
+        WiFi.macAddress(mac);
+    #endif
+    #endif
 }

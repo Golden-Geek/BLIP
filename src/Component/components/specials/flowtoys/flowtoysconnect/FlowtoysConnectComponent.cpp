@@ -1,4 +1,5 @@
 #include "UnityIncludes.h"
+#include "FlowtoysConnectComponent.h"
 
 namespace
 {
@@ -15,8 +16,11 @@ namespace
 
 void FlowtoysConnectComponent::setupInternal(JsonObject o)
 {
+    DMXReceiverComponent::instance->registerDMXListener(this);
+
     updateRate = 15; // low fps but enough for this
 
+    AddIntParamConfig(dmxAddress);
     AddBoolParam(pairingMode);
     // AddIntParamConfig(cePin);
     // AddIntParamConfig(csPin);
@@ -24,22 +28,33 @@ void FlowtoysConnectComponent::setupInternal(JsonObject o)
     AddIntParamConfig(page);
     AddIntParamConfig(mode);
     AddBoolParamConfig(adjustMode);
-    AddFloatParamConfig(brightness);
-    AddFloatParamConfig(hue);
-    AddFloatParamConfig(saturation);
-    AddFloatParamConfig(speed);
-    AddFloatParamConfig(density);
+    ParamInfo *bInfo = AddFloatParamConfig(brightness);
+    bInfo->setRange(&defaultRange);
+    ParamInfo *hInfo = AddFloatParamConfig(hue);
+    hInfo->setRange(&defaultRange);
+    ParamInfo *sInfo = AddFloatParamConfig(saturation);
+    sInfo->setRange(&defaultRange);
+    ParamInfo *spInfo = AddFloatParamConfig(speed);
+    spInfo->setRange(&defaultRange);
+    ParamInfo *dInfo = AddFloatParamConfig(density);
+    dInfo->setRange(&defaultRange);
+    AddIntParamWithTag(groupID, TagConfig | TagFeedback);
 
-    AddIntParamConfig(group1ID);
-    AddIntParamConfig(group2ID);
-    AddIntParamConfig(group3ID);
-    AddIntParamConfig(group4ID);
+    if (groupID == 0)
+        setNewGroupID();
+    else
+        pairingPacket.groupID = (groupID & 0xFFFF);
 
-    NDBG("FlowtoysConnect: Setup complete with first group ID " + std::to_string(group1ID));
+    button = RootComponent::instance->buttons.items[0];
+    ledOutput = RootComponent::instance->ios.items[0];
+    ;
+
+    NDBG("FlowtoysConnect: Setup complete, group ID " + std::to_string(pairingPacket.groupID));
 }
 
 bool FlowtoysConnectComponent::initInternal()
 {
+    
 
     uint8_t address[5] = {0x01, 0x07, 0xf1, 0, 0};
 
@@ -90,8 +105,9 @@ void FlowtoysConnectComponent::updateInternal()
     if (!isInit)
         return;
 
-    if (!pairingMode)
-        sendPacket();
+    checkButtonPairingMode();
+
+    sendPacket();
 
     if (RF24_DEFAULT_IRQ_PIN >= 0)
     {
@@ -109,15 +125,82 @@ void FlowtoysConnectComponent::updateInternal()
 
 void FlowtoysConnectComponent::clearInternal()
 {
+    DMXReceiverComponent::instance->unregisterDMXListener(this);
+
     if (RF24_DEFAULT_IRQ_PIN >= 0)
     {
         detachInterrupt(digitalPinToInterrupt(RF24_DEFAULT_IRQ_PIN));
     }
+}
 
-    if (radio != nullptr)
+void FlowtoysConnectComponent::checkButtonPairingMode()
+{
+    if (!pairingMode)
     {
-        delete radio;
-        radio = nullptr;
+        SetComponentParam(ledOutput, value, button->value * 0.5f);
+        if (button->veryLongPress)
+        {
+            SetParam(pairingMode, true);
+            NDBG("FlowtoysConnect: Entering pairing mode");
+        }
+        else if (button->multiPressCount >= 2)
+        {
+
+            pageOnRelease = button->multiPressCount;
+        }
+        else if (button->multiPressCount == 0 && pageOnRelease > 0)
+        {
+            if (pageOnRelease >= 6 && pageOnRelease <= 8)
+            {
+                pageOnRelease = 1;
+            }
+            else if (pageOnRelease > 8)
+            {
+                pageOnRelease = 13;
+            }
+
+            SetParam(page, pageOnRelease);
+            SetParam(mode, 1);
+            pageOnRelease = 0;
+
+            NDBG("FlowtoysConnect: Setting page to " + std::to_string(page));
+        }
+        else
+        {
+            if (button->value)
+            {
+                if (timeAtButtonDown == 0)
+                    timeAtButtonDown = millis();
+            }
+            else
+            {
+                if (!button->value)
+                {
+                    if (millis() - timeAtButtonDown < SHORTPRESS_TIME)
+                    {
+                        SetParam(mode, (mode + 1) % 10);
+                        NDBG("FlowtoysConnect: Setting mode to " + std::to_string(mode) + " on short press");
+                    }
+                }
+                timeAtButtonDown = 0;
+            }
+        }
+    }
+    else
+    {
+
+        float oscValue = (cos(millis() / 200.0f) * 0.5f + 0.5f) * .5f + 0.1f;
+        SetComponentParam(ledOutput, value, oscValue);
+
+        if (button->value)
+        {
+            if (!button->longPress && !button->veryLongPress)
+            {
+                SetParam(pairingMode, false);
+                SetParam(ledOutput->value, 0.0f);
+                NDBG("FlowtoysConnect: Exiting pairing mode");
+            }
+        }
     }
 }
 
@@ -125,32 +208,46 @@ void FlowtoysConnectComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
     if (paramInfo->ptr == &pairingMode)
     {
+        radio->stopListening();
         if (pairingMode)
         {
-            for (int i = 0; i < MAX_GROUPS; i++)
-            {
-                SetParam(*groupIds[i], 0);
-            }
+
+            setNewGroupID();
+            radio->setPayloadSize(sizeof(InvitePacket));
         }
         else
         {
-            Settings::saveSettings();
+            radio->setPayloadSize(sizeof(SyncPacket));
         }
+
+        radio->startListening();
     }
+}
+
+void FlowtoysConnectComponent::setNewGroupID()
+{
+    int newGroupID = random(1, 65535);
+    SetParam(groupID, newGroupID);
+    pairingPacket.groupID = (groupID & 0xFFFF);
+    SettingsComponent::instance->saveSettings();
 }
 
 void FlowtoysConnectComponent::sendPacket()
 {
     radio->stopListening();
-
-    for (int i = 0; i < 4; i++)
+    if (pairingMode)
     {
-        sendPacketToGroup(i);
+        sendPairingPacket();
+    }
+    else
+    {
+        sendSyncPacket();
     }
 
     radio->startListening();
 }
-void FlowtoysConnectComponent::sendPacketToGroup(int index)
+
+void FlowtoysConnectComponent::sendSyncPacket()
 {
     packet.global_hue = (uint8_t)(hue * 255);
     packet.global_sat = (uint8_t)(saturation * 255);
@@ -185,64 +282,86 @@ void FlowtoysConnectComponent::sendPacketToGroup(int index)
     packet.val_active = act;
 
     // set group ID
-    int gid = *groupIds[index];
-    packet.groupID = ((gid & 0xff) << 8) | ((gid >> 8) & 0xff);
+    // reverse group id bytes for some reason
+    uint16_t reverseGroupID = ((groupID & 0xFF) << 8) | ((groupID >> 8) & 0xFF);
+    packet.groupID = reverseGroupID;
     packet.padding++;
 
     // NDBG("Send page " + std::to_string(packet.page) + " mode " + std::to_string(packet.mode) + " to group " + std::to_string(gid));
     radio->write(&packet, sizeof(SyncPacket));
+
+    // NDBG("Sent Sync Packet: " + packet.toString());
+}
+
+void FlowtoysConnectComponent::sendPairingPacket()
+{
+    radio->write(&pairingPacket, sizeof(InvitePacket));
+    // show 2 bytes of the packet group ID
+    // NDBG("Sent Pairing Packet for group " + std::to_string(pairingPacket.groupID & 0xFF) + ", " + std::to_string((pairingPacket.groupID >> 8) & 0xFF));
 }
 
 void FlowtoysConnectComponent::receivePacket()
 {
     while (radio->available())
     {
-        radio->read(&receivingPacket, sizeof(SyncPacket));
+        // Can receive either SyncPacket or InvitePacket
 
-        receivingPacket.groupID = (receivingPacket.groupID >> 8 & 0xff) | ((receivingPacket.groupID & 0xff) << 8);
+        int payloadSize = radio->getDynamicPayloadSize();
 
-        if (pairingMode)
+        bool isSyncPacket = (payloadSize == sizeof(SyncPacket));
+        bool isInvitePacket = (payloadSize == sizeof(InvitePacket));
+        bool goodPayload = (isSyncPacket && !pairingMode) || (isInvitePacket && pairingMode);
+
+        if (!goodPayload)
         {
-            // NDBG("FlowtoysConnect: Received packet for group " + std::to_string(receivingPacket.groupID) + " page " + std::to_string(receivingPacket.page) + " mode " + std::to_string(receivingPacket.mode));
-            if (receivingPacket.page == 1 && receivingPacket.mode == 0) // pairing request
-            {
-                bool alreadyPaired = false;
-                // check if we are already paired
-                for (int i = 0; i < MAX_GROUPS; i++)
-                {
-                    if (*groupIds[i] == receivingPacket.groupID)
-                    {
-                        alreadyPaired = true;
-                        break; // already paired
-                    }
-                }
-
-                if (alreadyPaired)
-                    continue;
-
-                // add to first available group slot
-                for (int i = 0; i < MAX_GROUPS; i++)
-                {
-                    if (*groupIds[i] == 0)
-                    {
-                        NDBG("FlowtoysConnect: Paired with group " + std::to_string(receivingPacket.groupID) + " in slot " + std::to_string(i + 1));
-                        SetParam(*groupIds[i], receivingPacket.groupID);
-                        break;
-                    }
-
-                    if (i == MAX_GROUPS - 1)
-                    {
-                        // no available slots
-                        NDBG("FlowtoysConnect: No available group slots for pairing");
-                    }
-                }
-            }
+            // NDBG("FlowtoysConnect: Bad payload size " + std::to_string(payloadSize));
+            radio->flush_rx();
             continue;
         }
 
-        if (receivingPacket.groupID == *groupIds[0])
+        if (payloadSize == sizeof(SyncPacket))
         {
-            packet.padding = max(receivingPacket.padding, packet.padding);
+            radio->read(&receivingPacket, sizeof(SyncPacket));
+            if (receivingPacket.padding > packet.padding)
+                packet.padding = receivingPacket.padding; // sync back the group ID to maintain connection
         }
+        else if (payloadSize == sizeof(InvitePacket))
+        {
+            InvitePacket invitePacket;
+            radio->read(&invitePacket, sizeof(InvitePacket));
+        }
+        else
+        {
+            // unknown packet size
+            uint8_t buffer[32];
+            radio->read(&buffer, payloadSize);
+            // NDBG("Unknown packet received of size " + std::to_string(payloadSize));
+        }
+    }
+}
+
+void FlowtoysConnectComponent::onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
+{
+
+    uint16_t addr = dmxAddress;
+    if (len + startChannel < addr)
+        return; // not in range
+
+    if (startChannel > addr + 1)
+        return; // not in range
+
+    // read values
+    if (len + startChannel >= addr + 10)
+    {
+        int chStart = addr - startChannel;
+        page = data[chStart];
+        mode = data[chStart + 1];
+        adjustMode = data[chStart + 2] > 0;
+        hue = data[chStart + 3] / 255.0f;
+        saturation = data[chStart + 4] / 255.0f;
+        brightness = data[chStart + 5] / 255.0f;
+        speed = data[chStart + 6] / 255.0f;
+        density = data[chStart + 7] / 255.0f;
+        // sendPacket();
     }
 }

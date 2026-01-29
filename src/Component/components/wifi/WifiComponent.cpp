@@ -178,7 +178,11 @@ void WifiComponent::connect()
     }
 
     NDBG("Setting WiFi mode to " + std::to_string(wMode));
+#ifdef USE_ESPNOW
     esp_wifi_set_protocol(WIFI_IF_STA, getWifiProtocol());
+#else
+    WiFi.mode(wMode);
+#endif
 #ifdef ESP32
 #endif
 
