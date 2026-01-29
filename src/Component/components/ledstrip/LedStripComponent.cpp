@@ -6,6 +6,8 @@ ImplementManagerSingleton(LedStrip);
 
 void LedStripComponent::setupInternal(JsonObject o)
 {
+    isCritical = true;
+    
     setCustomUpdateRate(60, o); // 60 fps customizable
 // init
 #ifdef LED_USE_FASTLED
@@ -75,7 +77,7 @@ void LedStripComponent::setupLeds()
     {
         // NDBG("Setting Led Enable pin : " + std::to_string(enPin));
         pinMode(enPin, OUTPUT);
-        gpio_set_level(gpio_num_t(enPin), HIGH); // enable LEDs
+        digitalWrite(enPin, HIGH); // enable LEDs
     }
 
     if (count == 0 || dataPin == 0)
@@ -275,7 +277,7 @@ void LedStripComponent::setStripPower(bool value)
     if (enPin > 0)
     {
         NDBG("Set Strip Power " + std::to_string(value));
-        gpio_set_level(gpio_num_t(enPin), value); // enable LEDs
+        digitalWrite(enPin, value); // enable LEDs
     }
     else
     {

@@ -24,6 +24,8 @@ public:
 
 DeclareBoolParam(sendFeedback, true);
 DeclareBoolParam(sendDebugLogs, false);
+DeclareBoolParam(suspendUpdatesDuringUpload, true);
+DeclareBoolParam(suppressFeedbackDuringUpload, true);
 
 WSPrint wsPrint;
 
@@ -34,12 +36,15 @@ int uploadedBytes;
 File uploadingFile;
 long timeAtLastCleanup = 0;
 
+int activeUploadCount = 0;
+
 std::string tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
 
 struct UploadFileState
 {
     AsyncWebServerRequest *request = nullptr; // Use nullptr to check if the slot is free
     File file;
+    bool active = false;
 };
 
 UploadFileState uploadingFiles[MAX_CONCURRENT_UPLOADS];
@@ -55,6 +60,7 @@ void setupConnection();
 void closeServer();
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
+void finishUploadForRequest(AsyncWebServerRequest *request, bool canceled);
 
 #ifdef USE_OTA
 void handleOTAUpload(AsyncWebServerRequest *request, size_t index, uint8_t *data, size_t len, bool final);

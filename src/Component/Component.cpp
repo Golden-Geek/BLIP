@@ -1,5 +1,6 @@
 #include "UnityIncludes.h"
-#include "Component.h"
+
+bool Component::suspendNonCriticalUpdates = false;
 
 void Component::setup(JsonObject o)
 {
@@ -36,6 +37,14 @@ void Component::update(bool inFastLoop)
     if (!enabled)
         return;
 
+    if (suspendNonCriticalUpdates)
+    {
+        if(!isCritical)
+        {
+            return;
+        }
+    }
+
     long currentTime = millis();
     if (updateRate > 0)
     {
@@ -61,6 +70,17 @@ void Component::update(bool inFastLoop)
         //     NDBG("Component " + name + " update took " + std::to_string(duration) + " ms");
         // }
     }
+}
+
+void Component::setSuspendNonCriticalUpdates(bool value)
+{
+    DBG("Set suspend non critical updates to " + std::string(value ? "true" : "false"));
+    suspendNonCriticalUpdates = value;
+}
+
+bool Component::getSuspendNonCriticalUpdates()
+{
+    return suspendNonCriticalUpdates;
 }
 
 void Component::clear()
@@ -104,6 +124,9 @@ void Component::sendEvent(uint8_t type, var *data, int numData)
 
 bool Component::handleCommand(const std::string &command, var *data, int numData)
 {
+    if (handleCommandInternal(command, data, numData))
+        return true;
+
     if (numData == 0)
     {
         Trigger *trigger = getTrigger(command);
@@ -118,9 +141,6 @@ bool Component::handleCommand(const std::string &command, var *data, int numData
         if (handleSetParam(command, data, numData))
             return true;
     }
-
-    if (handleCommandInternal(command, data, numData))
-        return true;
 
     return false;
 }
@@ -678,7 +698,7 @@ void Component::paramValueChanged(ParamInfo *paramInfo)
         parentComponent->childParamValueChanged(this, this, paramInfo);
 }
 
-void Component::childParamValueChanged(Component *caller, Component *comp, ParamInfo*paramInfo)
+void Component::childParamValueChanged(Component *caller, Component *comp, ParamInfo *paramInfo)
 {
     // NDBG("Child param value changed : "+caller->name + " > " + comp->name);
     if (parentComponent != nullptr)

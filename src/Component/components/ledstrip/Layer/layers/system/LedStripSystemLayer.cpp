@@ -3,6 +3,8 @@
 
 void LedStripSystemLayer::setupInternal(JsonObject o)
 {
+    isCritical = true;
+
     LedStripLayer::setupInternal(o);
     blendMode = BlendMode::Alpha;
 
@@ -17,11 +19,20 @@ void LedStripSystemLayer::updateInternal()
     updateConnectionStatus();
     showBatteryStatus();
     updateShutdown();
+    updateCriticalStatus();
 }
 
 void LedStripSystemLayer::clearInternal()
 {
     clearColors();
+}
+
+void LedStripSystemLayer::updateCriticalStatus()
+{
+    if (!Component::suspendNonCriticalUpdates)
+        return;
+
+    fillAll(Color::HSV(.6f, .8f, .5f));
 }
 
 void LedStripSystemLayer::showBatteryStatus()

@@ -11,6 +11,7 @@ public:
                                                                               exposeEnabled(true),
                                                                               saveEnabled(true),
                                                                               isHighPriority(false),
+                                                                              isCritical(false),
                                                                               lastUpdateTime(0),
                                                                               lastFeedbackTime(0),
                                                                               parentComponent(nullptr)
@@ -27,6 +28,7 @@ public:
     bool exposeEnabled;
     bool saveEnabled;
     bool isHighPriority;
+    bool isCritical;
 
     long lastUpdateTime;
     long lastFeedbackTime;
@@ -56,6 +58,10 @@ public:
     bool init();
     virtual void update(bool inFastLoop = false);
     void clear();
+
+    static void setSuspendNonCriticalUpdates(bool value);
+    static bool getSuspendNonCriticalUpdates();
+    static bool suspendNonCriticalUpdates;
 
     virtual void setupInternal(JsonObject o) {}
     virtual bool initInternal() { return true; }

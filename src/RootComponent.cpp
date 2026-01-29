@@ -23,6 +23,7 @@ void RootComponent::setupInternal(JsonObject)
 
     exposeEnabled = false;
     saveEnabled = false;
+    isCritical = true;
 
     timeAtStart = millis();
     timeAtShutdown = 0;

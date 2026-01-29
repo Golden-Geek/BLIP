@@ -15,6 +15,7 @@ public:
     void updateInternal() override;
     void clearInternal() override;
 
+    void updateCriticalStatus();
     void showBatteryStatus();
     void updateConnectionStatus();
     void updateShutdown();

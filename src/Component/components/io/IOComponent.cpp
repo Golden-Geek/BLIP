@@ -176,7 +176,7 @@ void IOComponent::updatePin()
         {
             if (m == D_OUTPUT)
             {
-                gpio_set_level(gpio_num_t(pin), inverted ? !value : value);
+                digitalWrite(pin, inverted ? !value : value);
             }
             else
             {
@@ -212,7 +212,7 @@ void IOComponent::updatePin()
 
         if (inverted)
             v = !v;
-        gpio_set_level(gpio_num_t(pin), v);
+        digitalWrite(pin, v);
     }
     break;
 

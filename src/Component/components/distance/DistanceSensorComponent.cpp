@@ -66,9 +66,9 @@ void DistanceSensorComponent::updateHCSR04()
         if (millis() - stateStartTime >= max(1000 / updateRate, 60)) // Ensure at least 60ms between measurements
         {
             // Start Trigger sequence
-            gpio_set_level(gpio_num_t(trigPin), LOW); // Ensure low before pulse
+            digitalWrite(trigPin, LOW); // Ensure low before pulse
             delayMicroseconds(2);                     // Small delay for clean pulse
-            gpio_set_level(gpio_num_t(trigPin), HIGH);
+            digitalWrite(trigPin, HIGH);
             stateStartTime = micros(); // Record the start time of the trigger pulse
             currentState = TRIGGERING;
             RootComponent::instance->strips.items[0]->doNotUpdate = true;
@@ -79,7 +79,7 @@ void DistanceSensorComponent::updateHCSR04()
         // Check if the 10 microsecond trigger pulse is complete
         if (micros() - stateStartTime >= TRIG_PULSE_DURATION)
         {
-            gpio_set_level(gpio_num_t(trigPin), LOW);
+            digitalWrite(trigPin, LOW);
             currentState = WAITING_ECHO;
             // stateStartTime now marks the beginning of the wait for echo
         }

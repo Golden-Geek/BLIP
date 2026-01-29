@@ -93,6 +93,8 @@
     DefineStaticItems(Type, MType);                                                               \
     void setupInternal(JsonObject o) override                                                     \
     {                                                                                             \
+                                                                                                  \
+        isCritical = true;                                                                        \
         if (!Fixed)                                                                               \
             AddIntParamConfig(count);                                                             \
         for (int i = 0; i < count && i < MaxCount; i++)                                           \
@@ -169,7 +171,8 @@
 
 #define AddParamWithOptionsTag(type, class, param, tag, options, numOptions)         \
     addParam(&param, ParamType::type, #param, tag)->setOptions(options, numOptions); \
-    if(tag != TagFeedback) SetParam(param, Settings::getVal<class>(o, #param, param));
+    if (tag != TagFeedback)                                                          \
+        SetParam(param, Settings::getVal<class>(o, #param, param));
 
 #define AddMultiParamWithTag(type, class, param, tag, numData, ExtraSet) \
     {                                                                    \

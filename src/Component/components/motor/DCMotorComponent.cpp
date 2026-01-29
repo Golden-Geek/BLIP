@@ -53,8 +53,8 @@ void DCMotorComponent::paramValueChangedInternal(ParamInfo *paramInfo)
     void* param = paramInfo->ptr;
     if (param == &speed)
     {
-        gpio_set_level(gpio_num_t(dir1Pin), speed > 0 ? HIGH : LOW);
-        gpio_set_level(gpio_num_t(dir2Pin), speed > 0 ? LOW : HIGH);
+        digitalWrite(dir1Pin, speed > 0 ? HIGH : LOW);
+        digitalWrite(dir2Pin, speed > 0 ? LOW : HIGH);
         NDBG("Speed changed " + std::to_string(speed) + " / " + std::to_string(dir1Pin) + " :" + (speed > 0 ? "HIGH" : "LOW") + " / " + std::to_string(dir2Pin) + " :" + (speed > 0 ? "LOW" : "HIGH"));
         ledcWrite(pwmChannel, abs(speed) * 1024.0f);
     }

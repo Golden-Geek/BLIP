@@ -1,13 +1,14 @@
 #include "UnityIncludes.h"
 
 LedStripLayer::LedStripLayer(const std::string &name, Type t, LedStripComponent *strip) : Component(name),
-                                                                                     strip(strip),
-                                                                                     type(t)
+                                                                                          strip(strip),
+                                                                                          type(t)
 {
 }
 
 LedStripLayer::~LedStripLayer()
 {
+    RootComponent::instance->unregisterComponent(this);
 }
 
 void LedStripLayer::setupInternal(JsonObject o)

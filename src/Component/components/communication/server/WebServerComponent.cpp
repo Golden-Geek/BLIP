@@ -66,10 +66,13 @@ void WebServerComponent::setupInternal(JsonObject o)
     for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
     {
         uploadingFiles[i].request = nullptr;
+        uploadingFiles[i].active = false;
     }
 
     AddBoolParamConfig(sendFeedback);
     AddBoolParamConfig(sendDebugLogs);
+    AddBoolParamConfig(suspendUpdatesDuringUpload);
+    AddBoolParamConfig(suppressFeedbackDuringUpload);
 }
 
 bool WebServerComponent::initInternal()
@@ -403,6 +406,30 @@ void WebServerComponent::closeServer()
     NDBG("WebSocket connections closed");
 }
 
+void WebServerComponent::finishUploadForRequest(AsyncWebServerRequest *request, bool canceled)
+{
+    for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
+    {
+        if (uploadingFiles[i].request == request)
+        {
+            if (uploadingFiles[i].active)
+            {
+                uploadingFiles[i].active = false;
+                if (activeUploadCount > 0)
+                    activeUploadCount--;
+
+                if (suspendUpdatesDuringUpload && activeUploadCount == 0)
+                {
+                    Component::setSuspendNonCriticalUpdates(false);
+                }
+
+                sendEvent(canceled ? UploadCanceled : UploadDone);
+            }
+            break;
+        }
+    }
+}
+
 void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
 
@@ -425,6 +452,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             if (uploadingFiles[i].request == nullptr)
             {
                 uploadingFiles[i].request = request;
+                uploadingFiles[i].active = true;
                 break;
             }
         }
@@ -453,6 +481,20 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         NDBG("File Upload start from" + std::string(request->client()->remoteIP().toString().c_str()) + ", at : " + request->url().c_str() + "; Filename: " + filename.c_str() + ", Length: " + std::to_string(len / 1024) + " kb");
 
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
+        if (!uploadingFiles[i].file)
+        {
+            NDBG("Upload Aborted: Failed to open file for write");
+            finishUploadForRequest(request, true);
+            uploadingFiles[i].request = nullptr;
+            return;
+        }
+
+        activeUploadCount++;
+        if (suspendUpdatesDuringUpload && activeUploadCount == 1)
+        {
+            Component::setSuspendNonCriticalUpdates(true);
+        }
+        sendEvent(UploadStart);
 
         // Add a disconnect handler to clean up if the client aborts
         request->onDisconnect([this, request]()
@@ -463,6 +505,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
                 {
                     NDBG("Upload client disconnected. Cleaning up file.");
                     uploadingFiles[i].file.close();
+                    finishUploadForRequest(request, true);
                     uploadingFiles[i].request = nullptr; // Free the slot
                     break;
                 }
@@ -476,11 +519,34 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         {
             if (len > 0 && uploadingFiles[i].file)
             {
-                size_t written = uploadingFiles[i].file.write(data, len);
+                size_t written = 0;
+                for (int attempt = 0; attempt < 3; ++attempt)
+                {
+                    written = uploadingFiles[i].file.write(data, len);
+                    if (written != 0)
+                        break;
+
+                    NDBG("Write attempt " + std::to_string(attempt + 1) + " failed, retrying...");
+                    delayMicroseconds(200);
+                    yield();
+                }
                 if (written == 0)
                 {
                     NDBG("Upload Aborted: Write error");
+                    NDBG(FilesComponent::instance->getFileSystemInfo());
+                    finishUploadForRequest(request, true);
                     uploadingFiles[i].request->client()->close();
+                    uploadingFiles[i].request = nullptr;
+                    return;
+                }
+                else if (written != len)
+                {
+                    NDBG("Upload Aborted: Partial write " + std::to_string(written) + "/" + std::to_string(len));
+                    NDBG(FilesComponent::instance->getFileSystemInfo());
+                    finishUploadForRequest(request, true);
+                    uploadingFiles[i].request->client()->close();
+                    uploadingFiles[i].request = nullptr;
+                    return;
                 }
 
 #ifdef FILES_TYPE_FLASH
@@ -494,6 +560,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
                 NDBG("Upload Complete: " + std::string(uploadingFiles[i].file.name()) + ", size: " + std::to_string(index + len));
                 uploadingFiles[i].file.flush();
                 uploadingFiles[i].file.close();
+                finishUploadForRequest(request, false);
                 uploadingFiles[i].request = nullptr; // Free the slot
             }
             break;
@@ -609,12 +676,16 @@ void WebServerComponent::sendParamFeedback(Component *c, std::string pName, var 
 {
     if (!sendFeedback)
         return;
+    if (suppressFeedbackDuringUpload && activeUploadCount > 0)
+        return;
     sendParamFeedback(c->getFullPath(), pName, data, numData);
 }
 
 void WebServerComponent::sendParamFeedback(std::string path, std::string pName, var *data, int numData)
 {
     if (!sendFeedback)
+        return;
+    if (suppressFeedbackDuringUpload && activeUploadCount > 0)
         return;
 #ifdef USE_OSC
     OSCMessage msg = OSCComponent::createMessage(path, pName, data, numData, false);
@@ -637,6 +708,8 @@ void WebServerComponent::sendParamFeedback(std::string path, std::string pName, 
 void WebServerComponent::sendDebugLog(const std::string &msg, std::string source, std::string type)
 {
     if (!sendDebugLogs)
+        return;
+    if (suppressFeedbackDuringUpload && activeUploadCount > 0)
         return;
 
     /* message is like this :
