@@ -31,6 +31,10 @@ void DIPSwitchComponent::updateValue()
     int newValue = tca6408.readInputRegister();
     newValue = ~newValue & 0xFF;
 
+    //1 means off for each switch
+    newValue ^= 0xFF;
+
+
     // low values are ON for the dip switch
     bool extraPinState = digitalRead(DIPSWITCH_EXTRA_PIN);
     if (extraPinState == LOW) newValue |= 0x100; // set bit 9
