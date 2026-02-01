@@ -17,7 +17,7 @@ void FlowtoysConnectComponent::setupInternal(JsonObject o)
 {
     DMXReceiverComponent::instance->registerDMXListener(this);
 
-    updateRate = 40; // low fps but enough for this
+    updateRate = 20; // low fps but enough for this
 
     AddIntParamConfig(dmxAddress);
     AddBoolParam(pairingMode);
@@ -328,6 +328,10 @@ void FlowtoysConnectComponent::sendSyncPacket()
     packet.lfo[2] = (uint8_t)(lfo3 * 255);
     packet.lfo[3] = (uint8_t)(lfo4 * 255);
 
+    bool setPower = enablePowerPress && switchOnRelease;
+    packet.wakeup = setPower && wakeUpSwitchState ? 1 : 0;
+    packet.poweroff = setPower && !wakeUpSwitchState ? 1 : 0;
+
     // set group ID
     // reverse group id bytes for some reason
     uint16_t reverseGroupID = ((groupID & 0xFF) << 8) | ((groupID >> 8) & 0xFF);
@@ -401,23 +405,22 @@ void FlowtoysConnectComponent::onDMXReceived(uint16_t universe, const uint8_t *d
     if (startChannel > addr + 1)
         return; // not in range
 
+    int addrOffset = (addr - startChannel);
     if (len + startChannel >= addr + 13)
     {
         int chStart = addr - startChannel;
         page = data[chStart];
         mode = data[chStart + 1];
         adjustMode = data[chStart + 2] > 0;
-        hue = data[chStart + 3];
-        saturation = data[chStart + 4];
-        brightness = data[chStart + 5];
-        speed = data[chStart + 6];
-        density = data[chStart + 7];
+        hue = data[chStart + 3] / 255.0f;
+        saturation = data[chStart + 4] / 255.0f;
+        brightness = data[chStart + 5] / 255.0f;
+        speed = data[chStart + 6] / 255.0f;
+        density = data[chStart + 7] / 255.0f;
         lfoActive = data[chStart + 8] > 0;
-        lfo1 = data[chStart + 9];
-        lfo2 = data[chStart + 10];
-        lfo3 = data[chStart + 11];
-        lfo4 = data[chStart + 12];
+        lfo1 = data[chStart + 9] / 255.0f;
+        lfo2 = data[chStart + 10] / 255.0f;
+        lfo3 = data[chStart + 11] / 255.0f;
+        lfo4 = data[chStart + 12] / 255.0f;
     }
-    
-    NDBG("Received DMX Packet " + std::to_string(data[0]) + ", " + std::to_string(data[1]) + ", " + std::to_string(data[2]) + ", " + std::to_string(data[3]) + ", " + std::to_string(data[4]) + ", " + std::to_string(data[5]) + ", " + std::to_string(data[6]) + ", " + std::to_string(data[7]) + ", " + std::to_string(data[8]) + ", " + std::to_string(data[9]) + ", " + std::to_string(data[10]) + ", " + std::to_string(data[11]) + ", " + std::to_string(data[12]));
 }
