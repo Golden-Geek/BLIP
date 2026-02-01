@@ -761,7 +761,7 @@ ParamInfo *Component::getParamInfo(const std::string &paramName)
             return &p;
     }
 
-    DBG("Param not found: " + paramName);
+    DBG("Param not found : " + paramName);
     return nullptr; // should not happen
 }
 

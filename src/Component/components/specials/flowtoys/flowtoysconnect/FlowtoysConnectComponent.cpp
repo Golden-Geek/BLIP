@@ -1,5 +1,4 @@
 #include "UnityIncludes.h"
-#include "FlowtoysConnectComponent.h"
 
 namespace
 {
@@ -18,10 +17,12 @@ void FlowtoysConnectComponent::setupInternal(JsonObject o)
 {
     DMXReceiverComponent::instance->registerDMXListener(this);
 
-    updateRate = 15; // low fps but enough for this
+    updateRate = 40; // low fps but enough for this
 
     AddIntParamConfig(dmxAddress);
     AddBoolParam(pairingMode);
+    AddBoolParamConfig(enablePowerPress);
+
     // AddIntParamConfig(cePin);
     // AddIntParamConfig(csPin);
     // AddIntParamConfig(irqPin);
@@ -38,6 +39,15 @@ void FlowtoysConnectComponent::setupInternal(JsonObject o)
     spInfo->setRange(&defaultRange);
     ParamInfo *dInfo = AddFloatParamConfig(density);
     dInfo->setRange(&defaultRange);
+    AddBoolParamConfig(lfoActive);
+    AddFloatParamConfig(lfo1);
+    dInfo->setRange(&defaultRange);
+    AddFloatParamConfig(lfo2);
+    dInfo->setRange(&defaultRange);
+    AddFloatParamConfig(lfo3);
+    dInfo->setRange(&defaultRange);
+    AddFloatParamConfig(lfo4);
+    dInfo->setRange(&defaultRange);
     AddIntParamWithTag(groupID, TagConfig | TagFeedback);
 
     if (groupID == 0)
@@ -47,14 +57,15 @@ void FlowtoysConnectComponent::setupInternal(JsonObject o)
 
     button = RootComponent::instance->buttons.items[0];
     ledOutput = RootComponent::instance->ios.items[0];
-    ;
+#ifdef USE_DIPSWITCH
+    dipSwitch = &RootComponent::instance->dipswitch;
+#endif
 
     NDBG("FlowtoysConnect: Setup complete, group ID " + std::to_string(pairingPacket.groupID));
 }
 
 bool FlowtoysConnectComponent::initInternal()
 {
-    
 
     uint8_t address[5] = {0x01, 0x07, 0xf1, 0, 0};
 
@@ -105,7 +116,25 @@ void FlowtoysConnectComponent::updateInternal()
     if (!isInit)
         return;
 
-    checkButtonPairingMode();
+    if (millis() > 2000)
+    { // wait 2 seconds after init to avoid fake button values
+        checkButton();
+    }
+
+    if (pairingMode && timeAtPairingStart > 0 && millis() - timeAtPairingStart > 60000)
+    {
+        SetParam(pairingMode, false);
+        NDBG("FlowtoysConnect: Exiting pairing mode due to 1min timeout");
+    }
+
+#ifdef USE_DIPSWITCH
+    int dipSwitchValue = dipSwitch->value;
+    if (dipSwitchValue != dmxAddress)
+    {
+        NDBG("FlowtoysConnect: DIP Switch changed, new DMX Address: " + std::to_string(dipSwitchValue));
+        SetParam(dmxAddress, dipSwitchValue);
+    }
+#endif
 
     sendPacket();
 
@@ -133,11 +162,12 @@ void FlowtoysConnectComponent::clearInternal()
     }
 }
 
-void FlowtoysConnectComponent::checkButtonPairingMode()
+void FlowtoysConnectComponent::checkButton()
 {
     if (!pairingMode)
     {
-        SetComponentParam(ledOutput, value, button->value * 0.5f);
+        bool ledValue = button->value && !switchOnRelease;
+        SetComponentParam(ledOutput, value, ledValue * 0.5f);
         if (button->veryLongPress)
         {
             SetParam(pairingMode, true);
@@ -150,11 +180,11 @@ void FlowtoysConnectComponent::checkButtonPairingMode()
         }
         else if (button->multiPressCount == 0 && pageOnRelease > 0)
         {
-            if (pageOnRelease >= 6 && pageOnRelease <= 8)
+            if (pageOnRelease >= 6 && pageOnRelease <= 12)
             {
                 pageOnRelease = 1;
             }
-            else if (pageOnRelease > 8)
+            else if (pageOnRelease > 12)
             {
                 pageOnRelease = 13;
             }
@@ -171,6 +201,11 @@ void FlowtoysConnectComponent::checkButtonPairingMode()
             {
                 if (timeAtButtonDown == 0)
                     timeAtButtonDown = millis();
+
+                if (enablePowerPress && button->longPress)
+                {
+                    switchOnRelease = true;
+                }
             }
             else
             {
@@ -182,6 +217,11 @@ void FlowtoysConnectComponent::checkButtonPairingMode()
                         NDBG("FlowtoysConnect: Setting mode to " + std::to_string(mode) + " on short press");
                     }
                 }
+                if (enablePowerPress && switchOnRelease)
+                {
+                    wakeUpSwitchState = !wakeUpSwitchState;
+                    switchOnRelease = false;
+                }
                 timeAtButtonDown = 0;
             }
         }
@@ -189,15 +229,15 @@ void FlowtoysConnectComponent::checkButtonPairingMode()
     else
     {
 
-        float oscValue = (cos(millis() / 200.0f) * 0.5f + 0.5f) * .5f + 0.1f;
-        SetComponentParam(ledOutput, value, oscValue);
+        float blinkValue = ((millis() / 250) % 2) ? 1.0f : 0.0f;
+        SetComponentParam(ledOutput, value, blinkValue);
 
         if (button->value)
         {
             if (!button->longPress && !button->veryLongPress)
             {
                 SetParam(pairingMode, false);
-                SetParam(ledOutput->value, 0.0f);
+                SetComponentParam(ledOutput, value, 0.0f);
                 NDBG("FlowtoysConnect: Exiting pairing mode");
             }
         }
@@ -212,11 +252,13 @@ void FlowtoysConnectComponent::paramValueChangedInternal(ParamInfo *paramInfo)
         if (pairingMode)
         {
 
+            timeAtPairingStart = millis();
             setNewGroupID();
             radio->setPayloadSize(sizeof(InvitePacket));
         }
         else
         {
+            timeAtPairingStart = 0;
             radio->setPayloadSize(sizeof(SyncPacket));
         }
 
@@ -280,6 +322,11 @@ void FlowtoysConnectComponent::sendSyncPacket()
     packet.hue_active = act;
     packet.sat_active = act;
     packet.val_active = act;
+    packet.lfo_active = lfoActive ? 1 : 0;
+    packet.lfo[0] = (uint8_t)(lfo1 * 255);
+    packet.lfo[1] = (uint8_t)(lfo2 * 255);
+    packet.lfo[2] = (uint8_t)(lfo3 * 255);
+    packet.lfo[3] = (uint8_t)(lfo4 * 255);
 
     // set group ID
     // reverse group id bytes for some reason
@@ -287,7 +334,7 @@ void FlowtoysConnectComponent::sendSyncPacket()
     packet.groupID = reverseGroupID;
     packet.padding++;
 
-    // NDBG("Send page " + std::to_string(packet.page) + " mode " + std::to_string(packet.mode) + " to group " + std::to_string(gid));
+    // NDBG("Send page " + std::to_string(packet.page) + " mode " + std::to_string(packet.mode));
     radio->write(&packet, sizeof(SyncPacket));
 
     // NDBG("Sent Sync Packet: " + packet.toString());
@@ -342,6 +389,10 @@ void FlowtoysConnectComponent::receivePacket()
 
 void FlowtoysConnectComponent::onDMXReceived(uint16_t universe, const uint8_t *data, uint16_t startChannel, uint16_t len)
 {
+    if (dmxAddress == 0)
+    {
+        return; // ignore if address is 0
+    }
 
     uint16_t addr = dmxAddress;
     if (len + startChannel < addr)
@@ -350,18 +401,23 @@ void FlowtoysConnectComponent::onDMXReceived(uint16_t universe, const uint8_t *d
     if (startChannel > addr + 1)
         return; // not in range
 
-    // read values
-    if (len + startChannel >= addr + 10)
+    if (len + startChannel >= addr + 13)
     {
         int chStart = addr - startChannel;
         page = data[chStart];
         mode = data[chStart + 1];
         adjustMode = data[chStart + 2] > 0;
-        hue = data[chStart + 3] / 255.0f;
-        saturation = data[chStart + 4] / 255.0f;
-        brightness = data[chStart + 5] / 255.0f;
-        speed = data[chStart + 6] / 255.0f;
-        density = data[chStart + 7] / 255.0f;
-        // sendPacket();
+        hue = data[chStart + 3];
+        saturation = data[chStart + 4];
+        brightness = data[chStart + 5];
+        speed = data[chStart + 6];
+        density = data[chStart + 7];
+        lfoActive = data[chStart + 8] > 0;
+        lfo1 = data[chStart + 9];
+        lfo2 = data[chStart + 10];
+        lfo3 = data[chStart + 11];
+        lfo4 = data[chStart + 12];
     }
+    
+    NDBG("Received DMX Packet " + std::to_string(data[0]) + ", " + std::to_string(data[1]) + ", " + std::to_string(data[2]) + ", " + std::to_string(data[3]) + ", " + std::to_string(data[4]) + ", " + std::to_string(data[5]) + ", " + std::to_string(data[6]) + ", " + std::to_string(data[7]) + ", " + std::to_string(data[8]) + ", " + std::to_string(data[9]) + ", " + std::to_string(data[10]) + ", " + std::to_string(data[11]) + ", " + std::to_string(data[12]));
 }

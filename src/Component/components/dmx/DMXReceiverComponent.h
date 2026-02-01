@@ -14,6 +14,7 @@ ArtnetWifi artnet;
 #ifdef USE_DMX
 DeclareIntParam(dmxActivityLedPin, DMX_ACTIVITY_LED_PIN);
 EasyDMX dmx;
+unsigned long timeAtLastDMXUpdate = 0;
 #endif
 
 void setupInternal(JsonObject o) override;

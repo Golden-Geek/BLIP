@@ -88,7 +88,14 @@ DeclareFloatParam(hue, 0.0f);
 DeclareFloatParam(saturation, 1.0f);
 DeclareFloatParam(speed, 1.0f);
 DeclareFloatParam(density, 1.0f);
+DeclareBoolParam(lfoActive, false);
+DeclareFloatParam(lfo1, 0.0f);
+DeclareFloatParam(lfo2, 0.0f);
+DeclareFloatParam(lfo3, 0.0f);
+DeclareFloatParam(lfo4, 0.0f);
 DeclareIntParam(groupID, 0);
+DeclareBoolParam(enablePowerPress, true);
+
 
 RF24 *radio = nullptr;
 
@@ -98,9 +105,20 @@ InvitePacket pairingPacket;
 
 ButtonComponent* button = nullptr;
 IOComponent* ledOutput = nullptr;
+#ifdef USE_DIPSWITCH
+DIPSwitchComponent* dipSwitch = nullptr;
+#endif
 
 long timeAtButtonDown = 0;
 int pageOnRelease = 1;
+
+long timeAtPairingStart = 0;
+
+//power press
+bool switchOnRelease = false;
+bool wakeUpSwitchState = false;
+
+// spinlock
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
@@ -108,7 +126,7 @@ void updateInternal() override;
 
 void clearInternal() override;
 
-void checkButtonPairingMode();
+void checkButton();
 void paramValueChangedInternal(ParamInfo *param) override;
 
 void setNewGroupID();
