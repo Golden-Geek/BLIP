@@ -32,7 +32,7 @@ void DIPSwitchComponent::updateValue()
     newValue = ~newValue & 0xFF;
 
     //1 means off for each switch
-    newValue ^= 0xFF;
+    // newValue ^= 0xFF;
 
 
     // low values are ON for the dip switch
