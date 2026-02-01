@@ -1,6 +1,6 @@
 #pragma once
 #if defined USE_DMX
-#include "easydmx.h"
+#include "dmx.h"
 #endif
 
 DeclareComponentSingleton(DMXReceiver, "dmxReceiver", ESPNowDerive)
@@ -13,8 +13,9 @@ ArtnetWifi artnet;
 
 #ifdef USE_DMX
 DeclareIntParam(dmxActivityLedPin, DMX_ACTIVITY_LED_PIN);
-EasyDMX dmx;
+DMXReceiver dmx;
 unsigned long timeAtLastDMXUpdate = 0;
+uint8_t dmxData[DMX_BUF_SIZE];
 #endif
 
 void setupInternal(JsonObject o) override;

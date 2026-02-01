@@ -23,17 +23,8 @@ bool DMXReceiverComponent::initInternal()
     setupConnection();
 
 #ifdef USE_DMX
-    dmx.onReceive([this](uint8_t *data, int len)
-                  {
-                      unsigned long currentMillis = millis();
-                      if (currentMillis - timeAtLastDMXUpdate < 25)
-                          return; // debounce to avoid flooding with updates
-                      timeAtLastDMXUpdate = currentMillis;
-                      RootComponent::instance->timeAtLastSignal = millis();
-                      dispatchDMXData(0, data + 1, 1, len - 1); // skip start code byte
-                  });
 
-    int dmxResult = dmx.begin(DMXMode::Receive, DMX_RECEIVE_PIN, DMX_OUTPUT_PIN);
+    dmx.begin(DMX_RECEIVE_PIN);
     pinMode(DMX_ENABLE_PIN, OUTPUT);
     digitalWrite(DMX_ENABLE_PIN, LOW); // Enable DMX Receiver
 
@@ -43,11 +34,6 @@ bool DMXReceiverComponent::initInternal()
         digitalWrite(dmxActivityLedPin, LOW);
     }
 
-    if (dmxResult < 0)
-    {
-        DBG("Failed to initialize DMX Receiver");
-        result = false;
-    }
 #endif
 
     return result;
@@ -56,19 +42,27 @@ bool DMXReceiverComponent::initInternal()
 void DMXReceiverComponent::updateInternal()
 {
 #ifdef USE_ARTNET
-    if (!artnetIsInit)
-        return;
-
-    int r = -1;
-    while (r != 0)
+    if (artnetIsInit)
     {
-        r = artnet.read();
-        // DBG("Receiving artnet, returned " + std::to_string(r));
-    }
 
+        int r = -1;
+        while (r != 0)
+        {
+            r = artnet.read();
+        }
+    }
 #endif
 
 #ifdef USE_DMX
+
+    bool hasChanged = dmx.readAll(dmxData, DMX_BUF_SIZE);
+    if (hasChanged)
+    {
+        timeAtLastDMXUpdate = millis();
+        RootComponent::instance->timeAtLastSignal = millis();
+        dispatchDMXData(0, dmxData + 1, 1, DMX_BUF_SIZE - 1); // skip start code byte
+    }
+
     if (dmxActivityLedPin >= 0)
     {
         unsigned long currentMillis = millis();
