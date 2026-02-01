@@ -118,14 +118,23 @@ void MotionComponent::clearInternal()
 void MotionComponent::onEnabledChanged()
 {
     if (enabled)
-        startIMUTask();
+    {
+        if (!isInit)
+        {
+            init();
+        }
+        else
+        {
+            startIMUTask();
+        }
+    }
     else
         shouldStopRead = true;
 }
 
 void MotionComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
-    void* param = paramInfo->ptr;
+    void *param = paramInfo->ptr;
     if (param == &sendLevel)
     {
         getParamInfo(&throwState)->setTag(TagFeedback, sendLevel != SendLevelNone);
@@ -185,17 +194,23 @@ bool MotionComponent::setupIMU()
 
 #ifdef IMU_TYPE_BNO055
     NDBG("Setup BNO...");
+    // set imu address
+
     if (!bno.begin())
     {
         NDBG("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         return false;
     }
 
+    NDBG("BNO055 detected");
     bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_CONFIG);
     bno.setAxisRemap(Adafruit_BNO055::REMAP_CONFIG_P0);
     bno.setAxisSign(Adafruit_BNO055::REMAP_SIGN_P0);
     bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
-    // bno.setExtCrystalUse(true); //works on club but not on tab
+
+#ifdef BNO055_USE_EXTERNAL_CRYSTAL
+    bno.setExtCrystalUse(true); // works on club but not on tab
+#endif
     bno.enterNormalMode();
 
     SetParam(connected, true);

@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 struct var
 {
     char type;
@@ -103,7 +105,14 @@ struct var
         case 'f':
             return (int)value.f;
         case 's':
-            return std::stoi(s);
+        {
+            const char *c = s.c_str();
+            char *end = nullptr;
+            long v = std::strtol(c, &end, 10);
+            if (end == c)
+                return 0;
+            return (int)v;
+        }
         case 'p':
             return (int)*value.ptr;
         }
@@ -121,7 +130,14 @@ struct var
         case 'f':
             return value.f;
         case 's':
-            return std::stof(s);
+        {
+            const char *c = s.c_str();
+            char *end = nullptr;
+            float v = std::strtof(c, &end);
+            if (end == c)
+                return 0.0f;
+            return v;
+        }
         case 'p':
             return (float)*value.ptr;
         }

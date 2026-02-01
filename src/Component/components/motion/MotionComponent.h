@@ -3,10 +3,14 @@
 #define TRAIL_MAX 20
 #define IMU_NATIVE_STACK_SIZE (4 * 1024)
 
+#ifndef IMU_DEFAULT_ADDR
+#define IMU_DEFAULT_ADDR 0x28
+#endif
+
 DeclareComponent(Motion, "motion", )
 
 #ifdef IMU_TYPE_BNO055
-    Adafruit_BNO055 bno;
+    Adafruit_BNO055 bno = Adafruit_BNO055(-1, IMU_DEFAULT_ADDR);
 #elif defined IMU_TYPE_M5MPU
     m5::IMU_Class mpu;
 double lastUpdateTime;
