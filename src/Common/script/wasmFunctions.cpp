@@ -215,8 +215,8 @@ m3ApiRawFunction(m3_pointHSV)
 m3ApiRawFunction(m3_setIR)
 {
     m3ApiGetArg(float, v);
-    // RootComponent::instance->strips.items[0]->bakeLayer.setBrightness(v);
-
+    var val[1] = {v};
+    RootComponent::instance->ir.setParam(&RootComponent::instance->ir.value, val, 1);
     m3ApiSuccess();
 }
 

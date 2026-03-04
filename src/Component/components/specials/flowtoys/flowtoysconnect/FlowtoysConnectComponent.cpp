@@ -316,7 +316,7 @@ void FlowtoysConnectComponent::sendSyncPacket()
     packet.mode = m;
 
     uint8_t act = adjustMode ? 1 : 0;
-    packet.adjust_active = act;
+    packet.adjust_active = 0; // adjust_active is actually cycling through stuff so always disable here.
     packet.density_active = act;
     packet.speed_active = act;
     packet.hue_active = act;
@@ -406,21 +406,42 @@ void FlowtoysConnectComponent::onDMXReceived(uint16_t universe, const uint8_t *d
         return; // not in range
 
     int addrOffset = (addr - startChannel);
-    if (len + startChannel >= addr + 13)
+    if (len + startChannel >= addr + 7)
     {
         int chStart = addr - startChannel;
-        page = data[chStart];
-        mode = data[chStart + 1];
-        adjustMode = data[chStart + 2] > 0;
-        hue = data[chStart + 3] / 255.0f;
-        saturation = data[chStart + 4] / 255.0f;
-        brightness = data[chStart + 5] / 255.0f;
-        speed = data[chStart + 6] / 255.0f;
-        density = data[chStart + 7] / 255.0f;
-        lfoActive = data[chStart + 8] > 0;
-        lfo1 = data[chStart + 9] / 255.0f;
-        lfo2 = data[chStart + 10] / 255.0f;
-        lfo3 = data[chStart + 11] / 255.0f;
-        lfo4 = data[chStart + 12] / 255.0f;
+        int pageMode = data[chStart];
+
+        if (pageMode < 10)
+        {
+            page = 0;
+            mode = pageMode - 10;
+        }
+        else if (pageMode < 10)
+        {
+            page = 1;
+            mode = pageMode - 20;
+        }
+        else if (pageMode < 20)
+        {
+            page = 2;
+            mode = pageMode - 20;
+        }
+        else
+        {
+            page = 13;
+            mode = pageMode - 30;
+        }
+
+        adjustMode = data[chStart + 1] > 0;
+        hue = data[chStart + 2] / 255.0f;
+        saturation = data[chStart + 3] / 255.0f;
+        brightness = data[chStart + 4] / 255.0f;
+        speed = data[chStart + 5] / 255.0f;
+        density = data[chStart + 6] / 255.0f;
+        // lfoActive = adjustMode && (data[chStart + 7] > 0);
+        // lfo1 = data[chStart + 8] / 255.0f;
+        // lfo2 = data[chStart + 9] / 255.0f;
+        // lfo3 = data[chStart + 10] / 255.0f;
+        // lfo4 = data[chStart + 11] / 255.0f;
     }
 }
