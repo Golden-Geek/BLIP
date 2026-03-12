@@ -3,7 +3,10 @@
 void MotionComponent::setupInternal(JsonObject o)
 {
     saveEnabled = false;
-    enabled = false;
+    enabled = true;
+    setCustomUpdateRate(100, o);
+    timeSinceOrientationLastSent = 0;
+    hasPendingRealtimeFeedback = false;
 
     AddBoolParamConfig(connected);
     connected = false;
@@ -11,9 +14,10 @@ void MotionComponent::setupInternal(JsonObject o)
     AddEnumParamConfig(sendLevel, sendLevelOptions, SendLevelMax);
     AddIntParamConfig(orientationSendRate);
 
-#ifdef IMU_TYPE_BNO055
+#if defined(IMU_TYPE_BNO055) || defined(IMU_TYPE_BNO086)
     AddIntParamConfig(sdaPin);
     AddIntParamConfig(sclPin);
+    AddIntParamConfig(intPin);
 #endif
 
     AddEnumParam(throwState, throwStateOptions, ThrowStateMax);
@@ -21,10 +25,10 @@ void MotionComponent::setupInternal(JsonObject o)
     AddP3DParamFeedback(accel);
     AddP3DParamFeedback(gyro);
     AddP3DParamFeedback(linearAccel);
-    AddFloatParam(projectedAngle);
-    AddIntParam(spinCount);
-    AddFloatParam(spin);
-    AddFloatParam(activity);
+    AddFloatParamFeedback(projectedAngle);
+    AddIntParamFeedback(spinCount);
+    AddFloatParamFeedback(spin);
+    AddFloatParamFeedback(activity);
 
     AddFloatParamConfig(orientationXOffset);
     AddP3DParamConfig(flatThresholds);
@@ -48,25 +52,33 @@ void MotionComponent::setupInternal(JsonObject o)
 
 bool MotionComponent::initInternal()
 {
-#ifdef IMU_TYPE_BNO055
-    if (sdaPin == 0 || sclPin == 0)
+#if defined(IMU_TYPE_BNO055) || defined(IMU_TYPE_BNO086)
+    if (sdaPin < 0 || sclPin < 0)
     {
         std::string npin;
-        if (sdaPin == 0)
+        if (sdaPin < 0)
             npin += "SDA,";
-        if (sclPin == 0)
+        if (sclPin < 0)
             npin += "SCL";
 
         NDBG(npin + " pins not defined, not using IMU");
         return false;
     }
 
+    // On creators ball v2 the HD108 PARLIO driver can disturb GPIO0, so bind
+    // the I2C bus here after the LED component has already been initialized.
     Wire.begin(sdaPin, sclPin);
+#ifdef IMU_TYPE_BNO086
+    if (intPin >= 0)
+    {
+        pinMode(intPin, INPUT_PULLUP);
+    }
+#endif
 #endif
 
     if (enabled)
     {
-        startIMUTask();
+        return setupIMU();
     }
 
     return true;
@@ -74,42 +86,15 @@ bool MotionComponent::initInternal()
 
 void MotionComponent::updateInternal()
 {
-    // NDBG("updateInternal " + std::to_string(hasNewData)); // + ", " + std::to_string(orientation[1]) + ", " + std::to_string(orientation[2]));
-    if (!hasNewData)
-        return;
-
-    hasNewData = false;
-    imuLock = true;
-
-    long curTime = millis();
-    int orientationSendMS = 1000 / orientationSendRate;
-
-    // REFACTOR : This will need to set feedback on/off on sendLevel change
-    // if (curTime > timeSinceOrientationLastSent + orientationSendMS)
-    // {
-    //     if (sendLevel >= 1)
-    //     {
-    //         SendMultiParamFeedback(orientation);
-
-    //         if (sendLevel >= 2)
-    //         {
-    //             SendMultiParamFeedback(accel);
-    //             SendMultiParamFeedback(gyro);
-    //             SendMultiParamFeedback(linearAccel);
-    //             SendParamFeedback(projectedAngle);
-
-    //         }
-    //     }
-
-    //     timeSinceOrientationLastSent = curTime;
-    // }
-
-    imuLock = false;
+    readIMU();
+    sendRealtimeFeedback();
 }
 
 void MotionComponent::clearInternal()
 {
-    shouldStopRead = true;
+    SetParam(connected, false);
+    hasPendingRealtimeFeedback = false;
+    timeSinceOrientationLastSent = 0;
 #ifdef IMU_TYPE_BNO055
     bno.enterSuspendMode();
 #endif
@@ -125,11 +110,21 @@ void MotionComponent::onEnabledChanged()
         }
         else
         {
-            startIMUTask();
+            if (!connected)
+            {
+                setupIMU();
+            }
         }
     }
     else
-        shouldStopRead = true;
+    {
+        SetParam(connected, false);
+        hasPendingRealtimeFeedback = false;
+        timeSinceOrientationLastSent = 0;
+#ifdef IMU_TYPE_BNO055
+        bno.enterSuspendMode();
+#endif
+    }
 }
 
 void MotionComponent::paramValueChangedInternal(ParamInfo *paramInfo)
@@ -137,6 +132,10 @@ void MotionComponent::paramValueChangedInternal(ParamInfo *paramInfo)
     void *param = paramInfo->ptr;
     if (param == &sendLevel)
     {
+        if(getParamInfo(&throwState) == nullptr) {
+            //not init yet
+            return;
+        }
         getParamInfo(&throwState)->setTag(TagFeedback, sendLevel != SendLevelNone);
         getParamInfo(&orientation)->setTag(TagFeedback, sendLevel != SendLevelNone);
         getParamInfo(&accel)->setTag(TagFeedback, sendLevel == SendLevelAll);
@@ -146,46 +145,33 @@ void MotionComponent::paramValueChangedInternal(ParamInfo *paramInfo)
         getParamInfo(&spinCount)->setTag(TagFeedback, sendLevel == SendLevelAll);
         getParamInfo(&spin)->setTag(TagFeedback, sendLevel == SendLevelAll);
         getParamInfo(&activity)->setTag(TagFeedback, sendLevel == SendLevelAll);
+
+        if (sendLevel == SendLevelNone)
+        {
+            hasPendingRealtimeFeedback = false;
+        }
     }
+
+#ifdef IMU_TYPE_BNO086
+    if (isInit && connected && (param == &sendLevel || param == &orientationSendRate || param == &updateRate))
+    {
+        enableBNO086Reports();
+    }
+#endif
 }
 
-void MotionComponent::startIMUTask()
+bool MotionComponent::checkParamsFeedback(ParamInfo *paramInfo)
 {
-    hasNewData = false,
-    shouldStopRead = false;
-    imuLock = false;
-    xTaskCreate(&MotionComponent::readIMUStatic, "imu", IMU_NATIVE_STACK_SIZE, this, 1, NULL);
-}
-
-void MotionComponent::readIMUStatic(void *_imu)
-{
-    DBG("[motion] Start reading IMU");
-    MotionComponent *imuComp = (MotionComponent *)_imu;
-
-    bool result = imuComp->setupIMU();
-
-    if (!result)
+    if (isRealtimeFeedbackParam(paramInfo))
     {
-        vTaskDelete(NULL);
-        return;
+        if (paramInfo->hasTag(TagFeedback))
+        {
+            hasPendingRealtimeFeedback = true;
+        }
+        return false;
     }
 
-#ifdef IMU_TYPE_BNO055
-    imuComp->bno.enterNormalMode();
-#endif
-
-    while (!imuComp->shouldStopRead)
-    {
-        imuComp->readIMU();
-        delay(5);
-    }
-
-#ifdef IMU_TYPE_BNO055
-    imuComp->bno.enterSuspendMode();
-#endif
-
-    DBG("[motion] Stopped reading IMU");
-    vTaskDelete(NULL);
+    return Component::checkParamsFeedback(paramInfo);
 }
 
 bool MotionComponent::setupIMU()
@@ -214,6 +200,22 @@ bool MotionComponent::setupIMU()
     bno.enterNormalMode();
 
     SetParam(connected, true);
+#elif defined IMU_TYPE_BNO086
+    NDBG("Setup BNO086...");
+
+    if (!bno.begin(IMU_DEFAULT_ADDR, Wire))
+    {
+        NDBG("Ooops, no BNO08x detected ... Check your wiring or I2C ADDR!");
+        return false;
+    }
+
+    if (!enableBNO086Reports())
+    {
+        return false;
+    }
+
+    SetParam(connected, true);
+
 #elif defined IMU_TYPE_M5MPU
     bool result = mpu.init();
 
@@ -231,12 +233,44 @@ bool MotionComponent::setupIMU()
     return true;
 }
 
+#ifdef IMU_TYPE_BNO086
+bool MotionComponent::enableBNO086Reports()
+{
+    const uint16_t reportMilliseconds = updateRate > 0 ? max(1, 1000 / updateRate) : 10;
+
+    NDBG("Enabling BNO086 reports with interval " + std::to_string(reportMilliseconds) + "ms");
+    
+    if (!bno.enableRotationVector(reportMilliseconds))
+    {
+        NDBG("Could not enable rotation vector report");
+        return false;
+    }
+
+    if (sendLevel == SendLevelAll)
+    {
+        if (!bno.enableAccelerometer(reportMilliseconds))
+        {
+            NDBG("Could not enable accelerometer report");
+        }
+
+        if (!bno.enableLinearAccelerometer(reportMilliseconds))
+        {
+            NDBG("Could not enable linear acceleration report");
+        }
+
+        if (!bno.enableGyro(reportMilliseconds))
+        {
+            NDBG("Could not enable gyro report");
+        }
+    }
+
+    return true;
+}
+#endif
+
 void MotionComponent::readIMU()
 {
     if (!enabled)
-        return;
-
-    if (imuLock)
         return;
 
 #ifdef IMU_TYPE_BNO055
@@ -278,6 +312,66 @@ void MotionComponent::readIMU()
     computeProjectedAngle();
     computeSpin();
 
+#elif defined IMU_TYPE_BNO086
+    if (bno.wasReset())
+    {
+        NDBG("BNO086 was reset, re-enabling reports");
+        if (!enableBNO086Reports())
+        {
+            return;
+        }
+    }
+
+    if (intPin >= 0 && digitalRead(intPin) == HIGH)
+        return;
+
+    bool hasSensorUpdate = false;
+    uint8_t eventCount = 0;
+    while (eventCount < 8 && bno.getSensorEvent())
+    {
+        switch (bno.getSensorEventID())
+        {
+        case SENSOR_REPORTID_ROTATION_VECTOR:
+        {
+            float yaw = bno.getYaw() * RAD_TO_DEG;
+            float pitch = bno.getPitch() * RAD_TO_DEG;
+            float roll = bno.getRoll() * RAD_TO_DEG;
+
+            yaw = fmodf(yaw + orientationXOffset + 180.0f * 5, 360.0f) - 180.0f;
+            SetParam3(orientation, yaw, pitch, roll);
+            hasSensorUpdate = true;
+            break;
+        }
+        case SENSOR_REPORTID_ACCELEROMETER:
+            SetParam3(accel, bno.getAccelX(), bno.getAccelY(), bno.getAccelZ());
+            hasSensorUpdate = true;
+            break;
+        case SENSOR_REPORTID_LINEAR_ACCELERATION:
+            SetParam3(linearAccel, bno.getLinAccelX(), bno.getLinAccelY(), bno.getLinAccelZ());
+            hasSensorUpdate = true;
+            break;
+        case SENSOR_REPORTID_GYROSCOPE_CALIBRATED:
+            SetParam3(gyro, bno.getGyroX(), bno.getGyroY(), bno.getGyroZ());
+            hasSensorUpdate = true;
+            break;
+        default:
+            break;
+        }
+
+        eventCount++;
+
+        if (intPin >= 0 && digitalRead(intPin) == HIGH)
+            break;
+    }
+
+    if (!hasSensorUpdate)
+        return;
+
+    computeThrow();
+    computeActivity();
+    computeProjectedAngle();
+    computeSpin();
+
 #elif defined IMU_TYPE_M5MPU
 
     float gyroX, gyroY, gyroZ;
@@ -307,7 +401,66 @@ void MotionComponent::readIMU()
     SetParam3(accel, accX, accY, accZ);
     SetParam3(gyro, gyroX, gyroY, gyroZ);
 #endif
-    hasNewData = true;
+}
+
+bool MotionComponent::isRealtimeFeedbackParam(const ParamInfo *paramInfo) const
+{
+    if (paramInfo == nullptr)
+        return false;
+
+    void *param = paramInfo->ptr;
+    return param == &throwState ||
+           param == &orientation ||
+           param == &accel ||
+           param == &gyro ||
+           param == &linearAccel ||
+           param == &projectedAngle ||
+           param == &spinCount ||
+           param == &spin ||
+           param == &activity;
+}
+
+void MotionComponent::sendRealtimeFeedback()
+{
+    if (!hasPendingRealtimeFeedback)
+        return;
+
+    if (sendLevel == SendLevelNone)
+    {
+        hasPendingRealtimeFeedback = false;
+        return;
+    }
+
+    long curTime = millis();
+    int sendInterval = orientationSendRate > 0 ? max(1, 1000 / orientationSendRate) : 0;
+    if (sendInterval > 0 && timeSinceOrientationLastSent > 0 && (curTime - timeSinceOrientationLastSent) < sendInterval)
+        return;
+
+    timeSinceOrientationLastSent = curTime;
+    hasPendingRealtimeFeedback = false;
+
+    auto sendParamIfPresent = [this](void *param)
+    {
+        ParamInfo *info = getParamInfo(param);
+        if (info != nullptr && info->hasTag(TagFeedback))
+        {
+            CommunicationComponent::instance->sendParamFeedback(this, info);
+        }
+    };
+
+    sendParamIfPresent(&throwState);
+    sendParamIfPresent(&orientation);
+
+    if (sendLevel == SendLevelAll)
+    {
+        sendParamIfPresent(&accel);
+        sendParamIfPresent(&gyro);
+        sendParamIfPresent(&linearAccel);
+        sendParamIfPresent(&projectedAngle);
+        sendParamIfPresent(&spinCount);
+        sendParamIfPresent(&spin);
+        sendParamIfPresent(&activity);
+    }
 }
 
 void MotionComponent::computeProjectedAngle()

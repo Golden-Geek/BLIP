@@ -7,8 +7,7 @@
 
 #define FATAL(func, msg)                  \
     {                                     \
-        Serial.print("Fatal: " func " "); \
-        Serial.println(msg);              \
+        DBG("Fatal: " func " " + std::string(msg)); \
         return;                           \
     }
 
@@ -238,7 +237,7 @@ void Script::launchWasmTask()
 
     timeAtLaunch = millis() / 1000.0f;
 
-    Serial.println("Running WebAssembly...");
+    DBG("[script] Running WebAssembly...");
 
     if (initFunc != NULL)
     {

@@ -117,6 +117,13 @@
 #endif
 
 #ifdef USE_BATTERY
+
+#ifdef USE_BATTERY_MONITOR
+#ifdef MONITOR_TYPE_MAX17048
+#include <Adafruit_MAX1704X.h>
+#endif
+#endif
+
 #include "Component/components/battery/BatteryComponent.h"
 #endif
 
@@ -130,9 +137,9 @@
 #include <utility/vector.h>
 #include <utility/matrix.h>
 #include <utility/quaternion.h>
-
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BNO055.h>
+#elif defined IMU_TYPE_BNO086
+#include "SparkFun_BNO08x_Arduino_Library.h"
 #elif defined IMU_TYPE_M5MPU
 #endif
 #include "Component/components/motion/MotionComponent.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #define BATTERY_CHECK_INTERVAL 100
 #define BATTERY_AVERAGE_WINDOW 30
 
@@ -70,6 +71,12 @@ float values[BATTERY_AVERAGE_WINDOW];
 int valuesIndex = 0;
 
 bool readChargePinOnNextCheck = false;
+
+#ifdef USE_BATTERY_MONITOR
+#ifdef MONITOR_TYPE_MAX17048
+Adafruit_MAX17048 batteryMonitor;
+#endif
+#endif
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;

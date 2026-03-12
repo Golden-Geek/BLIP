@@ -224,7 +224,6 @@ struct var
         if (type == 's')
             s = v;
 
-        // Serial.println("= string : "+stringValue());
         return *this;
     }
 

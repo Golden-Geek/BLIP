@@ -1,10 +1,13 @@
 #pragma once
 
-#define TRAIL_MAX 20
-#define IMU_NATIVE_STACK_SIZE (4 * 1024)
-
 #ifndef IMU_DEFAULT_ADDR
+#ifdef IMU_TYPE_BNO055
 #define IMU_DEFAULT_ADDR 0x28
+#elif defined IMU_TYPE_BNO086
+#define IMU_DEFAULT_ADDR 0x4A
+#else
+#define IMU_DEFAULT_ADDR 0
+#endif
 #endif
 
 DeclareComponent(Motion, "motion", )
@@ -14,6 +17,8 @@ DeclareComponent(Motion, "motion", )
 #elif defined IMU_TYPE_M5MPU
     m5::IMU_Class mpu;
 double lastUpdateTime;
+#elif defined IMU_TYPE_BNO086
+    BNO08x bno;
 #endif
 
 enum SendLevel
@@ -41,7 +46,7 @@ DeclareBoolParam(connected, false);
 DeclareEnumParam(sendLevel, 0);
 DeclareIntParam(orientationSendRate, 50);
 
-#ifdef IMU_TYPE_BNO055
+#if (defined IMU_TYPE_BNO055) || (defined IMU_TYPE_BNO086)
 DeclareIntParam(sdaPin, IMU_DEFAULT_SDA);
 DeclareIntParam(sclPin, IMU_DEFAULT_SCL);
 DeclareIntParam(intPin, IMU_DEFAULT_INT);
@@ -50,7 +55,7 @@ DeclareIntParam(intPin, IMU_DEFAULT_INT);
 long timeSinceOrientationLastSent;
 
 // IMU data
-DeclareP3DRangeParam(orientation, -180, 180, -90, 90, -180, 180);
+DeclareP3DRangeParam(orientation, -180, -90,-180, 180, 90, 180);
 DeclareP3DParam(accel, 0, 0, 0);
 DeclareP3DParam(gyro, 0, 0, 0);
 DeclareP3DParam(linearAccel, 0, 0, 0);
@@ -83,22 +88,17 @@ int lastThrowState;
 float launchOrientationX;
 float launchProjectedAngle;
 float currentSpinLastUpdate;
-
-// Threading
-bool hasNewData;
-bool imuLock;
-bool shouldStopRead;
+bool hasPendingRealtimeFeedback = false;
 
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
 void updateInternal() override;
 void clearInternal() override;
 
-void startIMUTask();
-
-static void readIMUStatic(void *);
-
 bool setupIMU();
+#ifdef IMU_TYPE_BNO086
+bool enableBNO086Reports();
+#endif
 
 void readIMU();
 void sendCalibrationStatus();
@@ -106,12 +106,15 @@ void computeThrow();
 void computeActivity();
 void computeProjectedAngle();
 void computeSpin();
+bool isRealtimeFeedbackParam(const ParamInfo *paramInfo) const;
+void sendRealtimeFeedback();
 
 void setOrientationXOffset(float offset);
 void setProjectAngleOffset(float yaw, float angle);
 
 void onEnabledChanged() override;
 void paramValueChangedInternal(ParamInfo *param) override;
+bool checkParamsFeedback(ParamInfo *paramInfo) override;
 
 bool handleCommandInternal(const std::string &command, var *data, int numData) override;
 

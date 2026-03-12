@@ -713,13 +713,13 @@ bool Component::checkParamsFeedback(ParamInfo *paramInfo)
     if (!paramInfo->hasTag(TagFeedback))
         return false;
 
-    bool shouldSend = false;
     long currentTime = millis();
     if (lastFeedbackTime > 0 && feedbackRate > 0 && (currentTime - lastFeedbackTime) < (1000.0f / feedbackRate))
     {
         return false;
     }
 
+    lastFeedbackTime = currentTime;
     CommunicationComponent::instance->sendParamFeedback(this, paramInfo);
     return true;
 }

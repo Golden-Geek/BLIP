@@ -13,6 +13,8 @@
 #define LED_DEFAULT_TYPE WS2816
 #elif defined LED_MODEL_SK9822
 #define LED_DEFAULT_TYPE SK9822
+#elif defined LED_MODEL_HD108
+#define LED_DEFAULT_TYPE HD108
 #else
 #define LED_DEFAULT_TYPE WS2812B
 #endif
@@ -27,10 +29,16 @@
 #define NeoPixelColorDivider 1
 #elif defined LED_MODEL_SK9822
 #define NEOPIXEL_CLOCKED
-#define NeoPixelMethod DotStarMethod            
+#define NeoPixelMethod DotStarMethod
 #define NeoPixelFeature DotStarBgrFeature
 #define NeoPixelColor RgbColor
 #define NeoPixelColorDivider 256
+#elif defined LED_MODEL_HD108
+#define NEOPIXEL_CLOCKED
+#define NeoPixelMethod Hd108Esp32ParlioHzMethod
+#define NeoPixelFeature Hd108RgbFeature
+#define NeoPixelColor Rgb48Color
+#define NeoPixelColorDivider 1
 #else
 #define NeoPixelMethod NeoWs2812Method
 #define NeoPixelFeature NeoBgrFeature

@@ -25,9 +25,9 @@ void BatteryComponent::setupInternal(JsonObject o)
 
     AddFloatParamConfig(lowBatteryThreshold);
 
-    ParamInfo* levelInfo = AddRangeParamFeedback(batteryLevel);
+    ParamInfo *levelInfo = AddRangeParamFeedback(batteryLevel);
     levelInfo->setRange(&defaultRange);
-    
+
     AddRangeParamFeedback(voltage);
     AddBoolParamFeedback(charging);
 
@@ -126,6 +126,21 @@ void BatteryComponent::readChargePin()
 
 void BatteryComponent::readBatteryLevel()
 {
+#ifdef USE_BATTERY_MONITOR
+#ifdef MONITOR_TYPE_MAX17048
+    if (batteryMonitor.begin())
+    {
+        float volt = batteryMonitor.getVoltage();
+        float relVal = (volt - BATTERY_MIN_VOLTAGE) / (BATTERY_MAX_VOLTAGE - BATTERY_MIN_VOLTAGE);
+        SetParam(voltage, volt);
+        SetParam(batteryLevel, relVal);
+    }
+    else
+    {
+        NDBG("Failed to read from battery monitor");
+    }
+#endif
+#else
     if (batteryPin >= 0)
     {
 
@@ -205,6 +220,7 @@ void BatteryComponent::readBatteryLevel()
             }
         }
     }
+#endif
 }
 
 void BatteryComponent::checkShouldAutoShutdown()

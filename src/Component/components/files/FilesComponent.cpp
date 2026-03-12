@@ -67,7 +67,7 @@ bool FilesComponent::initInternal()
     SPI.begin(sdSCK, sdMiso, sdMosi, sdCS);
     if (!SD.begin(sdCS, SPI, 1'000'000UL))
     {
-        Serial.println("Flash init failed");
+        NDBG("Flash init failed");
     }
     else
     {
