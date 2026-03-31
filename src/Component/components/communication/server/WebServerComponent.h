@@ -1,7 +1,7 @@
 #pragma once
 
 #define MAX_CONCURRENT_UPLOADS 2
-#define UPLOAD_VERIFY_WINDOW_BYTES 16384
+#define UPLOAD_VERIFY_WINDOW_BYTES 32768
 
 static AsyncWebServer server = AsyncWebServer(80);
 static AsyncWebSocket ws("/");
