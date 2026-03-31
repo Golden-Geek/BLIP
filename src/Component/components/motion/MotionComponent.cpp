@@ -3,7 +3,7 @@
 void MotionComponent::setupInternal(JsonObject o)
 {
     saveEnabled = false;
-    enabled = true;
+    enabled = false;
     setCustomUpdateRate(100, o);
     timeSinceOrientationLastSent = 0;
     hasPendingRealtimeFeedback = false;
@@ -11,6 +11,7 @@ void MotionComponent::setupInternal(JsonObject o)
     AddBoolParamConfig(connected);
     connected = false;
 
+    sendLevel = SendLevelOrientation;
     AddEnumParamConfig(sendLevel, sendLevelOptions, SendLevelMax);
     AddIntParamConfig(orientationSendRate);
 

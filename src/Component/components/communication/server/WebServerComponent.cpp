@@ -3,6 +3,12 @@
 
 namespace
 {
+    struct UploadRequestContext
+    {
+        bool failed = false;
+        char errorMessage[192] = {};
+    };
+
     bool pathLooksLikeEditAsset(const std::string &path)
     {
         if (path.length() == 0)
@@ -67,6 +73,11 @@ void WebServerComponent::setupInternal(JsonObject o)
     {
         uploadingFiles[i].request = nullptr;
         uploadingFiles[i].active = false;
+        uploadingFiles[i].failed = false;
+        uploadingFiles[i].path = "";
+        uploadingFiles[i].expectedNextIndex = 0;
+        uploadingFiles[i].verifiedSize = 0;
+        uploadingFiles[i].pendingBytes = 0;
     }
 
     AddBoolParamConfig(sendFeedback);
@@ -196,11 +207,37 @@ bool WebServerComponent::initInternal()
                   request->send(response); });
 
     server.on(
-        "/uploadFile", HTTP_POST, [](AsyncWebServerRequest *request)
-        { 
-            AsyncWebServerResponse *response = request->beginResponse(200);
+        "/uploadFile", HTTP_POST, [this](AsyncWebServerRequest *request)
+        {
+            UploadFileState *state = nullptr;
+            for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
+            {
+                if (uploadingFiles[i].request == request)
+                {
+                    state = &uploadingFiles[i];
+                    break;
+                }
+            }
+
+            UploadRequestContext *context = static_cast<UploadRequestContext *>(request->_tempObject);
+            const bool failed = (context != nullptr && context->failed) || (state != nullptr && state->failed);
+            const String body = failed ? String((context != nullptr && context->errorMessage[0] != '\0') ? context->errorMessage : "Upload failed") : String("OK");
+
+            AsyncWebServerResponse *response = request->beginResponse(failed ? 500 : 200, "text/plain", body);
             response->addHeader("Access-Control-Allow-Origin", "*");
-            request->send(response); },
+            response->addHeader("Connection", "close");
+            request->send(response);
+
+            if (failed)
+            {
+                NDBG("Upload request completed with HTTP 500: " + std::string(body.c_str()));
+            }
+
+            if (state != nullptr)
+            {
+                finishUploadForRequest(request, failed, failed);
+            }
+        },
         std::bind(&WebServerComponent::handleFileUpload,
                   this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
 
@@ -406,12 +443,19 @@ void WebServerComponent::closeServer()
     NDBG("WebSocket connections closed");
 }
 
-void WebServerComponent::finishUploadForRequest(AsyncWebServerRequest *request, bool canceled)
+void WebServerComponent::finishUploadForRequest(AsyncWebServerRequest *request, bool canceled, bool deletePartialFile)
 {
     for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
     {
         if (uploadingFiles[i].request == request)
         {
+            std::string path = uploadingFiles[i].path;
+
+            if (uploadingFiles[i].file)
+            {
+                uploadingFiles[i].file.close();
+            }
+
             if (uploadingFiles[i].active)
             {
                 uploadingFiles[i].active = false;
@@ -425,6 +469,20 @@ void WebServerComponent::finishUploadForRequest(AsyncWebServerRequest *request, 
 
                 sendEvent(canceled ? UploadCanceled : UploadDone);
             }
+
+            uploadingFiles[i].request = nullptr;
+            uploadingFiles[i].failed = false;
+            uploadingFiles[i].path = "";
+            uploadingFiles[i].expectedNextIndex = 0;
+            uploadingFiles[i].verifiedSize = 0;
+            uploadingFiles[i].pendingBytes = 0;
+
+            if (deletePartialFile && path.length() > 0)
+            {
+                FilesComponent::instance->deleteFileIfExists(path);
+                NDBG("Deleted partial upload: " + path);
+            }
+
             break;
         }
     }
@@ -434,6 +492,153 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 {
 
 #ifdef USE_FILES
+
+    auto getUploadContext = [&](AsyncWebServerRequest *req) -> UploadRequestContext *
+    {
+        if (req->_tempObject == nullptr)
+        {
+            req->_tempObject = calloc(1, sizeof(UploadRequestContext));
+        }
+
+        return static_cast<UploadRequestContext *>(req->_tempObject);
+    };
+
+    auto markUploadFailed = [&](UploadFileState *state, const std::string &reason, bool logFsInfo = true)
+    {
+        NDBG(reason);
+        if (logFsInfo)
+        {
+            NDBG(FilesComponent::instance->getFileSystemInfo());
+        }
+
+        UploadRequestContext *context = getUploadContext(request);
+        if (context != nullptr)
+        {
+            context->failed = true;
+            snprintf(context->errorMessage, sizeof(context->errorMessage), "%s", reason.c_str());
+        }
+
+        if (state != nullptr)
+        {
+            if (state->file)
+            {
+                state->file.flush();
+                state->file.close();
+                state->file = File();
+            }
+
+            state->failed = true;
+            if (state->active)
+            {
+                state->active = false;
+                if (activeUploadCount > 0)
+                {
+                    activeUploadCount--;
+                }
+
+                if (suspendUpdatesDuringUpload && activeUploadCount == 0)
+                {
+                    Component::setSuspendNonCriticalUpdates(false);
+                }
+
+                sendEvent(UploadCanceled);
+            }
+        }
+    };
+
+    auto reopenUploadFile = [&](UploadFileState &state, const std::string &context, size_t &actualSize, bool logFsInfo = true) -> bool
+    {
+        if (state.file)
+        {
+            state.file.flush();
+            state.file.close();
+            state.file = File();
+        }
+
+        state.file = FilesComponent::instance->getFS().open(state.path.c_str(), FILE_APPEND);
+        if (!state.file)
+        {
+            NDBG(context + ": Failed to reopen " + state.path);
+            if (logFsInfo)
+            {
+                NDBG(FilesComponent::instance->getFileSystemInfo());
+            }
+            return false;
+        }
+
+        actualSize = static_cast<size_t>(state.file.size());
+        return true;
+    };
+
+    auto flushPendingUploadData = [&](UploadFileState &state) -> bool
+    {
+        while (state.pendingBytes > 0)
+        {
+            const size_t writeOffset = state.verifiedSize;
+            bool madeProgress = false;
+
+            for (int attempt = 0; attempt < 6; ++attempt)
+            {
+                const size_t bytesToWrite = state.pendingBytes;
+                const size_t reportedWritten = state.file.write(state.pendingData, bytesToWrite);
+
+                size_t actualSize = 0;
+                if (!reopenUploadFile(state, "Upload commit verification", actualSize))
+                {
+                    markUploadFailed(&state, "Upload Aborted: Failed to reopen after write at offset " + std::to_string(writeOffset));
+                    return false;
+                }
+
+                if (actualSize == writeOffset + bytesToWrite)
+                {
+                    state.verifiedSize += bytesToWrite;
+                    state.pendingBytes = 0;
+                    madeProgress = true;
+                    if (attempt > 0 || reportedWritten != bytesToWrite)
+                    {
+                        NDBG("Write recovered at offset " + std::to_string(writeOffset) + " for " + std::to_string(bytesToWrite) + " bytes");
+                    }
+                    break;
+                }
+
+                if (actualSize > writeOffset && actualSize < writeOffset + bytesToWrite)
+                {
+                    const size_t persistedBytes = actualSize - writeOffset;
+                    memmove(state.pendingData, state.pendingData + persistedBytes, state.pendingBytes - persistedBytes);
+                    state.pendingBytes -= persistedBytes;
+                    state.verifiedSize += persistedBytes;
+                    madeProgress = true;
+                    NDBG("Partial slice persisted at offset " + std::to_string(writeOffset) + ": " + std::to_string(persistedBytes) + "/" + std::to_string(bytesToWrite) + ", continuing with remaining bytes");
+                    break;
+                }
+
+                if (actualSize == writeOffset)
+                {
+                    NDBG("Write attempt " + std::to_string(attempt + 1) + " failed at offset " + std::to_string(writeOffset) + " (reported " + std::to_string(reportedWritten) + "/" + std::to_string(bytesToWrite) + "), retrying...");
+#ifdef FILES_TYPE_FLASH
+                    delay(1);
+#else
+                    delayMicroseconds(200);
+#endif
+                    yield();
+                    continue;
+                }
+
+                markUploadFailed(&state, "Upload Aborted: Unexpected file size after write at offset " + std::to_string(writeOffset) + ", got " + std::to_string(actualSize) + ", expected between " + std::to_string(writeOffset) + " and " + std::to_string(writeOffset + bytesToWrite));
+                return false;
+            }
+
+            if (!madeProgress)
+            {
+                markUploadFailed(&state, "Upload Aborted: Write error after retries at offset " + std::to_string(writeOffset));
+                return false;
+            }
+
+            yield();
+        }
+
+        return true;
+    };
 
 #ifdef USE_OTA
     if (filename == "firmware.bin")
@@ -445,7 +650,6 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 
     if (index == 0)
     {
-        // First chunk of a new upload, find a free slot
         int i;
         for (i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
         {
@@ -453,14 +657,14 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             {
                 uploadingFiles[i].request = request;
                 uploadingFiles[i].active = true;
+                uploadingFiles[i].failed = false;
                 break;
             }
         }
 
-        // If no free slot was found, abort
         if (i == MAX_CONCURRENT_UPLOADS)
         {
-            DBG("Upload Error: No free slot for new upload!");
+            markUploadFailed(nullptr, "Upload Aborted: No free slot for new upload!");
             return;
         }
 
@@ -480,12 +684,14 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 
         NDBG("File Upload start from" + std::string(request->client()->remoteIP().toString().c_str()) + ", at : " + request->url().c_str() + "; Filename: " + filename.c_str() + ", Length: " + std::to_string(len / 1024) + " kb");
 
+        uploadingFiles[i].path = dest;
+        uploadingFiles[i].expectedNextIndex = 0;
+        uploadingFiles[i].verifiedSize = 0;
+        uploadingFiles[i].pendingBytes = 0;
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
         if (!uploadingFiles[i].file)
         {
-            NDBG("Upload Aborted: Failed to open file for write");
-            finishUploadForRequest(request, true);
-            uploadingFiles[i].request = nullptr;
+            markUploadFailed(&uploadingFiles[i], "Upload Aborted: Failed to open file for write");
             return;
         }
 
@@ -496,7 +702,6 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         }
         sendEvent(UploadStart);
 
-        // Add a disconnect handler to clean up if the client aborts
         request->onDisconnect([this, request]()
                               {
             for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
@@ -504,67 +709,121 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
                 if (uploadingFiles[i].request == request)
                 {
                     NDBG("Upload client disconnected. Cleaning up file.");
-                    uploadingFiles[i].file.close();
-                    finishUploadForRequest(request, true);
-                    uploadingFiles[i].request = nullptr; // Free the slot
+                    finishUploadForRequest(request, true, true);
                     break;
                 }
             } });
     }
 
-    // Find the correct slot for this request and write data
+    bool handledUpload = false;
     for (int i = 0; i < MAX_CONCURRENT_UPLOADS; i++)
     {
         if (uploadingFiles[i].request == request)
         {
+            handledUpload = true;
+            if (uploadingFiles[i].failed)
+            {
+                break;
+            }
+
+            if (uploadingFiles[i].verifiedSize + uploadingFiles[i].pendingBytes != uploadingFiles[i].expectedNextIndex)
+            {
+                markUploadFailed(&uploadingFiles[i], "Upload Aborted: Internal upload state mismatch for " + uploadingFiles[i].path);
+                return;
+            }
+
+            if (index != uploadingFiles[i].expectedNextIndex)
+            {
+                markUploadFailed(&uploadingFiles[i], "Upload Aborted: Unexpected chunk offset " + std::to_string(index) + ", expected " + std::to_string(uploadingFiles[i].expectedNextIndex));
+                return;
+            }
+
+            if (!uploadingFiles[i].file)
+            {
+                size_t reopenedSize = 0;
+                if (!reopenUploadFile(uploadingFiles[i], "Upload reopen before write", reopenedSize))
+                {
+                    markUploadFailed(&uploadingFiles[i], "Upload Aborted: Failed to reopen upload file before write");
+                    return;
+                }
+
+                if (reopenedSize != uploadingFiles[i].verifiedSize)
+                {
+                    markUploadFailed(&uploadingFiles[i], "Upload Aborted: File size mismatch before write for " + uploadingFiles[i].path + ", got " + std::to_string(reopenedSize) + ", expected " + std::to_string(uploadingFiles[i].verifiedSize));
+                    return;
+                }
+            }
+
             if (len > 0 && uploadingFiles[i].file)
             {
-                size_t written = 0;
-                for (int attempt = 0; attempt < 3; ++attempt)
+                size_t incomingOffset = 0;
+                while (incomingOffset < len)
                 {
-                    written = uploadingFiles[i].file.write(data, len);
-                    if (written != 0)
-                        break;
+                    const size_t freeBytes = UPLOAD_VERIFY_WINDOW_BYTES - uploadingFiles[i].pendingBytes;
+                    if (freeBytes == 0)
+                    {
+                        if (!flushPendingUploadData(uploadingFiles[i]))
+                        {
+                            return;
+                        }
+                        continue;
+                    }
 
-                    NDBG("Write attempt " + std::to_string(attempt + 1) + " failed, retrying...");
-                    delayMicroseconds(200);
-                    yield();
-                }
-                if (written == 0)
-                {
-                    NDBG("Upload Aborted: Write error");
-                    NDBG(FilesComponent::instance->getFileSystemInfo());
-                    finishUploadForRequest(request, true);
-                    uploadingFiles[i].request->client()->close();
-                    uploadingFiles[i].request = nullptr;
-                    return;
-                }
-                else if (written != len)
-                {
-                    NDBG("Upload Aborted: Partial write " + std::to_string(written) + "/" + std::to_string(len));
-                    NDBG(FilesComponent::instance->getFileSystemInfo());
-                    finishUploadForRequest(request, true);
-                    uploadingFiles[i].request->client()->close();
-                    uploadingFiles[i].request = nullptr;
-                    return;
-                }
+                    const size_t remainingBytes = len - incomingOffset;
+                    const size_t bytesToBuffer = remainingBytes < freeBytes ? remainingBytes : freeBytes;
+                    memcpy(uploadingFiles[i].pendingData + uploadingFiles[i].pendingBytes, data + incomingOffset, bytesToBuffer);
+                    uploadingFiles[i].pendingBytes += bytesToBuffer;
+                    uploadingFiles[i].expectedNextIndex += bytesToBuffer;
+                    incomingOffset += bytesToBuffer;
 
-#ifdef FILES_TYPE_FLASH
-                delayMicroseconds(500);
-#endif
-                yield();
+                    if (uploadingFiles[i].pendingBytes == UPLOAD_VERIFY_WINDOW_BYTES)
+                    {
+                        if (!flushPendingUploadData(uploadingFiles[i]))
+                        {
+                            return;
+                        }
+                    }
+                }
             }
 
             if (final)
             {
-                NDBG("Upload Complete: " + std::string(uploadingFiles[i].file.name()) + ", size: " + std::to_string(index + len));
-                uploadingFiles[i].file.flush();
-                uploadingFiles[i].file.close();
-                finishUploadForRequest(request, false);
-                uploadingFiles[i].request = nullptr; // Free the slot
+                if (!flushPendingUploadData(uploadingFiles[i]))
+                {
+                    return;
+                }
+
+                if (uploadingFiles[i].file)
+                {
+                    uploadingFiles[i].file.flush();
+                    uploadingFiles[i].file.close();
+                    uploadingFiles[i].file = File();
+                }
+
+                File verifyFile = FilesComponent::instance->openFile(uploadingFiles[i].path, false, false);
+                if (!verifyFile)
+                {
+                    markUploadFailed(&uploadingFiles[i], "Upload Aborted: Failed to reopen file for final verification");
+                    return;
+                }
+
+                const size_t finalSize = static_cast<size_t>(verifyFile.size());
+                verifyFile.close();
+                if (finalSize != uploadingFiles[i].expectedNextIndex || finalSize != uploadingFiles[i].verifiedSize)
+                {
+                    markUploadFailed(&uploadingFiles[i], "Upload Aborted: Final size mismatch for " + uploadingFiles[i].path + ", got " + std::to_string(finalSize) + ", expected " + std::to_string(uploadingFiles[i].expectedNextIndex), false);
+                    return;
+                }
+
+                NDBG("Upload Complete: " + uploadingFiles[i].path + ", size: " + std::to_string(finalSize));
             }
             break;
         }
+    }
+
+    if (!handledUpload)
+    {
+        markUploadFailed(nullptr, "Upload Aborted: No upload state found for request at offset " + std::to_string(index));
     }
 #endif
 }

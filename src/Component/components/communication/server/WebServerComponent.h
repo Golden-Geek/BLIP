@@ -1,6 +1,7 @@
 #pragma once
 
 #define MAX_CONCURRENT_UPLOADS 2
+#define UPLOAD_VERIFY_WINDOW_BYTES 16384
 
 static AsyncWebServer server = AsyncWebServer(80);
 static AsyncWebSocket ws("/");
@@ -45,6 +46,12 @@ struct UploadFileState
     AsyncWebServerRequest *request = nullptr; // Use nullptr to check if the slot is free
     File file;
     bool active = false;
+    bool failed = false;
+    std::string path = "";
+    size_t expectedNextIndex = 0;
+    size_t verifiedSize = 0;
+    size_t pendingBytes = 0;
+    uint8_t pendingData[UPLOAD_VERIFY_WINDOW_BYTES] = {};
 };
 
 UploadFileState uploadingFiles[MAX_CONCURRENT_UPLOADS];
@@ -60,7 +67,7 @@ void setupConnection();
 void closeServer();
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-void finishUploadForRequest(AsyncWebServerRequest *request, bool canceled);
+void finishUploadForRequest(AsyncWebServerRequest *request, bool canceled, bool deletePartialFile = false);
 
 #ifdef USE_OTA
 void handleOTAUpload(AsyncWebServerRequest *request, size_t index, uint8_t *data, size_t len, bool final);

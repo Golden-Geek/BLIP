@@ -29,7 +29,7 @@ void RootComponent::setupInternal(JsonObject)
     timeAtShutdown = 0;
 
 #ifdef USE_POWER
-    if (settings.wakeUpButton > 0)
+    if (settings.wakeUpButton > 0 && settings.wakeUpButton < 40)
 #if POWER_EXT == 0
         esp_sleep_enable_ext0_wakeup((gpio_num_t)settings.wakeUpButton, settings.wakeUpState);
 #else
@@ -263,11 +263,17 @@ void RootComponent::powerdown()
     clear();
     delay(200);
 
+#ifdef POWER_HARD_SHUTDOWN
+    BoardShutdown;
+    delay(100);
+#endif
+
 #ifdef ESP8266
     ESP.deepSleep(5e6);
 #else
     esp_deep_sleep_start();
 #endif
+
 }
 
 void RootComponent::switchToWifi()

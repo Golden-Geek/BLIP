@@ -2079,10 +2079,22 @@ function applyLogFilter() {
                     }
                     resolve();
                 } else {
+                    const failureDetail = (xhr.responseText || "").trim();
                     setProgress(0, "Upload failed.");
-                    setStatus("error", "Upload failed with status " + xhr.status + ".");
+                    setStatus(
+                        "error",
+                        "Upload failed with status " +
+                            xhr.status +
+                            (failureDetail ? ": " + failureDetail : ".")
+                    );
                     uploadBtnLabel.textContent = fromAuto ? defaultUploadLabel : "Upload failed";
-                    reject(new Error("Upload failed with status " + xhr.status));
+                    reject(
+                        new Error(
+                            "Upload failed with status " +
+                                xhr.status +
+                                (failureDetail ? ": " + failureDetail : "")
+                        )
+                    );
                 }
             };
 
