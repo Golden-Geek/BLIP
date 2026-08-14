@@ -24,6 +24,10 @@
 
 #define DEBOUNCE_MAX_FRAMES 20
 
+#ifndef DISTANCE_INIT_RETRY_INTERVAL
+#define DISTANCE_INIT_RETRY_INTERVAL 1000
+#endif
+
 DeclareComponent(DistanceSensor, "distance", )
 
 #ifdef DISTANCE_SENSOR_HCSR04
@@ -57,19 +61,25 @@ unsigned long stateStartTime = 0;
 unsigned long pulseStart = 0;
 unsigned long pulseEnd = 0;
 int lastEchoState = LOW;
+int activeTrigPin = -1;
+int activeEchoPin = -1;
 
 #elif defined(DISTANCE_SENSOR_VL53L0X)
 
-unsigned long lastConnectTime = 0;
 VL53L0X_mod sensor;
 unsigned long lastMeasurementTime = 0;
 #endif
 
+unsigned long lastInitAttempt = 0;
+
 void setupInternal(JsonObject o) override;
 bool initInternal() override;
-void update() override;
+void update(bool inFastLoop = false) override;
 
 #ifdef DISTANCE_SENSOR_HCSR04
+bool initHCSR04();
+void deinitHCSR04();
+void setStripUpdatesPaused(bool paused);
 void updateHCSR04();
 #elif defined(DISTANCE_SENSOR_VL53L0X)
 bool initVL53L0X();
@@ -78,7 +88,7 @@ void updateVL53L0X();
 
 void paramValueChangedInternal(ParamInfo *param) override;
 
-;
+EndDeclareComponent
 
 // Manager
 DeclareComponentManager(DistanceSensor, DISTANCE, distances, distance, DISTANCE_MAX_COUNT)

@@ -154,9 +154,10 @@ void OSCComponent::processMessage(OSCMessage &msg)
     }
     else
     {
-        char addr[64];
-        msg.getAddress(addr);
-        std::string addrStr = std::string(addr).substr(1);
+        const char *addr = msg.getAddress();
+        std::string addrStr = addr != nullptr ? addr : "";
+        if (!addrStr.empty() && addrStr.front() == '/')
+            addrStr.erase(0, 1);
         StringHelpers::replaceAll(addrStr, "/", ".");
         int tcIndex = addrStr.rfind('.');
         std::string tc = tcIndex == -1 ? "root" : addrStr.substr(0, tcIndex); // component name
@@ -187,8 +188,6 @@ void OSCComponent::sendMessage(OSCMessage &msg)
     if (WifiComponent::instance->state != WifiComponent::Connected)
         return;
 
-    char addr[32];
-    msg.getAddress(addr);
     udp.beginPacket((char *)remoteHost.c_str(), remotePort);
     msg.send(udp);
     udp.endPacket();

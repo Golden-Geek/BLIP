@@ -23,7 +23,8 @@ Script::Script() : localComponent(NULL),
                    initFunc(NULL),
                    updateFunc(NULL),
                    stopFunc(NULL),
-                   isInUpdateFunc(false)
+                   isInUpdateFunc(false),
+                   launchStackWatermarkWords(0)
 {
 }
 
@@ -48,7 +49,11 @@ void Script::update()
 #if defined(ESP32)
         const UBaseType_t stackWords = uxTaskGetStackHighWaterMark(NULL);
         // DBG("[script] Update wasm script " + std::to_string(stackWords) + " words free stack");
-        if (stackWords < SCRIPT_MIN_STACK_WORDS)
+        // uxTaskGetStackHighWaterMark() is the task's all-time minimum, not its
+        // current free stack. Only act on a low watermark reached after this
+        // script launched; otherwise a startup-time dip stops every script.
+        if (launchStackWatermarkWords >= SCRIPT_MIN_STACK_WORDS &&
+            stackWords < SCRIPT_MIN_STACK_WORDS)
         {
             DBG("[script] Low stack while running wasm, stopping script");
             stop();
@@ -78,12 +83,44 @@ void Script::load(const std::string &path)
     DBG("[script] Load script " + path + "...");
 
 #ifdef USE_FILES
-    File f = FilesComponent::instance->openFile("/scripts/" + path + ".wasm", false); // false is for reading
+    const std::string scriptPath = "/scripts/" + path + ".wasm";
+    File f;
+    for (int attempt = 0; attempt < 3 && !f; attempt++)
+    {
+        f = FilesComponent::instance->openFile(scriptPath, false); // false is for reading
+        if (!f && attempt < 2)
+        {
+            delay(2);
+            yield();
+        }
+    }
+
     if (!f)
     {
-        DBG("[script] !Error reading file " + path);
+        DBG("[script] !Error reading file " + scriptPath + " after 3 attempts");
         return;
     }
+
+    const size_t totalBytes = f.size();
+    if (totalBytes == 0 || totalBytes > SCRIPT_MAX_SIZE)
+    {
+        f.close();
+        if (totalBytes == 0)
+            DBG("[script] !Script file is empty: " + scriptPath);
+        else
+            DBG("[script] !Script size is more than max size");
+        return;
+    }
+
+    const size_t bytesRead = f.read(scriptData, totalBytes);
+    f.close();
+    if (bytesRead != totalBytes)
+    {
+        DBG("[script] !Incomplete read for " + scriptPath + ": " + std::to_string(bytesRead) + "/" + std::to_string(totalBytes) + " bytes");
+        return;
+    }
+
+    scriptSize = totalBytes;
 
     StaticJsonDocument<1024> metaDataDoc;
     File mf = FilesComponent::instance->openFile("/scripts/" + path + "_metadata.wmeta", false); // false is for reading
@@ -144,21 +181,12 @@ void Script::load(const std::string &path)
         {
             DBG("[script] !Error parsing metadata json : " + std::string(error.c_str()));
         }
+        mf.close();
     }
     else
     {
         DBG("[script] No metadata file found for script " + path);
     }
-
-    long totalBytes = f.size();
-    if (totalBytes > SCRIPT_MAX_SIZE)
-    {
-        DBG("[script] !Script size is more than max size");
-        return;
-    }
-    scriptSize = totalBytes;
-
-    f.read(scriptData, scriptSize);
 
     DBG("[script] Script read " + std::to_string(scriptSize) + " bytes");
     launchWasm();
@@ -249,6 +277,10 @@ void Script::launchWasmTask()
     {
         DBG("[script] No init function found");
     }
+
+#if defined(ESP32)
+    launchStackWatermarkWords = uxTaskGetStackHighWaterMark(NULL);
+#endif
 }
 
 M3Result Script::LinkArduino(IM3Runtime runtime)

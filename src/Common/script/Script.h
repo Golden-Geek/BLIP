@@ -76,6 +76,7 @@ public:
     IM3Function triggerFunctionFunc;
 
     bool isInUpdateFunc;
+    uint32_t launchStackWatermarkWords;
     static float timeAtLaunch;
 
     void load(const std::string &name);

@@ -44,7 +44,7 @@ bool FilesComponent::initInternal()
         NDBG("Initializing SPI for SD Card on pins MOSI " + std::to_string(sdMosi) + ", MISO " + std::to_string(sdMiso) + ", SCK " + std::to_string(sdSCK) + ",  CS " + std::to_string(sdCS));
 
         spiSD.begin((int8_t)sdSCK, (int8_t)sdMiso, (int8_t)sdMosi, (int8_t)sdCS);
-        if (SD.begin((uint8_t)sdCS, spiSD, sdSpeed))
+        if (SD.begin((uint8_t)sdCS, spiSD, sdSpeed, "/sd", FILES_MAX_OPEN_FILES))
         {
             _fs = &SD;
             mounted = true;
@@ -65,7 +65,7 @@ bool FilesComponent::initInternal()
     
 
     SPI.begin(sdSCK, sdMiso, sdMosi, sdCS);
-    if (!SD.begin(sdCS, SPI, 1'000'000UL))
+    if (!SD.begin(sdCS, SPI, 1'000'000UL, "/sd", FILES_MAX_OPEN_FILES))
     {
         NDBG("Flash init failed");
     }

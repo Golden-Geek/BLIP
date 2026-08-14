@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #define ESPNOW_MAX_DEVICES 10
 #define ESPNOW_MAX_STREAM_RECEIVERS 10 // How many components can listen here
 
@@ -69,6 +71,7 @@ bool espNowInitialized = false;
 long lastReceiveTime;
 long lastSendTime = 0;
 long lastCheck = 0;
+std::atomic<uint32_t> sendCompletionCount{0};
 uint8_t sendPacketData[250];
 uint8_t sendMac[6];
 
@@ -87,7 +90,7 @@ void routeMessage(var *data, int numData);
 void sendStream(int id, int universe, Color3 *colors, int numColors);
 #endif
 
-void sendPacket(int id, const uint8_t *data, int len);
+int sendPacket(int id, const uint8_t *data, int len);
 
 void registerStreamReceiver(ESPNowStreamReceiver *receiver);
 void unregisterStreamReceiver(ESPNowStreamReceiver *receiver);

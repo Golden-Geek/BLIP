@@ -26,25 +26,35 @@ void DistanceSensorComponent::setupInternal(JsonObject o)
 
 bool DistanceSensorComponent::initInternal()
 {
+    lastInitAttempt = millis();
+
 #ifdef DISTANCE_SENSOR_HCSR04
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
+    return initHCSR04();
 #elif defined(DISTANCE_SENSOR_VL53L0X)
     Wire.begin();
     sensor.setTimeout(500);
-    initVL53L0X();
-    sensor.startContinuous(1000 / updateRate);
-#endif
+    if (!initVL53L0X())
+        return false;
 
+    sensor.startContinuous(updateRate > 0 ? max(1000 / updateRate, 1) : 1);
     return true;
+#endif
 }
 
-void DistanceSensorComponent::update()
+void DistanceSensorComponent::update(bool)
 {
     // Override update() to handle updateRate custom inside the sensors functions
 
     if (!enabled)
         return;
+
+    if (!isInit)
+    {
+        unsigned long currentTime = millis();
+        if (currentTime - lastInitAttempt >= DISTANCE_INIT_RETRY_INTERVAL)
+            isInit = initInternal();
+        return;
+    }
 
 #ifdef DISTANCE_SENSOR_HCSR04
     updateHCSR04();
@@ -54,16 +64,81 @@ void DistanceSensorComponent::update()
 }
 
 #ifdef DISTANCE_SENSOR_HCSR04
+bool DistanceSensorComponent::initHCSR04()
+{
+    if (!digitalPinCanOutput(trigPin))
+    {
+        NDBG("Invalid HC-SR04 trigger pin: " + std::to_string(trigPin));
+        return false;
+    }
+
+    if (!digitalPinIsValid(echoPin))
+    {
+        NDBG("Invalid HC-SR04 echo pin: " + std::to_string(echoPin));
+        return false;
+    }
+
+    if (trigPin == echoPin)
+    {
+        NDBG("HC-SR04 trigger and echo pins must be different.");
+        return false;
+    }
+
+    pinMode(trigPin, OUTPUT);
+    digitalWrite(trigPin, LOW);
+    pinMode(echoPin, INPUT);
+
+    activeTrigPin = trigPin;
+    activeEchoPin = echoPin;
+    currentState = IDLE;
+    stateStartTime = millis();
+    lastEchoState = LOW;
+    return true;
+}
+
+void DistanceSensorComponent::deinitHCSR04()
+{
+    setStripUpdatesPaused(false);
+
+    if (digitalPinCanOutput(activeTrigPin))
+    {
+        digitalWrite(activeTrigPin, LOW);
+        pinMode(activeTrigPin, INPUT);
+    }
+
+    if (digitalPinIsValid(activeEchoPin))
+        pinMode(activeEchoPin, INPUT);
+
+    activeTrigPin = -1;
+    activeEchoPin = -1;
+    currentState = IDLE;
+    lastEchoState = LOW;
+}
+
+void DistanceSensorComponent::setStripUpdatesPaused(bool paused)
+{
+#ifdef USE_LEDSTRIP
+    if (RootComponent::instance != nullptr &&
+        RootComponent::instance->strips.count > 0 &&
+        RootComponent::instance->strips.items[0] != nullptr)
+    {
+        RootComponent::instance->strips.items[0]->doNotUpdate = paused;
+    }
+#endif
+}
+
 void DistanceSensorComponent::updateHCSR04()
 {
-    int currentEchoState = gpio_get_level(echoPin);
+    int currentEchoState = gpio_get_level(static_cast<gpio_num_t>(echoPin));
 
     // --- State Machine ---
     switch (currentState)
     {
     case IDLE:
+    {
         // Start a new measurement if enough time has passed since the last one
-        if (millis() - stateStartTime >= max(1000 / updateRate, 60)) // Ensure at least 60ms between measurements
+        unsigned long measurementInterval = updateRate > 0 ? max(1000 / updateRate, 60) : 60;
+        if (millis() - stateStartTime >= measurementInterval) // Ensure at least 60ms between measurements
         {
             // Start Trigger sequence
             digitalWrite(trigPin, LOW); // Ensure low before pulse
@@ -71,9 +146,10 @@ void DistanceSensorComponent::updateHCSR04()
             digitalWrite(trigPin, HIGH);
             stateStartTime = micros(); // Record the start time of the trigger pulse
             currentState = TRIGGERING;
-            RootComponent::instance->strips.items[0]->doNotUpdate = true;
+            setStripUpdatesPaused(true);
         }
         break;
+    }
 
     case TRIGGERING:
         // Check if the 10 microsecond trigger pulse is complete
@@ -99,7 +175,7 @@ void DistanceSensorComponent::updateHCSR04()
             // Timeout: No echo received, reset state machine
             currentState = IDLE;
             stateStartTime = millis();
-            RootComponent::instance->strips.items[0]->doNotUpdate = false;
+            setStripUpdatesPaused(false);
         }
         break;
 
@@ -135,7 +211,7 @@ void DistanceSensorComponent::updateHCSR04()
 
         stateStartTime = millis(); // Record completion time for the next IDLE check
         currentState = IDLE;
-        RootComponent::instance->strips.items[0]->doNotUpdate = false;
+        setStripUpdatesPaused(false);
 
         break;
     }
@@ -161,21 +237,16 @@ bool DistanceSensorComponent::initVL53L0X()
 
 void DistanceSensorComponent::updateVL53L0X()
 {
-    if (!isInit)
-        return;
-
     if (!isConnected)
     {
-        if (millis() - lastConnectTime > 5000)
-        {
-            initVL53L0X();
-            lastConnectTime = millis();
-        }
+        isInit = false;
+        lastInitAttempt = millis();
         return;
     }
 
     long currentTime = millis();
-    if (currentTime - lastMeasurementTime < 1000 / updateRate)
+    unsigned long measurementInterval = updateRate > 0 ? max(1000 / updateRate, 1) : 1;
+    if (currentTime - lastMeasurementTime < measurementInterval)
         return; // Not time for the next measurement yet
 
     uint16_t range = 0;
@@ -193,6 +264,9 @@ void DistanceSensorComponent::updateVL53L0X()
     {
         NDBG("VL53L0X sensor timeout!");
         SetParam(isConnected, false);
+        sensor.stopContinuous();
+        isInit = false;
+        lastInitAttempt = millis();
         return;
     }
 
@@ -222,17 +296,15 @@ void DistanceSensorComponent::updateVL53L0X()
 }
 #endif
 
-void DistanceSensorComponent::paramValueChangedInternal(ParamInfo *param)
+void DistanceSensorComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 {
     void *param = paramInfo->ptr;
 #ifdef DISTANCE_SENSOR_HCSR04
-    if (param == &trigPin)
+    if (param == &trigPin || param == &echoPin)
     {
-        pinMode(trigPin, OUTPUT);
-    }
-    else if (param == &echoPin)
-    {
-        pinMode(echoPin, INPUT);
+        isInit = false;
+        deinitHCSR04();
+        isInit = initInternal();
     }
 #endif
 
@@ -243,7 +315,7 @@ void DistanceSensorComponent::paramValueChangedInternal(ParamInfo *param)
         {
             NDBG("Updating VL53L0X update rate to " + std::to_string(updateRate) + " Hz");
             sensor.stopContinuous();
-            sensor.startContinuous(1000 / updateRate);
+            sensor.startContinuous(updateRate > 0 ? max(1000 / updateRate, 1) : 1);
         }
     }
 #endif

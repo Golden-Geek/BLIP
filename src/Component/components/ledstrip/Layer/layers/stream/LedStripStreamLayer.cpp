@@ -4,6 +4,8 @@ void LedStripStreamLayer::setupInternal(JsonObject o)
 {
     LedStripLayer::setupInternal(o);
 
+    memset(pendingColors, 0, sizeof(pendingColors));
+
     AddIntParamConfig(universe);
     AddIntParamConfig(startChannel);
     AddBoolParamConfig(use16Bits);
@@ -21,11 +23,29 @@ bool LedStripStreamLayer::initInternal()
 
 void LedStripStreamLayer::updateInternal()
 {
-    if (!hasCleared && clearOnNoReception && millis() / 1000.0f - lastReceiveTime > noReceptionTime)
+    const uint32_t nowUs = micros();
+    const uint32_t nowMs = millis();
+
+    portENTER_CRITICAL(&pendingColorsMux);
+
+    if (pendingFrame &&
+        ((uint32_t)(nowUs - lastPacketTimeUs) >= LEDSTREAM_FRAME_SETTLE_US ||
+         (uint32_t)(nowUs - pendingFrameStartUs) >= LEDSTREAM_MAX_FRAME_HOLD_US))
     {
-        clearColors();
+        memcpy(colors, pendingColors, sizeof(Color) * strip->numColors);
+        pendingFrame = false;
+    }
+
+    if (!hasCleared && clearOnNoReception &&
+        (uint32_t)(nowMs - lastReceiveTimeMs) > (uint32_t)(noReceptionTime * 1000.0f))
+    {
+        memset(colors, 0, sizeof(Color) * strip->numColors);
+        memset(pendingColors, 0, sizeof(Color) * strip->numColors);
+        pendingFrame = false;
         hasCleared = true;
     }
+
+    portEXIT_CRITICAL(&pendingColorsMux);
 }
 
 void LedStripStreamLayer::clearInternal()
@@ -65,7 +85,23 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
 
     int actualLedCount = ledEnd - ledStart;
 
+    if (actualLedCount <= 0 || dataStartIndex >= len)
+        return;
+
     // DBG("Received Artnet, incoming universe : " + std::to_string(dmxUniverse) + ", strip universe : " + std::to_string(universe) + ", startChannel : " + std::to_string(startChannel) + ", ledStart : " + std::to_string(ledStart) + ", ledEnd : " + std::to_string(ledEnd) + ", actualLedCount : " + std::to_string(actualLedCount));
+
+    const uint32_t packetTimeUs = micros();
+
+    portENTER_CRITICAL(&pendingColorsMux);
+
+    if (!pendingFrame)
+    {
+        // Preserve channels not carried by this packet while collecting the
+        // rest of the frame.
+        memcpy(pendingColors, colors, sizeof(Color) * numColors);
+        pendingFrameStartUs = packetTimeUs;
+        pendingFrame = true;
+    }
 
     if (use16Bits)
     {
@@ -77,7 +113,7 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
             const uint16_t b = (data[channelIndex + 4] << 8 | data[channelIndex + 5]);
             const uint16_t a = includeAlpha ? (data[channelIndex + 6] << 8 | data[channelIndex + 7]) : 16383;
 
-            colors[ledStart + i] = Color(r, g, b, a);
+            pendingColors[ledStart + i] = Color(r, g, b, a);
         }
     }
     else
@@ -92,7 +128,7 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
                             data[channelIndex + 2],
                             alpha);
 
-            colors[ledStart + i] = c;
+            pendingColors[ledStart + i] = c;
 
             // if (i < 3)
             // {
@@ -100,7 +136,11 @@ void LedStripStreamLayer::onDMXReceived(uint16_t dmxUniverse, const uint8_t *dat
             // }
         }
 
-        lastReceiveTime = millis() / 1000.0f;
-        hasCleared = false;
     }
+
+    lastPacketTimeUs = packetTimeUs;
+    lastReceiveTimeMs = millis();
+    hasCleared = false;
+
+    portEXIT_CRITICAL(&pendingColorsMux);
 }

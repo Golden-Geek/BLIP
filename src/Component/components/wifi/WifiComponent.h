@@ -67,6 +67,10 @@ const std::string wifiModeNames[MODE_MAX]{
 
 #define MAX_POWER_LEVELS 4
 
+#ifndef WIFI_MAX_TX_POWER_INDEX
+#define WIFI_MAX_TX_POWER_INDEX (MAX_POWER_LEVELS - 1)
+#endif
+
 const wifi_power_t txPowerLevels[4] = {
     WIFI_POWER_15dBm,
     WIFI_POWER_17dBm,
@@ -131,6 +135,7 @@ bool isUsingWiFi() const;
 std::string getIP() const;
 int getChannel() const;
 uint8_t getWifiProtocol() const;
+int getTxPowerIndex() const;
 
 
 DeclareComponentEventTypes(ConnectionStateChanged);

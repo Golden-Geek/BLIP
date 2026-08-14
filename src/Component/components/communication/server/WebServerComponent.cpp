@@ -78,6 +78,7 @@ void WebServerComponent::setupInternal(JsonObject o)
         uploadingFiles[i].expectedNextIndex = 0;
         uploadingFiles[i].verifiedSize = 0;
         uploadingFiles[i].pendingBytes = 0;
+        uploadingFiles[i].pendingData.reset();
     }
 
     AddBoolParamConfig(sendFeedback);
@@ -170,7 +171,7 @@ bool WebServerComponent::initInternal()
                         }
 
                         chunk->nextComponent->fillChunkedOSCQueryData(chunk.get(), *showConfig);
-                        state->current = chunk->data;
+                        state->current = std::move(chunk->data);
                         state->offsetInChunk = 0;
 
                         if (state->current.length() == 0)
@@ -389,13 +390,7 @@ bool WebServerComponent::initInternal()
 void WebServerComponent::updateInternal()
 {
     if (wsIsInit)
-    {
-        if (timeAtLastCleanup + 10000 < millis())
-        {
-            timeAtLastCleanup = millis();
-            ws.cleanupClients(4);
-        }
-    }
+        ws.cleanupClients(2);
 }
 
 void WebServerComponent::clearInternal()
@@ -411,10 +406,13 @@ void WebServerComponent::onEnabledChanged()
 
 void WebServerComponent::setupConnection()
 {
-    bool shouldConnect = enabled && WifiComponent::instance->state == WifiComponent::Connected && !wsIsInit;
+    const bool shouldBeRunning = enabled && WifiComponent::instance->state == WifiComponent::Connected;
 
-    if (shouldConnect)
+    if (shouldBeRunning)
     {
+        if (wsIsInit)
+            return;
+
         NDBG("Start HTTP Server");
         server.begin();
         NDBG("HTTP server started");
@@ -423,7 +421,7 @@ void WebServerComponent::setupConnection()
 
         NDBG("WebSocket server established");
     }
-    else
+    else if (wsIsInit)
     {
         closeServer();
     }
@@ -439,8 +437,23 @@ void WebServerComponent::closeServer()
     }
 
     ws.closeAll();
+    server.end();
+    wsIsInit = false;
 
     NDBG("WebSocket connections closed");
+}
+
+bool WebServerComponent::canSendWebSocketData()
+{
+    if (!wsIsInit || ws.count() == 0)
+        return false;
+
+    // Leave headroom for lwIP/AsyncTCP control and poll events. Parameter
+    // feedback can be dropped safely and resumes when pressure subsides.
+    if (ESP.getFreeHeap() < WEBSOCKET_MIN_FREE_HEAP)
+        return false;
+
+    return ws.availableForWriteAll();
 }
 
 void WebServerComponent::finishUploadForRequest(AsyncWebServerRequest *request, bool canceled, bool deletePartialFile)
@@ -476,6 +489,7 @@ void WebServerComponent::finishUploadForRequest(AsyncWebServerRequest *request, 
             uploadingFiles[i].expectedNextIndex = 0;
             uploadingFiles[i].verifiedSize = 0;
             uploadingFiles[i].pendingBytes = 0;
+            uploadingFiles[i].pendingData.reset();
 
             if (deletePartialFile && path.length() > 0)
             {
@@ -528,6 +542,8 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             }
 
             state->failed = true;
+            state->pendingBytes = 0;
+            state->pendingData.reset();
             if (state->active)
             {
                 state->active = false;
@@ -580,7 +596,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
             for (int attempt = 0; attempt < 6; ++attempt)
             {
                 const size_t bytesToWrite = state.pendingBytes;
-                const size_t reportedWritten = state.file.write(state.pendingData, bytesToWrite);
+                const size_t reportedWritten = state.file.write(state.pendingData.get(), bytesToWrite);
 
                 size_t actualSize = 0;
                 if (!reopenUploadFile(state, "Upload commit verification", actualSize))
@@ -604,7 +620,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
                 if (actualSize > writeOffset && actualSize < writeOffset + bytesToWrite)
                 {
                     const size_t persistedBytes = actualSize - writeOffset;
-                    memmove(state.pendingData, state.pendingData + persistedBytes, state.pendingBytes - persistedBytes);
+                    memmove(state.pendingData.get(), state.pendingData.get() + persistedBytes, state.pendingBytes - persistedBytes);
                     state.pendingBytes -= persistedBytes;
                     state.verifiedSize += persistedBytes;
                     madeProgress = true;
@@ -688,6 +704,12 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
         uploadingFiles[i].expectedNextIndex = 0;
         uploadingFiles[i].verifiedSize = 0;
         uploadingFiles[i].pendingBytes = 0;
+        uploadingFiles[i].pendingData.reset(new (std::nothrow) uint8_t[UPLOAD_VERIFY_WINDOW_BYTES]);
+        if (!uploadingFiles[i].pendingData)
+        {
+            markUploadFailed(&uploadingFiles[i], "Upload Aborted: Failed to allocate verification buffer", false);
+            return;
+        }
         uploadingFiles[i].file = FilesComponent::instance->openFile(dest, true, true);
         if (!uploadingFiles[i].file)
         {
@@ -771,7 +793,7 @@ void WebServerComponent::handleFileUpload(AsyncWebServerRequest *request, String
 
                     const size_t remainingBytes = len - incomingOffset;
                     const size_t bytesToBuffer = remainingBytes < freeBytes ? remainingBytes : freeBytes;
-                    memcpy(uploadingFiles[i].pendingData + uploadingFiles[i].pendingBytes, data + incomingOffset, bytesToBuffer);
+                    memcpy(uploadingFiles[i].pendingData.get() + uploadingFiles[i].pendingBytes, data + incomingOffset, bytesToBuffer);
                     uploadingFiles[i].pendingBytes += bytesToBuffer;
                     uploadingFiles[i].expectedNextIndex += bytesToBuffer;
                     incomingOffset += bytesToBuffer;
@@ -873,6 +895,8 @@ void WebServerComponent::onAsyncWSEvent(AsyncWebSocket *server, AsyncWebSocketCl
     switch (type)
     {
     case WS_EVT_CONNECT:
+        client->keepAlivePeriod(15);
+        client->setCloseClientOnQueueFull(false);
         NDBG("Client " + std::to_string(client->id()) + " connected from " + client->remoteIP().toString().c_str());
         NDBG("Clients connected: " + std::to_string(server->count()));
         break;
@@ -920,9 +944,8 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
     {
         // DBG("Got websocket OSC message");
 
-        char addr[64];
-        msg.getAddress(addr);
-        tmpExcludeParam = std::string(addr);
+        const char *addr = msg.getAddress();
+        tmpExcludeParam = addr != nullptr ? addr : "";
 
         OSCComponent::instance->processMessage(msg);
 
@@ -931,33 +954,44 @@ void WebServerComponent::parseBinaryMessage(uint8_t *data, size_t len)
 #endif
 }
 
-void WebServerComponent::sendParamFeedback(Component *c, std::string pName, var *data, int numData)
-{
-    if (!sendFeedback)
-        return;
-    if (suppressFeedbackDuringUpload && activeUploadCount > 0)
-        return;
-    sendParamFeedback(c->getFullPath(), pName, data, numData);
-}
-
-void WebServerComponent::sendParamFeedback(std::string path, std::string pName, var *data, int numData)
+void WebServerComponent::sendParamFeedback(Component *c, const std::string &pName, const var *data, int numData)
 {
     if (!sendFeedback)
         return;
     if (suppressFeedbackDuringUpload && activeUploadCount > 0)
         return;
 #ifdef USE_OSC
+    // Check before getFullPath(), which also allocates.
+    if (!canSendWebSocketData())
+        return;
+#endif
+    sendParamFeedback(c->getFullPath(), pName, data, numData);
+}
+
+void WebServerComponent::sendParamFeedback(const std::string &path, const std::string &pName, const var *data, int numData)
+{
+    if (!sendFeedback)
+        return;
+    if (suppressFeedbackDuringUpload && activeUploadCount > 0)
+        return;
+#ifdef USE_OSC
+    // Avoid temporary OSC/string allocations when there is nobody to receive
+    // feedback or a slow client has filled its outgoing queue.
+    if (!canSendWebSocketData())
+        return;
+
     OSCMessage msg = OSCComponent::createMessage(path, pName, data, numData, false);
 
-    char addr[64];
-    msg.getAddress(addr);
-    if (std::string(addr) == tmpExcludeParam)
+    // getAddress(char*) is unbounded in the OSC library. Use its owned,
+    // null-terminated address directly and compare without allocating.
+    const char *addr = msg.getAddress();
+    if (addr != nullptr && !tmpExcludeParam.empty() && tmpExcludeParam == addr)
         return;
 
     wsPrint.flush();
     msg.send(wsPrint);
 
-    if (!ws.availableForWriteAll())
+    if (!canSendWebSocketData())
         return;
 
     ws.binaryAll(wsPrint.data, wsPrint.index);
@@ -969,6 +1003,8 @@ void WebServerComponent::sendDebugLog(const std::string &msg, std::string source
     if (!sendDebugLogs)
         return;
     if (suppressFeedbackDuringUpload && activeUploadCount > 0)
+        return;
+    if (!canSendWebSocketData())
         return;
 
     /* message is like this :
@@ -1008,13 +1044,16 @@ void WebServerComponent::sendDebugLog(const std::string &msg, std::string source
 void WebServerComponent::sendBye(std::string type)
 {
 #ifdef USE_OSC
+    if (!canSendWebSocketData())
+        return;
+
     OSCMessage msg("/bye");
     msg.add(type.c_str());
 
     wsPrint.flush();
     msg.send(wsPrint);
 
-    if (!ws.availableForWriteAll())
+    if (!canSendWebSocketData())
         return;
     ws.binaryAll(wsPrint.data, wsPrint.index);
 #endif

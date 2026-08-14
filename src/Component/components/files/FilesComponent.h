@@ -25,6 +25,12 @@
 #define FILES_DEFAULT_EN -1
 #endif
 
+// Arduino's SD default is only five descriptors. Web serving, playback,
+// uploads, and script loading can legitimately overlap and exhaust that pool.
+#ifndef FILES_MAX_OPEN_FILES
+#define FILES_MAX_OPEN_FILES 10
+#endif
+
 #if defined(FILES_TYPE_SD) || defined(FILES_TYPE_FLASH)
 #define FILES_USE_SPI
 #endif

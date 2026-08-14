@@ -1,7 +1,8 @@
 #pragma once
 
 #define MAX_CONCURRENT_UPLOADS 2
-#define UPLOAD_VERIFY_WINDOW_BYTES 32768
+#define UPLOAD_VERIFY_WINDOW_BYTES 8192
+#define WEBSOCKET_MIN_FREE_HEAP 16384
 
 static AsyncWebServer server = AsyncWebServer(80);
 static AsyncWebSocket ws("/");
@@ -35,8 +36,6 @@ bool wsIsInit = false;
 bool isUploading;
 int uploadedBytes;
 File uploadingFile;
-long timeAtLastCleanup = 0;
-
 int activeUploadCount = 0;
 
 std::string tmpExcludeParam = ""; // to change with client exclude when AsyncWebServer implements it
@@ -51,7 +50,7 @@ struct UploadFileState
     size_t expectedNextIndex = 0;
     size_t verifiedSize = 0;
     size_t pendingBytes = 0;
-    uint8_t pendingData[UPLOAD_VERIFY_WINDOW_BYTES] = {};
+    std::unique_ptr<uint8_t[]> pendingData;
 };
 
 UploadFileState uploadingFiles[MAX_CONCURRENT_UPLOADS];
@@ -65,6 +64,7 @@ void onEnabledChanged() override;
 
 void setupConnection();
 void closeServer();
+bool canSendWebSocketData();
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 void finishUploadForRequest(AsyncWebServerRequest *request, bool canceled, bool deletePartialFile = false);
@@ -79,8 +79,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void parseTextMessage(std::string msg);
 void parseBinaryMessage(uint8_t *data, size_t len);
 
-void sendParamFeedback(Component *c, std::string pName, var *data, int numData);
-void sendParamFeedback(std::string path, std::string pName, var *data, int numData);
+void sendParamFeedback(Component *c, const std::string &pName, const var *data, int numData);
+void sendParamFeedback(const std::string &path, const std::string &pName, const var *data, int numData);
 void sendDebugLog(const std::string &msg, std::string source = "", std::string type = "info");
 void sendBye(std::string type);
 

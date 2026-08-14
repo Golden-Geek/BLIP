@@ -20,6 +20,12 @@ void WifiComponent::setupInternal(JsonObject o)
     AddStringParamConfig(manualGateway);
     AddBoolParamConfig(channelScanMode);
     AddEnumParamConfig(txPower, txPowerLevelNames, MAX_POWER_LEVELS);
+    int safeTxPowerIndex = getTxPowerIndex();
+    if (txPower != safeTxPowerIndex)
+    {
+        NDBG("Limiting TX power from " + txPowerLevelNames[std::clamp(txPower, 0, MAX_POWER_LEVELS - 1)] + " to " + txPowerLevelNames[safeTxPowerIndex]);
+        txPower = safeTxPowerIndex;
+    }
     AddEnumParamConfig(wifiProtocol, wifiProtocolNames, WIFI_MODE_MAX);
     AddFloatParam(signal);
 
@@ -229,7 +235,7 @@ void WifiComponent::connect()
             WiFi.setScanMethod(WIFI_FAST_SCAN);
         }
 
-        WiFi.setTxPower((wifi_power_t)txPowerLevels[std::clamp(txPower, 0, MAX_POWER_LEVELS - 1)]);
+        WiFi.setTxPower((wifi_power_t)txPowerLevels[getTxPowerIndex()]);
 
         if (manualIP != "" && manualGateway != "" && manualIP != "0.0.0.0" && manualGateway != "0.0.0.0")
         {
@@ -376,4 +382,10 @@ uint8_t WifiComponent::getWifiProtocol() const
     }
 
     return WIFI_PROTOCOL_11B;
+}
+
+int WifiComponent::getTxPowerIndex() const
+{
+    const int maxPowerIndex = std::clamp((int)WIFI_MAX_TX_POWER_INDEX, 0, MAX_POWER_LEVELS - 1);
+    return std::clamp(txPower, 0, maxPowerIndex);
 }

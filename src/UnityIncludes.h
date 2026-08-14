@@ -15,6 +15,8 @@
 #include <SPI.h>
 #include <arduino-timer.h>
 #include <map>
+#include <memory>
+#include <new>
 #include <ostream>
 #ifdef USE_ARTNET
 #include <ArtnetWifi.h>
@@ -134,6 +136,7 @@
 #endif
 
 #ifdef IMU_TYPE_BNO055
+#include <Adafruit_BNO055.h>
 #include <utility/vector.h>
 #include <utility/matrix.h>
 #include <utility/quaternion.h>

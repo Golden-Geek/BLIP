@@ -253,7 +253,10 @@ void Component::fillChunkedOSCQueryData(OSCQueryChunk *chunk, bool showConfig)
 
         if (params.size() > 0 || triggers.size() > 0)
         {
-            StaticJsonDocument<6000> doc;
+            // This runs from the AsyncTCP task while the web editor fetches
+            // its configuration. Keep the sizeable JSON pool off that task's
+            // stack to avoid intermittent stack overflows on connection.
+            DynamicJsonDocument doc(6000);
             JsonObject o = doc.to<JsonObject>();
 
             if (triggers.size() > 0)

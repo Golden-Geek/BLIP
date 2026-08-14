@@ -4,7 +4,14 @@ ImplementSingleton(ESPNowComponent);
 
 void ESPNowComponent::setupInternal(JsonObject o)
 {
+#ifdef ESPNOW_BRIDGE
     AddBoolParamConfig(pairingMode);
+#else
+    // Pairing is an operational state, not a setting. In particular, do not
+    // restore a pairing session that was active when settings were saved.
+    AddBoolParam(pairingMode);
+    pairingMode = false;
+#endif
     AddBoolParamConfig(longRange);
     AddBoolParamConfig(optimalRange);
 
@@ -83,7 +90,7 @@ void ESPNowComponent::initESPNow()
     {
         NDBG("WiFi mode to STA with Phy " + WifiComponent::instance->wifiProtocolNames[WifiComponent::instance->wifiProtocol]);
         esp_wifi_set_protocol(WIFI_IF_STA, WifiComponent::instance->getWifiProtocol());
-        int powerIndex = std::clamp(WifiComponent::instance->txPower, 0, MAX_POWER_LEVELS - 1);
+        int powerIndex = WifiComponent::instance->getTxPowerIndex();
         NDBG("Setting TX Power to " + WifiComponent::instance->txPowerLevelNames[powerIndex]);
         WiFi.setTxPower((wifi_power_t)WifiComponent::instance->txPowerLevels[powerIndex]);
     }
@@ -222,6 +229,8 @@ void ESPNowComponent::clearInternal()
 
 void ESPNowComponent::onDataSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
 {
+    instance->sendCompletionCount.fetch_add(1, std::memory_order_relaxed);
+
     if (status == ESP_NOW_SEND_SUCCESS)
     {
         // DBG("[ESPNow] Sent to " + StringHelpers::macToString(tx_info->des_addr));
@@ -554,8 +563,6 @@ void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numCo
     const int headerSize = 5;
 
     int colorsSent = 0;
-    DBG("Streaming now, numColors : " + std::to_string(numColors) + ", universe : " + std::to_string(universe));
-
     while (colorsSent < numColors)
     {
         int currentUniverse = universe + floor((float)colorsSent / colorsPerUniverse);
@@ -585,21 +592,39 @@ void ESPNowComponent::sendStream(int id, int universe, Color3 *colors, int numCo
         // DBG("Sending stream to ID " + std::to_string(id) + ", universe " + std::to_string(currentUniverse) + ", start channel " + std::to_string(startDmxChannel) + ", start color index : " + std::to_string(startColorIndex) + ", colors " + std::to_string(colorsInThisPacket));
         memcpy(sendPacketData + headerSize, colors + colorsSent, colorsInThisPacket * 3);
 
-        sendPacket(id, sendPacketData, dataLen);
+        const uint32_t completedBeforeSend = sendCompletionCount.load(std::memory_order_relaxed);
+        const int queuedPackets = sendPacket(id, sendPacketData, dataLen);
+
+        // ESP-NOW transmission is asynchronous. Reusing the radio queue for
+        // the next LED chunk before this one completes causes dropped chunks
+        // and visible partial frames, especially at the 1 Mbps range setting.
+        if (queuedPackets > 0)
+        {
+            const uint32_t completionTarget = completedBeforeSend + queuedPackets;
+            const uint32_t waitStart = millis();
+            while ((int32_t)(sendCompletionCount.load(std::memory_order_relaxed) - completionTarget) < 0 &&
+                   (uint32_t)(millis() - waitStart) < 8)
+            {
+                delay(1);
+            }
+        }
 
         colorsSent += colorsInThisPacket;
     }
 }
 #endif
 
-void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
+int ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
 {
+
+    int queuedPackets = 0;
 
 #ifdef ESPNOW_BRIDGE
 
     if (broadcastMode)
     {
-        esp_now_send(broadcastMac, data, len);
+        if (esp_now_send(broadcastMac, data, len) == ESP_OK)
+            queuedPackets++;
     }
     else
     {
@@ -608,7 +633,8 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
             for (int i = 0; i < numConnectedDevices; i++)
             {
                 // DBG("Sending to " + StringHelpers::macToString(remoteMacsBytes[i]));
-                esp_now_send(remoteMacsBytes[i], data, len);
+                if (esp_now_send(remoteMacsBytes[i], data, len) == ESP_OK)
+                    queuedPackets++;
                 if (i % 3 == 0)
                     delayMicroseconds(100);
             }
@@ -616,7 +642,8 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
         else if (id >= 0 && id < numConnectedDevices)
         {
             // DBG("Sending to " + StringHelpers::macToString(remoteMacsBytes[id]));
-            esp_now_send(remoteMacsBytes[id], data, len);
+            if (esp_now_send(remoteMacsBytes[id], data, len) == ESP_OK)
+                queuedPackets++;
         }
     }
 #else
@@ -626,9 +653,12 @@ void ESPNowComponent::sendPacket(int id, const uint8_t *data, int len)
     // }
     // else
     // {
-    esp_now_send(bridgeMac, data, len);
+    if (esp_now_send(bridgeMac, data, len) == ESP_OK)
+        queuedPackets++;
     // }
 #endif
+
+    return queuedPackets;
 }
 
 void ESPNowComponent::registerStreamReceiver(ESPNowStreamReceiver *receiver)
@@ -928,6 +958,11 @@ void ESPNowComponent::paramValueChangedInternal(ParamInfo *paramInfo)
         DBG("Pairing mode changed " + std::to_string(pairingMode));
         if (pairingMode)
             bridgeInit = false;
+    }
+    else if (param == &autoPairing && !autoPairing && pairingMode)
+    {
+        NDBG("Auto pairing disabled, stopping pairing mode");
+        SetParam(pairingMode, false);
     }
 #endif
 

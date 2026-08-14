@@ -1,5 +1,6 @@
 
 #include "UnityIncludes.h"
+#include "Common/Memory.cpp"
 #include "main.cpp"
 #include "RootComponent.cpp"
 #include "Common/Settings.cpp"

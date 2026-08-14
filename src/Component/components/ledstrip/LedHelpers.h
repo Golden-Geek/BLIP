@@ -40,8 +40,24 @@
 #define NeoPixelColor Rgb48Color
 #define NeoPixelColorDivider 1
 #else
+
 #define NeoPixelMethod NeoWs2812Method
+#ifndef LED_DEFAULT_COLOR_ORDER
 #define NeoPixelFeature NeoBgrFeature
+#else
+    #if LED_DEFAULT_COLOR_ORDER == GRB
+        #define NeoPixelFeature NeoGrbFeature
+    #elif LED_DEFAULT_COLOR_ORDER == RGB
+        #define NeoPixelFeature NeoRgbFeature
+    #else
+        #define NeoPixelFeature NeoBgrFeature
+    #endif
+#endif
+
+#ifndef NeoPixelFeature
+#define NeoPixelFeature NeoBgrFeature
+#endif
+
 #define NeoPixelColor RgbColor
 #define NeoPixelColorDivider 256
 #endif // LED_MODELS

@@ -27,8 +27,14 @@ void LedStripComponent::setupInternal(JsonObject o)
 
     ParamInfo* countInfo = AddIntParamConfig(count);
 #ifdef LED_FIXED_COUNT
+    // A saved count from another board/firmware can be larger than the
+    // compile-time color buffers. Always restore the fixed hardware count
+    // before any layer uses it.
+    count = LED_FIXED_COUNT;
     countInfo->setTag(TagConfig, false);
     countInfo->setTag(TagFeedback, false);
+#else
+    count = constrain(count, 0, LED_MAX_COUNT);
 #endif
     AddIntParamConfig(dataPin);
     AddIntParamConfig(enPin);
@@ -251,12 +257,32 @@ void LedStripComponent::paramValueChangedInternal(ParamInfo *paramInfo)
 #ifdef LED_USE_FASTLED
     if (param == &colorCorrection)
         updateCorrection();
-#else
+#endif
+
     if (param == &count)
     {
-        setupLeds();
-    }
+#ifdef LED_FIXED_COUNT
+        if (count != LED_FIXED_COUNT)
+        {
+            NDBG("Ignoring LED count " + std::to_string(count) + "; this board uses " + std::to_string(LED_FIXED_COUNT));
+            count = LED_FIXED_COUNT;
+        }
+#else
+        int safeCount = constrain(count, 0, LED_MAX_COUNT);
+        if (count != safeCount)
+        {
+            NDBG("Clamping LED count " + std::to_string(count) + " to " + std::to_string(safeCount));
+            count = safeCount;
+        }
 #endif
+
+        // During setup the remaining LED parameters and layers are not ready
+        // yet. initInternal() will perform the initial hardware setup.
+#ifndef LED_USE_FASTLED
+        if (isInit)
+            setupLeds();
+#endif
+    }
 }
 
 void LedStripComponent::onEnabledChanged()
@@ -367,13 +393,21 @@ void LedStripComponent::showLeds()
     float targetBrightness = brightness * LED_BRIGHTNESS_FACTOR;
     if (maxPower > 0)
     {
-        int totalAmpFullBrightness = 0;
+        float totalAmpFullBrightness = 0;
         const float bMultiplier = LED_BRIGHTNESS_FACTOR * LED_LEDS_PER_PIXEL;
+#ifdef USE_16BIT_COLOR
+        const float colorMax = 65535.0f;
+#else
+        const float colorMax = 255.0f;
+#endif
 
         for (int i = 0; i < count; i++)
         {
             Color c = colors[i];
-            totalAmpFullBrightness += (((c.r * RED_MILLIAMP + c.g * GREEN_MILLIAMP + c.b * BLUE_MILLIAMP + DARK_MILLIAMP) / (c.a / 255.0f)) / 255.0f);
+            const float alpha = c.a / colorMax;
+            totalAmpFullBrightness +=
+                ((c.r * RED_MILLIAMP + c.g * GREEN_MILLIAMP + c.b * BLUE_MILLIAMP) / colorMax) * alpha +
+                DARK_MILLIAMP;
         }
 
         totalAmpFullBrightness *= bMultiplier;

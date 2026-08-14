@@ -93,7 +93,7 @@ void CommunicationComponent::sendParamFeedback(Component *c, const ParamInfo *pa
 {
     void *param = paramInfo->ptr;
     ParamType pType = paramInfo->type;
-    std::string pName = paramInfo->name;
+    const std::string &pName = paramInfo->name;
     int numData = 1;
     var data[4];
 

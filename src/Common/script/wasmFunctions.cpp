@@ -216,7 +216,9 @@ m3ApiRawFunction(m3_setIR)
 {
     m3ApiGetArg(float, v);
     var val[1] = {v};
+#ifdef USE_IR
     RootComponent::instance->ir.setParam(&RootComponent::instance->ir.value, val, 1);
+#endif
     m3ApiSuccess();
 }
 

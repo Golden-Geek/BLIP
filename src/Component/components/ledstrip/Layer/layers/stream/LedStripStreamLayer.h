@@ -6,6 +6,14 @@
 #define LEDSTREAM_ARTNET_PORT 5678
 #endif
 
+#ifndef LEDSTREAM_FRAME_SETTLE_US
+#define LEDSTREAM_FRAME_SETTLE_US 2000
+#endif
+
+#ifndef LEDSTREAM_MAX_FRAME_HOLD_US
+#define LEDSTREAM_MAX_FRAME_HOLD_US 12000
+#endif
+
 class LedStripStreamLayer : public LedStripLayer, public DMXListener
 {
 public:
@@ -20,7 +28,16 @@ public:
     DeclareFloatParam(noReceptionTime, 1.0f);
 
     bool hasCleared = false;
-    float lastReceiveTime = 0;
+    uint32_t lastReceiveTimeMs = 0;
+
+    // Network frames can span several Art-Net/ESP-NOW packets, sometimes
+    // arriving from another core. Stage them here and publish one coherent
+    // snapshot from updateInternal() instead of rendering a half-written frame.
+    Color pendingColors[LED_MAX_COUNT];
+    portMUX_TYPE pendingColorsMux = portMUX_INITIALIZER_UNLOCKED;
+    bool pendingFrame = false;
+    uint32_t pendingFrameStartUs = 0;
+    uint32_t lastPacketTimeUs = 0;
 
     void setupInternal(JsonObject o) override;
     bool initInternal() override;
